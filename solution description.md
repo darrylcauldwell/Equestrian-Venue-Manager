@@ -1,6 +1,6 @@
 # Solution Description
 
-## Database
+## Relational Database
 
 Database Type: PostgreSQL
 
@@ -32,9 +32,9 @@ Calendar Events Table: Contains data related to calendar events
 | calendar_event_description | VARCHAR(100) | Calendar entry description |
 | calendar_event_arena_id | INTEGER | Unique arena identifier |
 | calendar_event_payment_ref | INTEGER | Identifier from external payment system or livery status |
-| calendar_event_start_time | INTEGER | Calendar entry start time |
-| calendar_event_end_time | INTEGER | Calendar entry end time |
-| calendar_event_type | INTEGER | Calendar entry type,  eg external, event, livery,  maintenance |
+| calendar_event_start_time | TIMESTAMP | Calendar entry start time |
+| calendar_event_end_time | TIMESTAMP | Calendar entry end time |
+| calendar_event_type | ENUM | Calendar entry type,  enumeration: external, event, livery,  maintenance |
 | calendar_event_user_id | INTEGER | User ID of the calendar event booker |
 
 Horses Table: Contains data related to the horses.
@@ -46,6 +46,133 @@ Horses Table: Contains data related to the horses.
 | horse_colour | VARCHAR(50) | Horse's colour |
 | horse_birth_year | INTEGER | Horse's birth year |
 | horse_owner_id | INTEGER | User ID of the horse's owner |
+
+## NoSQL Database
+
+Each relational database table could become a collection:
+
+Users collection:
+
+```json
+{
+  "users": [
+    {
+      "user_id": "u1",
+      "user_email": "user@example.com",
+      "user_name": "John Doe",
+      "user_phone": 1234567890,
+      "user_livery_status": true,
+      "user_staff_status": false,
+      "user_hashed_password": "hashedpassword123"
+    },
+    {
+      "user_id": "u2",
+      "user_email": "user1@example.com",
+      "user_name": "Joan Doe",
+      "user_phone": 1234567890,
+      "user_livery_status": true,
+      "user_staff_status": false,
+      "user_hashed_password": "hashedpassword123"
+    }
+  ]
+}
+```
+
+Arenas collection:
+
+```json
+{
+  "_id": "a1",
+  "name": "Indoor Arena",
+  "description": "Indoor arena"
+},
+{
+  "_id": "a2",
+  "name": "Outdoor Arena",
+  "description": "All weather outdoor arena"
+}
+```
+
+Future Calendar Events collection:
+
+```json
+{
+  "events": [
+    {
+    "event_id": "e3",
+    "description": "Jumping Lesson",
+    "arena_id": "a1",
+    "payment_ref": "pay123",
+    "start_time": "2024-07-17T14:00:00Z",
+    "end_time": "2024-07-17T16:00:00Z",
+    "event_type": "external",
+    "user": "n1"
+    },
+     {
+    "event_id": "e4",
+    "description": "Dressage Competition",
+    "arena_id": "a1",
+    "payment_ref": "pay123",
+    "start_time": "2024-07-17T14:00:00Z",
+    "end_time": "2024-07-17T16:00:00Z",
+    "event_type": "event",
+    "user": "n1"
+    }   
+  ]
+}
+```
+
+Historical Calendar Events collection:
+
+```json
+{
+  "events": [
+    {
+    "event_id": "e1",
+    "description": "Jumping Lesson",
+    "arena_id": "a1",
+    "payment_ref": "pay123",
+    "start_time": "2024-07-17T14:00:00Z",
+    "end_time": "2024-07-17T16:00:00Z",
+    "event_type": "external",
+    "user": "n1"
+    },
+     {
+    "event_id": "e2",
+    "description": "Dressage Competition",
+    "arena_id": "a1",
+    "payment_ref": "pay123",
+    "start_time": "2024-07-17T14:00:00Z",
+    "end_time": "2024-07-17T16:00:00Z",
+    "event_type": "event",
+    "user": "n1"
+    }   
+  ]
+}
+```
+
+Horse collection:
+
+```json
+{
+  "horses": [
+    {
+      "horse_id": "h1",
+      "horse_name": "Wellbrow Ethan",
+      "horse_colour": "Black",
+      "horse_birth_year": 2011,
+      "horse_owner_id": "u1"
+    },
+    {
+      "horse_id": "h2",
+      "horse_name": "Ridge Cross Lad",
+      "horse_colour": "Chestnut",
+      "horse_birth_year": 2013,
+      "horse_owner_id": "u1"
+    }
+  ]
+}
+```
 
 ## Internal API
 
@@ -95,3 +222,23 @@ List Calendar Events Endpoint:
 Endpoint: /api/v1/calendar/
 Method: GET
 Description: Retrieves a list of all available slots, calendar events associated with the user's account and if livery events associated with all user's account type livery.
+
+Create Arenas Endpoint:
+Endpoint: /api/v1/arena/
+Method: POST
+Description: Add an arena.
+
+Get Arena Endpoint:
+Endpoint: /api/v1/arena/<arena_id>
+Method: GET
+Description: Retrieve an arena.
+
+Update Arenas Endpoint:
+Endpoint: /api/v1/arena/<arena_id>
+Method: PUT
+Description: Update an arena.
+
+List Arenas Endpoint:
+Endpoint: /api/v1/arena/
+Method: GET
+Description: Retrieves a list of all arenas.

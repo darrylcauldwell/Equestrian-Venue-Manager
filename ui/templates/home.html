@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equestrian Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+        }
+        nav {
+            background: #444;
+            padding: 0.5rem;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Equestrian Management System</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('horses') }}">Horses</a></li>
+            <li><a href="{{ url_for('calendar') }}">Calendar</a></li>
+            <li><a href="{{ url_for('arenas') }}">Arenas</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h2>Welcome to Your Equestrian Management Dashboard</h2>
+        <p>Here you can manage your horses, schedule events, and book arenas.</p>
+        <h3>Quick Links:</h3>
+        <ul>
+            <li><a href="{{ url_for('horses') }}">Manage Your Horses</a></li>
+            <li><a href="{{ url_for('calendar') }}">View and Schedule Events</a></li>
+            <li><a href="{{ url_for('arenas') }}">Book Arenas</a></li>
+        </ul>
+    </div>
+</body>
+</html>
