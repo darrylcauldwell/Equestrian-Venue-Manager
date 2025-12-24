@@ -1,5 +1,6 @@
 import pytest
 import json
+import os
 from datetime import datetime, timedelta, date, time
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -36,13 +37,18 @@ from app.models.task import YardTask, TaskComment
 from app.models.turnout import TurnoutRequest
 from app.utils.auth import get_password_hash, create_access_token
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+# Use DATABASE_URL from environment (for CI with PostgreSQL) or fall back to SQLite for local testing
+SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///:memory:")
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
