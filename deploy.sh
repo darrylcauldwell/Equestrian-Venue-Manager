@@ -31,25 +31,48 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# Get domain name
+# Get server address (domain or IP)
 echo ""
-read -p "Enter your domain name (e.g., yourvenue.com): " DOMAIN
-if [ -z "$DOMAIN" ]; then
-  echo -e "${RED}Domain name is required${NC}"
-  exit 1
+echo "Enter your domain name OR IP address."
+echo "Examples: yourvenue.com OR 167.71.133.139"
+echo ""
+read -p "Domain/IP: " SERVER_ADDRESS
+if [ -z "$SERVER_ADDRESS" ]; then
+  # Try to detect the server's public IP
+  SERVER_ADDRESS=$(curl -s ifconfig.me 2>/dev/null || echo "")
+  if [ -z "$SERVER_ADDRESS" ]; then
+    echo -e "${RED}Could not detect server IP. Please enter manually.${NC}"
+    exit 1
+  fi
+  echo -e "${YELLOW}Using detected IP: ${SERVER_ADDRESS}${NC}"
 fi
 
-# Get email for SSL certificates
-read -p "Enter your email (for SSL certificates): " ACME_EMAIL
-if [ -z "$ACME_EMAIL" ]; then
-  echo -e "${RED}Email is required for SSL certificates${NC}"
-  exit 1
+# Determine if this is an IP address or domain
+if [[ "$SERVER_ADDRESS" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  IS_IP=true
+  USE_SSL=false
+  echo -e "${YELLOW}Detected IP address - will configure HTTP only (no SSL)${NC}"
+else
+  IS_IP=false
+  # Ask about SSL for domain names
+  read -p "Enable SSL with Let's Encrypt? (y/n, default: y): " ENABLE_SSL
+  if [ "$ENABLE_SSL" = "n" ] || [ "$ENABLE_SSL" = "N" ]; then
+    USE_SSL=false
+  else
+    USE_SSL=true
+    read -p "Enter your email (for SSL certificates): " ACME_EMAIL
+    if [ -z "$ACME_EMAIL" ]; then
+      echo -e "${RED}Email is required for SSL certificates${NC}"
+      exit 1
+    fi
+  fi
 fi
 
 # Get GitHub repository (for container images)
-read -p "Enter GitHub repository (e.g., username/equestrian-venue-manager): " GITHUB_REPO
+echo ""
+read -p "Enter GitHub repository (default: darrylcauldwell/Equestrian-Venue-Manager): " GITHUB_REPO
 if [ -z "$GITHUB_REPO" ]; then
-  echo -e "${YELLOW}Warning: No GitHub repo specified. You'll need to build images locally.${NC}"
+  GITHUB_REPO="darrylcauldwell/Equestrian-Venue-Manager"
 fi
 
 echo ""
@@ -79,7 +102,9 @@ echo ""
 echo -e "${GREEN}Step 3: Setting up firewall...${NC}"
 ufw allow OpenSSH
 ufw allow 80/tcp
-ufw allow 443/tcp
+if [ "$USE_SSL" = true ]; then
+  ufw allow 443/tcp
+fi
 ufw --force enable
 echo -e "${GREEN}Firewall configured${NC}"
 
@@ -95,6 +120,13 @@ SECRET_KEY=$(openssl rand -hex 32)
 
 echo ""
 echo -e "${GREEN}Step 6: Creating environment file...${NC}"
+
+if [ "$USE_SSL" = true ]; then
+  FRONTEND_URL="https://${SERVER_ADDRESS}"
+else
+  FRONTEND_URL="http://${SERVER_ADDRESS}"
+fi
+
 cat > .env << EOF
 # Database Configuration
 POSTGRES_USER=evm
@@ -106,16 +138,17 @@ SECRET_KEY=${SECRET_KEY}
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 
-# Domain Configuration
-DOMAIN=${DOMAIN}
-FRONTEND_URL=https://${DOMAIN}
+# Server Configuration
+SERVER_ADDRESS=${SERVER_ADDRESS}
+FRONTEND_URL=${FRONTEND_URL}
+USE_SSL=${USE_SSL}
 
 # GitHub Container Registry
 GITHUB_REPOSITORY=${GITHUB_REPO}
 IMAGE_TAG=latest
 
-# Let's Encrypt Email
-ACME_EMAIL=${ACME_EMAIL}
+# Let's Encrypt Email (only used if SSL enabled)
+ACME_EMAIL=${ACME_EMAIL:-}
 
 # Stripe Configuration (optional - add later if needed)
 STRIPE_SECRET_KEY=
@@ -129,19 +162,22 @@ echo -e "${GREEN}Environment file created at /opt/evm/.env${NC}"
 
 echo ""
 echo -e "${GREEN}Step 7: Creating docker-compose.yml...${NC}"
-cat > docker-compose.yml << 'COMPOSE_EOF'
+
+if [ "$USE_SSL" = true ]; then
+  # Full setup with Traefik and SSL
+  cat > docker-compose.yml << COMPOSE_EOF
 services:
   db:
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-evm}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-evm_db}
+      POSTGRES_USER: \${POSTGRES_USER:-evm}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+      POSTGRES_DB: \${POSTGRES_DB:-evm_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-evm} -d ${POSTGRES_DB:-evm_db}"]
+      test: ["CMD-SHELL", "pg_isready -U \${POSTGRES_USER:-evm} -d \${POSTGRES_DB:-evm_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -149,18 +185,18 @@ services:
       - evm-network
 
   backend:
-    image: ghcr.io/${GITHUB_REPOSITORY}/backend:${IMAGE_TAG:-latest}
+    image: ghcr.io/\${GITHUB_REPOSITORY}/backend:\${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-evm}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-evm_db}
-      SECRET_KEY: ${SECRET_KEY}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-      ARENA_BOOKING_PRICE_PER_HOUR: ${ARENA_BOOKING_PRICE_PER_HOUR:-2500}
-      FRONTEND_URL: ${FRONTEND_URL:-https://your-domain.com}
+      DATABASE_URL: postgresql://\${POSTGRES_USER:-evm}:\${POSTGRES_PASSWORD}@db:5432/\${POSTGRES_DB:-evm_db}
+      SECRET_KEY: \${SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: \${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      REFRESH_TOKEN_EXPIRE_DAYS: \${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      STRIPE_SECRET_KEY: \${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: \${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: \${STRIPE_WEBHOOK_SECRET:-}
+      ARENA_BOOKING_PRICE_PER_HOUR: \${ARENA_BOOKING_PRICE_PER_HOUR:-2500}
+      FRONTEND_URL: \${FRONTEND_URL}
     depends_on:
       db:
         condition: service_healthy
@@ -168,13 +204,13 @@ services:
       - evm-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.rule=Host(\`\${SERVER_ADDRESS}\`) && PathPrefix(\`/api\`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY}/frontend:${IMAGE_TAG:-latest}
+    image: ghcr.io/\${GITHUB_REPOSITORY}/frontend:\${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       - backend
@@ -182,7 +218,7 @@ services:
       - evm-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.frontend.rule=Host(\`\${SERVER_ADDRESS}\`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
@@ -197,7 +233,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.email=\${ACME_EMAIL}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
     ports:
@@ -218,34 +254,138 @@ networks:
     driver: bridge
 COMPOSE_EOF
 
+else
+  # Simple setup without SSL - direct port mapping
+  cat > docker-compose.yml << COMPOSE_EOF
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: \${POSTGRES_USER:-evm}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+      POSTGRES_DB: \${POSTGRES_DB:-evm_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \${POSTGRES_USER:-evm} -d \${POSTGRES_DB:-evm_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - evm-network
+
+  backend:
+    image: ghcr.io/\${GITHUB_REPOSITORY}/backend:\${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://\${POSTGRES_USER:-evm}:\${POSTGRES_PASSWORD}@db:5432/\${POSTGRES_DB:-evm_db}
+      SECRET_KEY: \${SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: \${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      REFRESH_TOKEN_EXPIRE_DAYS: \${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      STRIPE_SECRET_KEY: \${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: \${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: \${STRIPE_WEBHOOK_SECRET:-}
+      ARENA_BOOKING_PRICE_PER_HOUR: \${ARENA_BOOKING_PRICE_PER_HOUR:-2500}
+      FRONTEND_URL: \${FRONTEND_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - evm-network
+
+  frontend:
+    image: ghcr.io/\${GITHUB_REPOSITORY}/frontend:\${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=http://\${SERVER_ADDRESS}/api
+    depends_on:
+      - backend
+    networks:
+      - evm-network
+
+  # Nginx reverse proxy for API routing (no SSL)
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - evm-network
+
+volumes:
+  postgres_data:
+
+networks:
+  evm-network:
+    driver: bridge
+COMPOSE_EOF
+
+  # Create nginx config for routing
+  cat > nginx.conf << 'NGINX_EOF'
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream frontend {
+        server frontend:80;
+    }
+
+    upstream backend {
+        server backend:8000;
+    }
+
+    server {
+        listen 80;
+        server_name _;
+
+        # API requests go to backend
+        location /api {
+            proxy_pass http://backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Everything else goes to frontend
+        location / {
+            proxy_pass http://frontend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+NGINX_EOF
+
+  # Remove duplicate port mapping from frontend (nginx handles it)
+  sed -i 's/ports:/# ports:/g; s/- "80:80"/# - "80:80"/g' docker-compose.yml
+
+fi
+
 echo -e "${GREEN}docker-compose.yml created${NC}"
 
 echo ""
-echo -e "${YELLOW}=============================================="
-echo " IMPORTANT: DNS Configuration Required"
-echo "=============================================="
-echo -e "${NC}"
-echo "Before continuing, ensure your domain's DNS is configured:"
-echo ""
-echo "  ${DOMAIN} -> $(curl -s ifconfig.me)"
-echo ""
-echo "Add an A record pointing to this server's IP address."
-echo ""
-read -p "Press Enter when DNS is configured (or Ctrl+C to exit)..."
-
-echo ""
 echo -e "${GREEN}Step 8: Logging into GitHub Container Registry...${NC}"
-if [ -n "$GITHUB_REPO" ]; then
-  echo "You need a GitHub Personal Access Token with 'read:packages' permission."
-  echo "Create one at: https://github.com/settings/tokens"
-  echo ""
-  read -p "Enter your GitHub username: " GH_USER
-  read -s -p "Enter your GitHub Personal Access Token: " GH_TOKEN
-  echo ""
+echo "You need a GitHub Personal Access Token with 'read:packages' permission."
+echo "Create one at: https://github.com/settings/tokens"
+echo ""
+read -p "Enter your GitHub username: " GH_USER
+read -s -p "Enter your GitHub Personal Access Token: " GH_TOKEN
+echo ""
 
-  echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_USER" --password-stdin
-  echo -e "${GREEN}Logged into GitHub Container Registry${NC}"
-fi
+echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_USER" --password-stdin
+echo -e "${GREEN}Logged into GitHub Container Registry${NC}"
 
 echo ""
 echo -e "${GREEN}Step 9: Pulling container images...${NC}"
@@ -257,15 +397,15 @@ docker compose up -d
 
 echo ""
 echo -e "${GREEN}Step 11: Waiting for database to be ready...${NC}"
-sleep 10
+sleep 15
 
 echo ""
 echo -e "${GREEN}Step 12: Running database migrations...${NC}"
 docker compose exec -T backend alembic upgrade head
 
 echo ""
-echo -e "${GREEN}Step 13: Creating default admin user...${NC}"
-docker compose exec -T backend python scripts/init_admin.py
+echo -e "${GREEN}Step 13: Seeding initial data...${NC}"
+docker compose exec -T backend python scripts/seed_database.py || true
 
 echo ""
 echo -e "${GREEN}=============================================="
@@ -275,7 +415,7 @@ echo -e "${NC}"
 echo ""
 echo "Your application is now running at:"
 echo ""
-echo -e "  ${GREEN}https://${DOMAIN}${NC}"
+echo -e "  ${GREEN}${FRONTEND_URL}${NC}"
 echo ""
 echo "Default admin credentials:"
 echo -e "  Username: ${YELLOW}admin${NC}"
@@ -289,7 +429,4 @@ echo "  docker compose logs -f          # View logs"
 echo "  docker compose ps               # Check status"
 echo "  docker compose restart          # Restart services"
 echo "  docker compose pull && docker compose up -d  # Update"
-echo ""
-echo "To enable demo data, log in as admin and go to:"
-echo "  Settings -> Demo Data Management -> Enable Demo Data Mode"
 echo ""
