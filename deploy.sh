@@ -3,11 +3,12 @@
 # Equestrian Venue Manager - Deployment Script
 #
 # Run this script on a fresh Ubuntu 22.04 droplet:
-#   curl -O https://raw.githubusercontent.com/YOUR-ORG/equestrian-venue-manager/main/deploy.sh
+#   curl -sSL https://raw.githubusercontent.com/darrylcauldwell/Equestrian-Venue-Manager/main/deploy.sh | sudo bash
+#
+# Or download and run:
+#   curl -O https://raw.githubusercontent.com/darrylcauldwell/Equestrian-Venue-Manager/main/deploy.sh
 #   chmod +x deploy.sh
 #   sudo ./deploy.sh
-#
-# Or copy/paste the contents and run directly.
 #
 
 set -e
