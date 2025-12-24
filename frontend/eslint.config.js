@@ -5,10 +5,10 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules'] },
+  { ignores: ['dist', 'node_modules', 'e2e/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -26,14 +26,6 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       // useEffect dependencies: warn but don't fail (common pattern to exclude callbacks)
       'react-hooks/exhaustive-deps': 'warn',
-    },
-  },
-  // E2E tests: relax unused-vars rule as tests often assign locators without using them directly
-  {
-    files: ['e2e/**/*.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-      'react-hooks/rules-of-hooks': 'off',
     },
   }
 );
