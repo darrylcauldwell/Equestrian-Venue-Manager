@@ -30,6 +30,7 @@ export function MyBookings() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const handleCancel = async (bookingId: number) => {

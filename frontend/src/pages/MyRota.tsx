@@ -48,6 +48,7 @@ export default function MyRota() {
 
   useEffect(() => {
     loadInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

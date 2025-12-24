@@ -74,6 +74,7 @@ export default function Clinics() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, disciplineFilter]);
 
   const loadData = async () => {

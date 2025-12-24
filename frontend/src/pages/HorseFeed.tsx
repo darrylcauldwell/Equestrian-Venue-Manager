@@ -46,6 +46,7 @@ export function HorseFeed() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horseId]);
 
   const handleSaveFeed = async (e: React.FormEvent) => {

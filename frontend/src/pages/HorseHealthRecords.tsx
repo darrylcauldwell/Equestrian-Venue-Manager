@@ -136,6 +136,7 @@ export function HorseHealthRecords() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horseId]);
 
   // Load tasks due when on care plans tab and there are active programs
@@ -143,6 +144,7 @@ export function HorseHealthRecords() {
     if (activeTab === 'careplans' && rehabPrograms.some(p => p.status === 'active')) {
       loadTasksDue();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, rehabPrograms]);
 
   const loadProgramTaskLogs = async (programId: number) => {

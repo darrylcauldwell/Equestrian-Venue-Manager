@@ -38,6 +38,7 @@ export default function HorseEmergencyContacts() {
     if (horseId) {
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horseId]);
 
   const loadData = async () => {

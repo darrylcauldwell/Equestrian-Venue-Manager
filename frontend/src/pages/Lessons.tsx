@@ -139,6 +139,7 @@ export default function Lessons() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, disciplineFilter]);
 
   const loadData = async () => {
@@ -480,6 +481,7 @@ export default function Lessons() {
     if (showCoachBookModal && myProfile) {
       loadBookingAvailability();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showCoachBookModal, bookingWeekStart, myProfile?.id]);
 
   const calculateEndTime = (startTime: string, durationMinutes: number) => {

@@ -27,5 +27,13 @@ export default tseslint.config(
       // useEffect dependencies: warn but don't fail (common pattern to exclude callbacks)
       'react-hooks/exhaustive-deps': 'warn',
     },
+  },
+  // E2E tests: relax unused-vars rule as tests often assign locators without using them directly
+  {
+    files: ['e2e/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+      'react-hooks/rules-of-hooks': 'off',
+    },
   }
 );
