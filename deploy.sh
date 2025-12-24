@@ -36,7 +36,7 @@ echo ""
 echo "Enter your domain name OR IP address."
 echo "Examples: yourvenue.com OR 167.71.133.139"
 echo ""
-read -p "Domain/IP: " SERVER_ADDRESS </dev/tty
+read -p "Domain/IP: " SERVER_ADDRESS < /dev/tty
 if [ -z "$SERVER_ADDRESS" ]; then
   # Try to detect the server's public IP
   SERVER_ADDRESS=$(curl -s ifconfig.me 2>/dev/null || echo "")
@@ -55,12 +55,12 @@ if [[ "$SERVER_ADDRESS" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 else
   IS_IP=false
   # Ask about SSL for domain names
-  read -p "Enable SSL with Let's Encrypt? (y/n, default: y): " ENABLE_SSL </dev/tty
+  read -p "Enable SSL with Let's Encrypt? (y/n, default: y): " ENABLE_SSL < /dev/tty
   if [ "$ENABLE_SSL" = "n" ] || [ "$ENABLE_SSL" = "N" ]; then
     USE_SSL=false
   else
     USE_SSL=true
-    read -p "Enter your email (for SSL certificates): " ACME_EMAIL </dev/tty
+    read -p "Enter your email (for SSL certificates): " ACME_EMAIL < /dev/tty
     if [ -z "$ACME_EMAIL" ]; then
       echo -e "${RED}Email is required for SSL certificates${NC}"
       exit 1
@@ -70,7 +70,7 @@ fi
 
 # Get GitHub repository (for container images)
 echo ""
-read -p "Enter GitHub repository (default: darrylcauldwell/Equestrian-Venue-Manager): " GITHUB_REPO </dev/tty
+read -p "Enter GitHub repository (default: darrylcauldwell/Equestrian-Venue-Manager): " GITHUB_REPO < /dev/tty
 if [ -z "$GITHUB_REPO" ]; then
   GITHUB_REPO="darrylcauldwell/Equestrian-Venue-Manager"
 fi
@@ -380,8 +380,8 @@ echo -e "${GREEN}Step 8: Logging into GitHub Container Registry...${NC}"
 echo "You need a GitHub Personal Access Token with 'read:packages' permission."
 echo "Create one at: https://github.com/settings/tokens"
 echo ""
-read -p "Enter your GitHub username: " GH_USER </dev/tty
-read -s -p "Enter your GitHub Personal Access Token: " GH_TOKEN </dev/tty
+read -p "Enter your GitHub username: " GH_USER < /dev/tty
+read -s -p "Enter your GitHub Personal Access Token: " GH_TOKEN < /dev/tty
 echo ""
 
 echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_USER" --password-stdin
