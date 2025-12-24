@@ -128,7 +128,7 @@ export function AdminLessonTriage() {
       setSuccess('Lesson confirmed successfully');
       setTimeout(() => setSuccess(''), 3000);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('Failed to confirm lesson');
       setTimeout(() => setError(''), 3000);
     }
@@ -147,7 +147,7 @@ export function AdminLessonTriage() {
       setSuccess('Lesson declined');
       setTimeout(() => setSuccess(''), 3000);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('Failed to decline lesson');
       setTimeout(() => setError(''), 3000);
     }
@@ -159,7 +159,7 @@ export function AdminLessonTriage() {
       setSuccess('Lesson marked as complete');
       setTimeout(() => setSuccess(''), 3000);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('Failed to complete lesson');
       setTimeout(() => setError(''), 3000);
     }
@@ -176,7 +176,7 @@ export function AdminLessonTriage() {
       setSuccess('Lesson cancelled');
       setTimeout(() => setSuccess(''), 3000);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('Failed to cancel lesson');
       setTimeout(() => setError(''), 3000);
     }

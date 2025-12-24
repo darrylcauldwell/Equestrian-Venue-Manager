@@ -177,7 +177,7 @@ export function AdminBackups() {
       setRestoreResult(result);
       setSuccess('Restore completed successfully');
       loadData(); // Refresh backup list
-    } catch (err) {
+    } catch {
       setError('Restore failed. Check the file format and try again.');
     } finally {
       setIsRestoring(false);

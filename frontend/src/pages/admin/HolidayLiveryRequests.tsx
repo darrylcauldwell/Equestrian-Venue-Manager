@@ -90,7 +90,7 @@ export function AdminHolidayLiveryRequests() {
     try {
       const detail = await holidayLiveryApi.get(request.id);
       setSelectedRequest(detail);
-    } catch (err) {
+    } catch {
       setError('Failed to load request details');
       setShowDetailModal(false);
     } finally {
@@ -110,7 +110,7 @@ export function AdminHolidayLiveryRequests() {
         admin_notes: '',
       });
       setShowApproveModal(true);
-    } catch (err) {
+    } catch {
       setError('Failed to load request details');
     } finally {
       setLoadingDetail(false);
@@ -127,7 +127,7 @@ export function AdminHolidayLiveryRequests() {
         admin_notes: '',
       });
       setShowRejectModal(true);
-    } catch (err) {
+    } catch {
       setError('Failed to load request details');
     } finally {
       setLoadingDetail(false);
@@ -171,7 +171,7 @@ export function AdminHolidayLiveryRequests() {
       setSuccess('Request rejected');
       setTimeout(() => setSuccess(''), 3000);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('Failed to reject request');
       setTimeout(() => setError(''), 3000);
     }
@@ -185,7 +185,7 @@ export function AdminHolidayLiveryRequests() {
       setSuccess('Request cancelled');
       setTimeout(() => setSuccess(''), 3000);
       await loadData();
-    } catch (err) {
+    } catch {
       setError('Failed to cancel request');
       setTimeout(() => setError(''), 3000);
     }

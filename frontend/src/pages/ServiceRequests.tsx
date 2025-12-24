@@ -83,11 +83,6 @@ export function ServiceRequests() {
     special_instructions: '',
   });
 
-  // Redirect non-livery users
-  if (user && !isLivery) {
-    return <Navigate to="/book" replace />;
-  }
-
   // Request form state
   const [requestForm, setRequestForm] = useState<CreateServiceRequest>({
     service_id: '',
@@ -146,6 +141,19 @@ export function ServiceRequests() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Load insurance claims when tab is switched or filters change
+  useEffect(() => {
+    if (activeTab === 'insurance-claims' && user) {
+      loadInsuranceClaims();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, insuranceFilters.horseId, insuranceFilters.month, user]);
+
+  // Redirect non-livery users - must be after all hooks
+  if (user && !isLivery) {
+    return <Navigate to="/book" replace />;
+  }
 
   const handleRequestService = (service: Service) => {
     setSelectedService(service);
@@ -277,13 +285,6 @@ export function ServiceRequests() {
       setError('Failed to download insurance statement. Make sure you have marked at least one service as claimable.');
     }
   };
-
-  // Load insurance claims when tab is switched or filters change
-  useEffect(() => {
-    if (activeTab === 'insurance-claims' && user) {
-      loadInsuranceClaims();
-    }
-  }, [activeTab, insuranceFilters.horseId, insuranceFilters.month]);
 
   const getRecurringPatternLabel = (pattern: RecurringPattern) => {
     const labels: Record<RecurringPattern, string> = {

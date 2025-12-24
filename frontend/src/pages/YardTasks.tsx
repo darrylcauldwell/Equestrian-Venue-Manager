@@ -62,9 +62,6 @@ export default function YardTasks() {
 
   // Only staff and admin can access this page
   const isStaffOrAdmin = isAdmin || user?.is_yard_staff;
-  if (!isStaffOrAdmin) {
-    return <Navigate to="/book" replace />;
-  }
 
   // Non-admin staff default to 'my' tab (their assigned tasks)
   const [activeTab, setActiveTab] = useState<TabType>(isAdmin ? 'today' : 'my');
@@ -147,8 +144,16 @@ export default function YardTasks() {
   const [newComment, setNewComment] = useState('');
 
   useEffect(() => {
-    loadData();
-  }, [categoryFilter, priorityFilter, assignedToFilter]);
+    if (isStaffOrAdmin) {
+      loadData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryFilter, priorityFilter, assignedToFilter, isStaffOrAdmin]);
+
+  // Authorization check - must be after all hooks
+  if (!isStaffOrAdmin) {
+    return <Navigate to="/book" replace />;
+  }
 
   const loadData = async () => {
     try {
