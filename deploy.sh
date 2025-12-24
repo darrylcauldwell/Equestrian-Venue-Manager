@@ -384,35 +384,23 @@ fi
 echo -e "${GREEN}docker-compose.yml created${NC}"
 
 echo ""
-echo -e "${GREEN}Step 8: Logging into GitHub Container Registry...${NC}"
-echo "You need a GitHub Personal Access Token with 'read:packages' permission."
-echo "Create one at: https://github.com/settings/tokens"
-echo ""
-read -p "Enter your GitHub username: " GH_USER < /dev/tty
-read -s -p "Enter your GitHub Personal Access Token: " GH_TOKEN < /dev/tty
-echo ""
-
-echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_USER" --password-stdin
-echo -e "${GREEN}Logged into GitHub Container Registry${NC}"
-
-echo ""
-echo -e "${GREEN}Step 9: Pulling container images...${NC}"
+echo -e "${GREEN}Step 8: Pulling container images...${NC}"
 docker compose pull
 
 echo ""
-echo -e "${GREEN}Step 10: Starting services...${NC}"
+echo -e "${GREEN}Step 9: Starting services...${NC}"
 docker compose up -d
 
 echo ""
-echo -e "${GREEN}Step 11: Waiting for database to be ready...${NC}"
+echo -e "${GREEN}Step 10: Waiting for database to be ready...${NC}"
 sleep 15
 
 echo ""
-echo -e "${GREEN}Step 12: Running database migrations...${NC}"
+echo -e "${GREEN}Step 11: Running database migrations...${NC}"
 docker compose exec -T backend alembic upgrade head
 
 echo ""
-echo -e "${GREEN}Step 13: Seeding initial data...${NC}"
+echo -e "${GREEN}Step 12: Seeding initial data...${NC}"
 docker compose exec -T backend python scripts/seed_database.py || true
 
 echo ""
