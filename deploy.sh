@@ -36,15 +36,23 @@ echo ""
 echo "Enter your domain name OR IP address."
 echo "Examples: yourvenue.com OR 167.71.133.139"
 echo ""
-read -p "Domain/IP: " SERVER_ADDRESS < /dev/tty
-if [ -z "$SERVER_ADDRESS" ]; then
-  # Try to detect the server's public IP
-  SERVER_ADDRESS=$(curl -s ifconfig.me 2>/dev/null || echo "")
-  if [ -z "$SERVER_ADDRESS" ]; then
-    echo -e "${RED}Could not detect server IP. Please enter manually.${NC}"
-    exit 1
-  fi
-  echo -e "${YELLOW}Using detected IP: ${SERVER_ADDRESS}${NC}"
+# Try to detect the server's public IP first
+DETECTED_IP=$(curl -s ifconfig.me 2>/dev/null || echo "")
+
+echo -n "Domain/IP"
+if [ -n "$DETECTED_IP" ]; then
+  echo -n " [${DETECTED_IP}]"
+fi
+echo -n ": "
+read SERVER_ADDRESS < /dev/tty
+
+# Use detected IP if nothing entered
+if [ -z "$SERVER_ADDRESS" ] && [ -n "$DETECTED_IP" ]; then
+  SERVER_ADDRESS="$DETECTED_IP"
+  echo "Using: $SERVER_ADDRESS"
+elif [ -z "$SERVER_ADDRESS" ]; then
+  echo -e "${RED}No IP address entered and could not auto-detect.${NC}"
+  exit 1
 fi
 
 # Determine if this is an IP address or domain
