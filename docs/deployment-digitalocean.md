@@ -1,12 +1,12 @@
 # Deploying Equestrian Venue Manager on DigitalOcean
 
-This guide walks you through deploying the Equestrian Venue Manager application on a DigitalOcean Droplet.
+This guide walks you through deploying the Equestrian Venue Manager application on a DigitalOcean Droplet using the automated deployment script.
 
 ## Prerequisites
 
 - A DigitalOcean account
-- A domain name pointed to your droplet's IP address
-- Basic familiarity with Linux command line
+- A domain name
+- A GitHub Personal Access Token with `read:packages` permission ([create one here](https://github.com/settings/tokens))
 
 ## Step 1: Create a DigitalOcean Droplet
 
@@ -20,160 +20,60 @@ This guide walks you through deploying the Equestrian Venue Manager application 
      - Recommended: Basic Plan, 4GB RAM / 2 vCPUs ($24/month)
    - **Authentication**: SSH Key (recommended) or Password
 4. Click "Create Droplet"
+5. Note the droplet's IP address
 
-## Step 2: Initial Server Setup
+## Step 2: Configure DNS
 
-Connect to your droplet via SSH:
+Point your domain to the droplet's IP address:
+
+1. Go to your domain registrar's DNS settings
+2. Add an A record:
+   - **Host**: `@` (or your subdomain)
+   - **Points to**: Your droplet's IP address
+   - **TTL**: 300 (or default)
+
+Wait a few minutes for DNS to propagate.
+
+## Step 3: Deploy with One Command
+
+SSH into your droplet and run the deployment script:
 
 ```bash
 ssh root@your-droplet-ip
 ```
 
-### Update System
+Then run:
 
 ```bash
-apt update && apt upgrade -y
+curl -sSL https://raw.githubusercontent.com/darrylcauldwell/Equestrian-Venue-Manager/main/deploy.sh | sudo bash
 ```
 
-### Create a Non-Root User (Recommended)
+The script will prompt you for:
+- Your domain name (e.g., `yourvenue.com`)
+- Your email address (for SSL certificates)
+- Your GitHub repository (e.g., `darrylcauldwell/Equestrian-Venue-Manager`)
+- Your GitHub username and Personal Access Token
 
-```bash
-adduser evm
-usermod -aG sudo evm
-```
+The script automatically:
+- Updates the system
+- Installs Docker and Docker Compose
+- Configures the firewall (ports 80, 443, SSH)
+- Generates secure passwords and secret keys
+- Creates all configuration files
+- Pulls and starts all containers
+- Sets up automatic SSL with Let's Encrypt
+- Runs database migrations
+- Creates the default admin user
 
-### Configure Firewall
+## Step 4: Access Your Application
 
-```bash
-ufw allow OpenSSH
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw enable
-```
+Once deployment completes, visit your domain: `https://your-domain.com`
 
-## Step 3: Install Docker
+**Default admin credentials:**
+- Username: `admin`
+- Password: `password`
 
-```bash
-# Install Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
-
-# Add user to docker group
-usermod -aG docker evm
-
-# Install Docker Compose plugin
-apt install docker-compose-plugin -y
-
-# Verify installation
-docker --version
-docker compose version
-```
-
-## Step 4: Set Up the Application
-
-### Create Application Directory
-
-```bash
-mkdir -p /opt/evm
-cd /opt/evm
-```
-
-### Download Production Docker Compose File
-
-```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/YOUR-ORG/equestrian-venue-manager/main/docker-compose.prod.yml
-```
-
-Or create it manually (copy contents from `docker-compose.prod.yml` in the repository).
-
-### Create Environment File
-
-```bash
-nano .env
-```
-
-Add the following configuration:
-
-```env
-# Database Configuration
-POSTGRES_USER=evm
-POSTGRES_PASSWORD=your-secure-database-password-here
-POSTGRES_DB=evm_db
-
-# Application Configuration
-SECRET_KEY=your-very-long-random-secret-key-here
-
-# Domain Configuration
-DOMAIN=your-domain.com
-
-# GitHub Container Registry
-GITHUB_REPOSITORY=your-org/equestrian-venue-manager
-IMAGE_TAG=latest
-
-# Let's Encrypt Email (for SSL certificates)
-ACME_EMAIL=your-email@example.com
-
-# Traefik Dashboard Auth (optional)
-# Generate with: echo $(htpasswd -nb admin your-password) | sed -e s/\\$/\\$\\$/g
-TRAEFIK_AUTH=admin:$$apr1$$xxx$$xxxxxxxxxxxxxxxxxxxxxxxx
-```
-
-Generate a secure secret key:
-
-```bash
-openssl rand -hex 32
-```
-
-Generate Traefik dashboard password:
-
-```bash
-# Install apache2-utils for htpasswd
-apt install apache2-utils -y
-echo $(htpasswd -nb admin your-password) | sed -e s/\\$/\\$\\$/g
-```
-
-### Log in to GitHub Container Registry
-
-```bash
-# Use a GitHub Personal Access Token with packages:read permission
-echo "YOUR_GITHUB_PAT" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
-```
-
-## Step 5: Start the Application
-
-```bash
-cd /opt/evm
-docker compose -f docker-compose.yml up -d
-```
-
-**That's it!** The application will automatically:
-- Wait for the database to be ready
-- Run all database migrations
-- Seed demo data (on first start only)
-- Create the default admin user with:
-  - Username: `admin`
-  - Password: `password`
-- Start the application
-
-**Important**: Change the admin password immediately after first login!
-
-## Step 6: Verify Deployment
-
-1. Check all containers are running:
-   ```bash
-   docker compose ps
-   ```
-
-2. Check container logs:
-   ```bash
-   docker compose logs -f
-   ```
-
-3. Visit your domain in a browser: `https://your-domain.com`
-
-4. Log in with the default admin credentials:
-   - Username: `admin`
-   - Password: `password`
+**IMPORTANT: Change the admin password immediately after first login!**
 
 ## Post-Deployment Tasks
 
@@ -186,127 +86,113 @@ docker compose -f docker-compose.yml up -d
 ### Configure Site Settings
 
 1. Navigate to Admin → Settings
-2. Configure:
-   - Site name
-   - Contact information
-   - Business hours
-   - Other preferences
-
-### Configure Stripe Payments (Optional)
-
-To enable guest arena booking payments:
-
-1. Navigate to Admin → Settings → Payment Settings
-2. Toggle "Enable Stripe Payments"
-3. Enter your Stripe API keys from the [Stripe Dashboard](https://dashboard.stripe.com/apikeys)
-4. Configure webhook endpoint:
-   - In Stripe Dashboard, go to [Webhooks](https://dashboard.stripe.com/webhooks)
-   - Add endpoint: `https://your-domain.com/api/payments/webhook`
-   - Select event: `checkout.session.completed`
-   - Copy the webhook signing secret and paste in Settings
-5. Save settings
+2. Configure venue name, contact information, and other preferences
 
 ### Enable Demo Data (Optional)
 
-If you want to explore the application with sample data:
+To explore the application with sample data:
 
 1. Navigate to Admin → Settings
 2. Scroll to "Demo Data" section
 3. Click "Enable Demo Data Mode"
 
-This will populate the system with sample:
-- Users (livery clients, staff, coaches)
-- Horses
-- Arenas
-- Bookings
-- And other sample data
+## Maintenance Commands
 
-To remove demo data later, click "Clean Demo Data" in the same section.
-
-## Maintenance
-
-### View Logs
-
-```bash
-# All services
-docker compose logs -f
-
-# Specific service
-docker compose logs -f backend
-docker compose logs -f frontend
-```
-
-### Update Application
+All commands should be run from `/opt/evm`:
 
 ```bash
 cd /opt/evm
 
-# Pull latest images
-docker compose pull
+# View logs
+docker compose logs -f
 
-# Restart with new images
-docker compose up -d
+# View specific service logs
+docker compose logs -f backend
+docker compose logs -f frontend
 
-# Run migrations (if needed)
+# Check container status
+docker compose ps
+
+# Restart services
+docker compose restart
+
+# Update to latest version
+docker compose pull && docker compose up -d
+
+# Run database migrations (after update)
 docker compose exec backend alembic upgrade head
-```
 
-### Backup Database
-
-```bash
-# Create backup
+# Backup database
 docker compose exec db pg_dump -U evm evm_db > backup-$(date +%Y%m%d).sql
 
-# Restore backup
+# Restore database
 cat backup-20240101.sql | docker compose exec -T db psql -U evm evm_db
 ```
-
-### SSL Certificate Renewal
-
-Traefik automatically handles SSL certificate renewal via Let's Encrypt. Certificates are stored in the `letsencrypt` volume.
 
 ## Troubleshooting
 
 ### Application Won't Start
 
-1. Check logs: `docker compose logs -f`
-2. Verify environment variables: `cat .env`
-3. Check disk space: `df -h`
-4. Check memory: `free -m`
+```bash
+# Check logs
+docker compose logs -f
 
-### Database Connection Issues
+# Check disk space
+df -h
 
-1. Check database container: `docker compose logs db`
-2. Verify DATABASE_URL in backend logs
-3. Ensure PostgreSQL is healthy: `docker compose ps`
+# Check memory
+free -m
+```
 
 ### SSL Certificate Issues
 
-1. Verify domain DNS is pointing to your droplet
+1. Verify domain DNS is pointing to your droplet: `dig your-domain.com`
 2. Check Traefik logs: `docker compose logs traefik`
-3. Ensure ports 80 and 443 are open
+3. Ensure ports 80 and 443 are open: `ufw status`
 
 ### Container Images Not Found
 
-1. Verify you're logged in to ghcr.io
-2. Check GITHUB_REPOSITORY environment variable
-3. Ensure images are publicly accessible or PAT has correct permissions
+1. Re-login to GitHub Container Registry:
+   ```bash
+   echo "YOUR_PAT" | docker login ghcr.io -u YOUR_USERNAME --password-stdin
+   ```
+2. Pull images again: `docker compose pull`
+
+### Database Connection Issues
+
+```bash
+# Check database container
+docker compose logs db
+
+# Verify database is healthy
+docker compose ps
+```
 
 ## Security Recommendations
 
 1. **Change default passwords** immediately after deployment
-2. **Enable UFW firewall** and only allow necessary ports
-3. **Use SSH keys** instead of password authentication
-4. **Keep system updated**: `apt update && apt upgrade -y`
-5. **Monitor logs** regularly for suspicious activity
-6. **Backup database** regularly
-7. **Use strong passwords** for all accounts
+2. **Use SSH keys** instead of password authentication
+3. **Keep system updated**: Run `apt update && apt upgrade -y` regularly
+4. **Backup database** regularly
+5. **Monitor logs** for suspicious activity
 
-## Resource Scaling
+## Updating the Application
 
-If you need more resources:
+When new versions are released:
 
-1. **Vertical Scaling**: Resize your droplet in DigitalOcean dashboard
-2. **Database Performance**: Consider DigitalOcean Managed Databases
-3. **CDN**: Use DigitalOcean Spaces or Cloudflare for static assets
-4. **Load Balancing**: Use DigitalOcean Load Balancers for high availability
+```bash
+cd /opt/evm
+docker compose pull
+docker compose up -d
+docker compose exec backend alembic upgrade head
+```
+
+## Uninstalling
+
+To completely remove the application:
+
+```bash
+cd /opt/evm
+docker compose down -v  # Warning: This deletes all data!
+rm -rf /opt/evm
+```
