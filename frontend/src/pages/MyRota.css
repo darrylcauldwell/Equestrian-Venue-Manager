@@ -1,0 +1,309 @@
+.my-rota-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.my-rota-page .page-header {
+  margin-bottom: 24px;
+}
+
+.my-rota-page .page-header h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.75rem;
+  color: #1a365d;
+}
+
+.my-rota-page .page-header p {
+  margin: 0;
+  color: #666;
+}
+
+.my-rota-page .error-message {
+  background: #fee;
+  color: #c00;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* Week Navigation */
+.my-rota-page .week-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.my-rota-page .week-navigation .btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.my-rota-page .week-navigation .btn:hover {
+  background: #f5f5f5;
+  border-color: #bbb;
+}
+
+.my-rota-page .current-week {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #1a365d;
+  min-width: 200px;
+  text-align: center;
+}
+
+/* Week Summary */
+.my-rota-page .week-summary {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.my-rota-page .week-summary strong {
+  color: #1a365d;
+}
+
+/* Rota Grid */
+.my-rota-page .rota-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .my-rota-page .rota-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.my-rota-page .rota-day {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.my-rota-page .rota-day.today {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
+
+.my-rota-page .rota-day.past {
+  opacity: 0.7;
+}
+
+.my-rota-page .rota-day.has-shift {
+  background: linear-gradient(to bottom, #f0fff4, #fff);
+}
+
+.my-rota-page .rota-day.on-holiday {
+  background: linear-gradient(to bottom, #e6f7ff, #fff);
+}
+
+.my-rota-page .rota-day.on-absence {
+  background: linear-gradient(to bottom, #fff5f5, #fff);
+}
+
+/* Day Header */
+.my-rota-page .day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.my-rota-page .rota-day.today .day-header {
+  background: #ebf8ff;
+}
+
+.my-rota-page .day-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #4a5568;
+  text-transform: uppercase;
+}
+
+.my-rota-page .day-date {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a365d;
+}
+
+.my-rota-page .rota-day.today .day-date {
+  color: #3182ce;
+}
+
+/* Day Content */
+.my-rota-page .day-content {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Status Blocks (Holiday/Absence) */
+.my-rota-page .status-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.my-rota-page .status-block .status-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.my-rota-page .status-block.holiday .status-icon {
+  background: #3182ce;
+}
+
+.my-rota-page .status-block.absence .status-icon {
+  background: #e53e3e;
+}
+
+.my-rota-page .status-block .status-text {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+}
+
+/* Shift Block */
+.my-rota-page .shift-block {
+  text-align: center;
+}
+
+.my-rota-page .shift-type {
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  display: inline-block;
+}
+
+.my-rota-page .shift-type.shift-morning {
+  background: #fefcbf;
+  color: #975a16;
+}
+
+.my-rota-page .shift-type.shift-afternoon {
+  background: #fed7aa;
+  color: #9c4221;
+}
+
+.my-rota-page .shift-type.shift-full_day {
+  background: #c6f6d5;
+  color: #276749;
+}
+
+.my-rota-page .shift-type.shift-split {
+  background: #e9d8fd;
+  color: #553c9a;
+}
+
+.my-rota-page .shift-role {
+  font-size: 0.85rem;
+  color: #4a5568;
+  margin-bottom: 4px;
+}
+
+.my-rota-page .shift-time {
+  font-size: 0.8rem;
+  color: #718096;
+  font-family: monospace;
+}
+
+.my-rota-page .shift-notes {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: #666;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* No Shift */
+.my-rota-page .no-shift {
+  text-align: center;
+  color: #a0aec0;
+  font-size: 0.85rem;
+}
+
+/* Legend */
+.my-rota-page .rota-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.my-rota-page .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.my-rota-page .legend-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.my-rota-page .legend-box.shift-morning {
+  background: #fefcbf;
+  border: 1px solid #d69e2e;
+}
+
+.my-rota-page .legend-box.shift-afternoon {
+  background: #fed7aa;
+  border: 1px solid #dd6b20;
+}
+
+.my-rota-page .legend-box.shift-full {
+  background: #c6f6d5;
+  border: 1px solid #38a169;
+}
+
+.my-rota-page .legend-box.on-holiday {
+  background: #bee3f8;
+  border: 1px solid #3182ce;
+}
+
+.my-rota-page .legend-box.on-absence {
+  background: #fed7d7;
+  border: 1px solid #e53e3e;
+}

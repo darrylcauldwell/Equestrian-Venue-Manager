@@ -1,0 +1,88 @@
+.not-found-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--bg-body) 0%, var(--bg-secondary) 100%);
+  padding: 2rem;
+}
+
+.not-found-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.horse-illustration {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 2rem;
+  color: var(--color-primary);
+}
+
+.horse-illustration svg {
+  width: 100%;
+  height: 100%;
+}
+
+.not-found-content h1 {
+  font-size: 6rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.not-found-content h2 {
+  font-size: 2rem;
+  margin: 0.5rem 0 1rem;
+  color: var(--text-primary);
+}
+
+.not-found-content p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0;
+}
+
+.not-found-content .subtext {
+  font-style: italic;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.not-found-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.not-found-actions .btn-primary,
+.not-found-actions .btn-secondary {
+  padding: 0.875rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.not-found-actions .btn-primary {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.not-found-actions .btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.not-found-actions .btn-secondary {
+  background: var(--bg-card);
+  color: var(--color-primary);
+  border: 1px solid var(--border-color);
+}
+
+.not-found-actions .btn-secondary:hover {
+  background: var(--bg-card-hover);
+}
