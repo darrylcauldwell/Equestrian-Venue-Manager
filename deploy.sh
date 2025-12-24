@@ -78,10 +78,12 @@ fi
 
 # Get GitHub repository (for container images)
 echo ""
-read -p "Enter GitHub repository (default: darrylcauldwell/Equestrian-Venue-Manager): " GITHUB_REPO < /dev/tty
+read -p "Enter GitHub repository (default: darrylcauldwell/equestrian-venue-manager): " GITHUB_REPO < /dev/tty
 if [ -z "$GITHUB_REPO" ]; then
-  GITHUB_REPO="darrylcauldwell/Equestrian-Venue-Manager"
+  GITHUB_REPO="darrylcauldwell/equestrian-venue-manager"
 fi
+# Ensure lowercase for Docker
+GITHUB_REPO=$(echo "$GITHUB_REPO" | tr '[:upper:]' '[:lower:]')
 
 echo ""
 echo -e "${GREEN}Step 1: Updating system...${NC}"
