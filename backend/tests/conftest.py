@@ -22,6 +22,18 @@ from app.models.livery_package import BillingType
 from app.models.holiday_livery import HolidayLiveryRequest, HolidayLiveryStatus
 from app.models.service import Service, ServiceRequest, ServiceCategory, RequestStatus, PreferredTime, RecurringPattern
 from app.models.medication_log import RehabProgram, RehabPhase, RehabTask, RehabStatus, TaskFrequency
+from app.models.settings import SiteSettings
+from app.models.account import Account
+from app.models.backup import BackupRecord
+from app.models.coach import Coach
+from app.models.emergency_contact import EmergencyContact
+from app.models.feed import FeedPlan, FeedType
+from app.models.field import Field
+from app.models.health_record import HealthRecord
+from app.models.invoice import Invoice, InvoiceItem
+from app.models.staff_management import StaffLeave, StaffShift, StaffTimesheet
+from app.models.task import YardTask
+from app.models.turnout import TurnoutRequest
 from app.utils.auth import get_password_hash, create_access_token
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
