@@ -34,8 +34,6 @@ export function AdminSettings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [demoDataEnabled, setDemoDataEnabled] = useState(false);
   const [canEnableDemo, setCanEnableDemo] = useState(false);
-  const [_hasRealData, setHasRealData] = useState(false);
-  const [_demoBlockReason, setDemoBlockReason] = useState<string | null>(null);
 
   // Scheduler state
   const [schedulerRunning, setSchedulerRunning] = useState(false);
@@ -269,8 +267,6 @@ export function AdminSettings() {
       try {
         const demoStatus = await settingsApi.getDemoStatus();
         setCanEnableDemo(demoStatus.can_enable_demo);
-        setHasRealData(demoStatus.has_real_data);
-        setDemoBlockReason(demoStatus.reason);
       } catch {
         setCanEnableDemo(false);
       }

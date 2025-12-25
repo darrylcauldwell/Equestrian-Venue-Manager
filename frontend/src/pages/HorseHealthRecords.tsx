@@ -73,7 +73,6 @@ export function HorseHealthRecords() {
     vet_notified: false,
   });
   const [savingTaskLog, setSavingTaskLog] = useState(false);
-  const [_taskLogError, _setTaskLogError] = useState('');
 
   // Form states for each record type
   const [farrierForm, setFarrierForm] = useState<CreateFarrierRecord>({

@@ -29,7 +29,7 @@ export function validatePhone(value: string | undefined | null): ValidationResul
   }
   // UK phone number patterns
   const phoneRegex = /^(\+44|0)[1-9]\d{8,9}$/;
-  const cleanPhone = value.replace(/[\s\-\(\)]/g, '');
+  const cleanPhone = value.replace(/[\s()-]/g, '');
   if (!phoneRegex.test(cleanPhone)) {
     return { isValid: false, message: 'Please enter a valid UK phone number' };
   }

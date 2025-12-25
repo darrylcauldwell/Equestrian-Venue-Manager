@@ -174,13 +174,20 @@ def start_scheduler():
         # Get configured schedule times from settings
         times = _get_schedule_settings()
 
+        # Misfire handling: allow jobs to run if missed within grace period
+        # coalesce=True means if multiple runs were missed, only run once
+        daily_grace_time = 23 * 3600  # 23 hours for daily jobs
+        monthly_grace_time = 7 * 24 * 3600  # 7 days for monthly jobs
+
         # Add health task generation job
         sched.add_job(
             generate_daily_health_tasks,
             trigger=CronTrigger(hour=times["health_tasks_hour"], minute=times["health_tasks_minute"]),
             id="daily_health_tasks",
             name="Generate daily health tasks",
-            replace_existing=True
+            replace_existing=True,
+            misfire_grace_time=daily_grace_time,
+            coalesce=True
         )
 
         # Add task rollover job
@@ -189,7 +196,9 @@ def start_scheduler():
             trigger=CronTrigger(hour=times["rollover_hour"], minute=times["rollover_minute"]),
             id="task_rollover",
             name="Rollover incomplete tasks to backlog",
-            replace_existing=True
+            replace_existing=True,
+            misfire_grace_time=daily_grace_time,
+            coalesce=True
         )
 
         # Add monthly billing job
@@ -198,7 +207,9 @@ def start_scheduler():
             trigger=CronTrigger(day=times["billing_day"], hour=times["billing_hour"], minute=times["billing_minute"]),
             id="monthly_billing",
             name="Generate monthly livery billing",
-            replace_existing=True
+            replace_existing=True,
+            misfire_grace_time=monthly_grace_time,
+            coalesce=True
         )
 
         # Add automated backup job
@@ -207,7 +218,9 @@ def start_scheduler():
             trigger=CronTrigger(hour=times["backup_hour"], minute=times["backup_minute"]),
             id="automated_backup",
             name="Automated database backup",
-            replace_existing=True
+            replace_existing=True,
+            misfire_grace_time=daily_grace_time,
+            coalesce=True
         )
 
         # Add backup cleanup job
@@ -216,7 +229,9 @@ def start_scheduler():
             trigger=CronTrigger(hour=times["cleanup_hour"], minute=times["cleanup_minute"]),
             id="backup_cleanup",
             name="Cleanup old backups based on retention",
-            replace_existing=True
+            replace_existing=True,
+            misfire_grace_time=daily_grace_time,
+            coalesce=True
         )
 
         sched.start()

@@ -53,7 +53,8 @@ export function AdminServices() {
 
     try {
       if (editingService) {
-        const { id, category, ...updateData } = formData;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _id, category: _category, ...updateData } = formData;
         await servicesApi.update(editingService.id, updateData);
       } else {
         await servicesApi.create(formData);

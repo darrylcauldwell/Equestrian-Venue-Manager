@@ -204,20 +204,18 @@ class TestCreateServiceRequest:
 
 
 class TestCreateRehabAssistanceRequest:
-    """Tests for creating rehab assistance requests with recurring patterns."""
+    """Tests for creating rehab assistance requests."""
 
-    def test_create_rehab_assistance_single_request(self, client, auth_headers_livery, rehab_program_active, horse):
-        """Create a single rehab assistance request (no recurrence)."""
+    def test_create_rehab_assistance_single_day(self, client, auth_headers_livery, rehab_program_active, horse):
+        """Create a single day rehab assistance request."""
         request_date = date.today() + timedelta(days=1)
         response = client.post(
             "/api/services/requests/rehab",
             json={
                 "horse_id": horse.id,
                 "rehab_program_id": rehab_program_active.id,
-                "rehab_task_id": rehab_program_active.task1.id,
-                "requested_date": str(request_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "none",
+                "start_date": str(request_date),
+                "end_date": str(request_date),
                 "special_instructions": "Please be gentle"
             },
             headers=auth_headers_livery
@@ -228,36 +226,14 @@ class TestCreateRehabAssistanceRequest:
         request = data[0]
         assert request["horse_id"] == horse.id
         assert request["rehab_program_id"] == rehab_program_active.id
-        assert request["rehab_task_id"] == rehab_program_active.task1.id
         assert request["requested_date"] == str(request_date)
         assert request["recurring_pattern"] == "none"
         assert request["recurring_series_id"] is None
-        assert request["status"] == "pending"  # Rehab assistance requires quote
-        assert "Walk in hand for 10 minutes" in request["special_instructions"]
+        assert request["status"] == "pending"
+        assert "Please be gentle" in request["special_instructions"]
 
-    def test_create_rehab_assistance_all_tasks(self, client, auth_headers_livery, rehab_program_active, horse):
-        """Create rehab assistance for all tasks (rehab_task_id=None)."""
-        request_date = date.today() + timedelta(days=2)
-        response = client.post(
-            "/api/services/requests/rehab",
-            json={
-                "horse_id": horse.id,
-                "rehab_program_id": rehab_program_active.id,
-                "requested_date": str(request_date),
-                "preferred_time": "afternoon",
-                "recurring_pattern": "none"
-            },
-            headers=auth_headers_livery
-        )
-        assert response.status_code == 201
-        data = response.json()
-        assert len(data) == 1
-        request = data[0]
-        assert request["rehab_task_id"] is None
-        assert "all rehab tasks" in request["special_instructions"]
-
-    def test_create_rehab_assistance_daily_recurring(self, client, auth_headers_livery, rehab_program_active, horse):
-        """Create daily recurring rehab assistance requests."""
+    def test_create_rehab_assistance_date_range(self, client, auth_headers_livery, rehab_program_active, horse):
+        """Create rehab assistance for a date range (creates daily requests)."""
         start_date = date.today() + timedelta(days=1)
         end_date = start_date + timedelta(days=6)  # 7 days total
 
@@ -266,11 +242,8 @@ class TestCreateRehabAssistanceRequest:
             json={
                 "horse_id": horse.id,
                 "rehab_program_id": rehab_program_active.id,
-                "rehab_task_id": rehab_program_active.task1.id,
-                "requested_date": str(start_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "daily",
-                "recurring_end_date": str(end_date)
+                "start_date": str(start_date),
+                "end_date": str(end_date)
             },
             headers=auth_headers_livery
         )
@@ -284,89 +257,12 @@ class TestCreateRehabAssistanceRequest:
         for request in data:
             assert request["recurring_series_id"] == series_id
             assert request["recurring_pattern"] == "daily"
-            assert request["status"] == "pending"  # Rehab assistance requires quote
+            assert request["status"] == "pending"
 
         # Check dates are consecutive
-        dates = [request["requested_date"] for request in data]
+        dates = sorted([request["requested_date"] for request in data])
         expected_dates = [(start_date + timedelta(days=i)).isoformat() for i in range(7)]
         assert dates == expected_dates
-
-    def test_create_rehab_assistance_weekdays_recurring(self, client, auth_headers_livery, rehab_program_active, horse):
-        """Create weekday-only recurring rehab assistance requests."""
-        # Start on a Monday
-        start_date = date.today()
-        while start_date.weekday() != 0:  # Find next Monday
-            start_date += timedelta(days=1)
-
-        end_date = start_date + timedelta(days=13)  # 2 weeks
-
-        response = client.post(
-            "/api/services/requests/rehab",
-            json={
-                "horse_id": horse.id,
-                "rehab_program_id": rehab_program_active.id,
-                "requested_date": str(start_date),
-                "preferred_time": "afternoon",
-                "recurring_pattern": "weekdays",
-                "recurring_end_date": str(end_date)
-            },
-            headers=auth_headers_livery
-        )
-        assert response.status_code == 201
-        data = response.json()
-        assert len(data) == 10  # 10 weekdays in 2 weeks
-
-        # Verify all are weekdays (Mon-Fri)
-        for request in data:
-            req_date = date.fromisoformat(request["requested_date"])
-            assert req_date.weekday() < 5, f"Expected weekday, got {req_date.strftime('%A')}"
-
-    def test_create_rehab_assistance_custom_recurring(self, client, auth_headers_livery, rehab_program_active, horse):
-        """Create custom recurring rehab assistance requests (specific days)."""
-        start_date = date.today() + timedelta(days=1)
-        end_date = start_date + timedelta(days=13)  # 2 weeks
-
-        response = client.post(
-            "/api/services/requests/rehab",
-            json={
-                "horse_id": horse.id,
-                "rehab_program_id": rehab_program_active.id,
-                "requested_date": str(start_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "custom",
-                "recurring_days": ["monday", "wednesday", "friday"],
-                "recurring_end_date": str(end_date)
-            },
-            headers=auth_headers_livery
-        )
-        assert response.status_code == 201
-        data = response.json()
-
-        # Verify all are Monday, Wednesday, or Friday
-        allowed_days = [0, 2, 4]  # Monday=0, Wednesday=2, Friday=4
-        for request in data:
-            req_date = date.fromisoformat(request["requested_date"])
-            assert req_date.weekday() in allowed_days, f"Expected Mon/Wed/Fri, got {req_date.strftime('%A')}"
-            assert request["recurring_pattern"] == "custom"
-
-    def test_create_rehab_assistance_recurring_without_end_date(self, client, auth_headers_livery, rehab_program_active, horse):
-        """Recurring request without end date should fail."""
-        start_date = date.today() + timedelta(days=1)
-
-        response = client.post(
-            "/api/services/requests/rehab",
-            json={
-                "horse_id": horse.id,
-                "rehab_program_id": rehab_program_active.id,
-                "requested_date": str(start_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "daily"
-                # Missing recurring_end_date
-            },
-            headers=auth_headers_livery
-        )
-        assert response.status_code == 400
-        assert "end date is required" in response.json()["detail"].lower()
 
     def test_create_rehab_assistance_invalid_end_date(self, client, auth_headers_livery, rehab_program_active, horse):
         """End date before start date should fail."""
@@ -378,15 +274,13 @@ class TestCreateRehabAssistanceRequest:
             json={
                 "horse_id": horse.id,
                 "rehab_program_id": rehab_program_active.id,
-                "requested_date": str(start_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "daily",
-                "recurring_end_date": str(end_date)
+                "start_date": str(start_date),
+                "end_date": str(end_date)
             },
             headers=auth_headers_livery
         )
         assert response.status_code == 400
-        assert "after the start date" in response.json()["detail"].lower()
+        assert "after" in response.json()["detail"].lower() or "on or after" in response.json()["detail"].lower()
 
     def test_create_rehab_assistance_for_other_users_horse(self, client, db, auth_headers_livery, rehab_program_active):
         """Cannot create rehab assistance for another user's horse."""
@@ -420,9 +314,8 @@ class TestCreateRehabAssistanceRequest:
             json={
                 "horse_id": other_horse.id,
                 "rehab_program_id": rehab_program_active.id,
-                "requested_date": str(request_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "none"
+                "start_date": str(request_date),
+                "end_date": str(request_date)
             },
             headers=auth_headers_livery
         )
@@ -450,9 +343,8 @@ class TestCreateRehabAssistanceRequest:
             json={
                 "horse_id": horse.id,
                 "rehab_program_id": inactive_program.id,
-                "requested_date": str(request_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "none"
+                "start_date": str(request_date),
+                "end_date": str(request_date)
             },
             headers=auth_headers_livery
         )
@@ -474,10 +366,8 @@ class TestCancelRecurringSeries:
             json={
                 "horse_id": horse.id,
                 "rehab_program_id": rehab_program_active.id,
-                "requested_date": str(start_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "daily",
-                "recurring_end_date": str(end_date)
+                "start_date": str(start_date),
+                "end_date": str(end_date)
             },
             headers=auth_headers_livery
         )
@@ -541,7 +431,7 @@ class TestCancelRecurringSeries:
         db.commit()
 
         # Create rehab program for other user's horse
-        from app.models.medication_log import RehabProgram, RehabPhase, RehabTask, RehabStatus, TaskFrequency
+        from app.models.medication_log import RehabProgram, RehabStatus
         other_program = RehabProgram(
             horse_id=other_horse.id,
             name="Other rehab",
@@ -552,28 +442,6 @@ class TestCancelRecurringSeries:
         db.add(other_program)
         db.commit()
         db.refresh(other_program)
-
-        # Add phase and task
-        phase = RehabPhase(
-            program_id=other_program.id,
-            phase_number=1,
-            name="Phase 1",
-            duration_days=14,
-            start_day=1
-        )
-        db.add(phase)
-        db.commit()
-        db.refresh(phase)
-
-        task = RehabTask(
-            phase_id=phase.id,
-            task_type="walk",
-            description="Walk",
-            frequency=TaskFrequency.DAILY,
-            sequence=1
-        )
-        db.add(task)
-        db.commit()
 
         # Other user creates recurring series
         other_token = create_access_token(other_user.id)
@@ -587,10 +455,8 @@ class TestCancelRecurringSeries:
             json={
                 "horse_id": other_horse.id,
                 "rehab_program_id": other_program.id,
-                "requested_date": str(start_date),
-                "preferred_time": "morning",
-                "recurring_pattern": "daily",
-                "recurring_end_date": str(end_date)
+                "start_date": str(start_date),
+                "end_date": str(end_date)
             },
             headers=other_headers
         )
