@@ -393,8 +393,20 @@ echo -e "${GREEN}Step 9: Starting services...${NC}"
 docker compose up -d
 
 echo ""
-echo -e "${GREEN}Step 10: Waiting for database to be ready...${NC}"
-sleep 15
+echo -e "${GREEN}Step 10: Waiting for services to be ready...${NC}"
+echo "Waiting for database..."
+sleep 10
+
+# Wait for backend to be responsive (up to 60 seconds)
+echo "Waiting for backend API..."
+for i in {1..30}; do
+  if docker compose exec -T backend curl -sf http://localhost:8000/api/health > /dev/null 2>&1; then
+    echo "Backend is ready!"
+    break
+  fi
+  echo "  Waiting... ($i/30)"
+  sleep 2
+done
 
 echo ""
 echo -e "${GREEN}Step 11: Running database migrations...${NC}"
@@ -402,7 +414,22 @@ docker compose exec -T backend alembic upgrade head
 
 echo ""
 echo -e "${GREEN}Step 12: Creating admin user...${NC}"
-docker compose exec -T backend python scripts/init_database.py
+# Try the script first, fall back to inline Python if script doesn't exist
+docker compose exec -T backend python scripts/init_database.py 2>/dev/null || \
+docker compose exec -T backend python -c "
+from app.database import SessionLocal
+from app.models.user import User, UserRole
+from app.utils.auth import get_password_hash
+db = SessionLocal()
+if not db.query(User).filter(User.username == 'admin').first():
+    admin = User(username='admin', email='admin@example.com', name='Administrator', password_hash=get_password_hash('password'), role=UserRole.ADMIN, is_active=True, must_change_password=True)
+    db.add(admin)
+    db.commit()
+    print('Admin user created')
+else:
+    print('Admin user already exists')
+db.close()
+"
 
 echo ""
 echo -e "${GREEN}=============================================="
