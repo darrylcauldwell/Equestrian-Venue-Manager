@@ -84,11 +84,16 @@ export default function Weather() {
     );
   }
 
-  if (error || !weather) {
-    return null; // Don't show anything if weather fails
+  if (error || !weather || !weather.forecast) {
+    return null; // Don't show anything if weather fails or data is incomplete
   }
 
   const { forecast } = weather;
+
+  // Additional safety check for required forecast properties
+  if (forecast.weather_code === undefined || !forecast.overnight || !forecast.daytime) {
+    return null;
+  }
   const icon = getWeatherIcon(forecast.weather_code);
 
   // Calculate rug suggestions based on overnight minimum temperature

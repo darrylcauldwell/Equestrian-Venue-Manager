@@ -37,54 +37,57 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      // Use CSS custom properties to respect theme (light/dark mode)
       return (
         <div style={{
           padding: '2rem',
           maxWidth: '800px',
           margin: '2rem auto',
           fontFamily: 'system-ui, sans-serif',
+          color: 'var(--text-color, inherit)',
+          backgroundColor: 'var(--background-color, inherit)',
         }}>
-          <h1 style={{ color: '#dc3545', marginBottom: '1rem' }}>
+          <h1 style={{ color: 'var(--danger-color, #dc3545)', marginBottom: '1rem' }}>
             Something went wrong
           </h1>
-          <p style={{ marginBottom: '1rem', color: '#666' }}>
+          <p style={{ marginBottom: '1rem', color: 'var(--text-muted, #666)' }}>
             An error occurred while rendering this page. The error details are shown below.
           </p>
 
           <div style={{
-            background: '#f8f9fa',
-            border: '1px solid #dee2e6',
+            background: 'var(--card-bg, #f8f9fa)',
+            border: '1px solid var(--border-color, #dee2e6)',
             borderRadius: '4px',
             padding: '1rem',
             marginBottom: '1rem',
             overflow: 'auto',
           }}>
-            <h3 style={{ color: '#dc3545', margin: '0 0 0.5rem 0', fontSize: '1rem' }}>
+            <h3 style={{ color: 'var(--danger-color, #dc3545)', margin: '0 0 0.5rem 0', fontSize: '1rem' }}>
               Error:
             </h3>
-            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: 'var(--text-color, inherit)' }}>
               {this.state.error?.message}
             </pre>
           </div>
 
           {this.state.errorInfo && (
             <details style={{ marginBottom: '1rem' }}>
-              <summary style={{ cursor: 'pointer', marginBottom: '0.5rem' }}>
+              <summary style={{ cursor: 'pointer', marginBottom: '0.5rem', color: 'var(--text-color, inherit)' }}>
                 Stack Trace (click to expand)
               </summary>
               <div style={{
-                background: '#f8f9fa',
-                border: '1px solid #dee2e6',
+                background: 'var(--card-bg, #f8f9fa)',
+                border: '1px solid var(--border-color, #dee2e6)',
                 borderRadius: '4px',
                 padding: '1rem',
                 overflow: 'auto',
                 maxHeight: '300px',
               }}>
-                <pre style={{ margin: 0, fontSize: '0.75rem', whiteSpace: 'pre-wrap' }}>
+                <pre style={{ margin: 0, fontSize: '0.75rem', whiteSpace: 'pre-wrap', color: 'var(--text-color, inherit)' }}>
                   {this.state.error?.stack}
                 </pre>
-                <hr style={{ margin: '1rem 0' }} />
-                <pre style={{ margin: 0, fontSize: '0.75rem', whiteSpace: 'pre-wrap' }}>
+                <hr style={{ margin: '1rem 0', borderColor: 'var(--border-color, #dee2e6)' }} />
+                <pre style={{ margin: 0, fontSize: '0.75rem', whiteSpace: 'pre-wrap', color: 'var(--text-color, inherit)' }}>
                   {this.state.errorInfo.componentStack}
                 </pre>
               </div>
@@ -96,7 +99,7 @@ export class ErrorBoundary extends Component<Props, State> {
               onClick={this.handleReset}
               style={{
                 padding: '0.5rem 1rem',
-                background: '#007bff',
+                background: 'var(--primary-color, #007bff)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
@@ -109,7 +112,7 @@ export class ErrorBoundary extends Component<Props, State> {
               onClick={this.handleReload}
               style={{
                 padding: '0.5rem 1rem',
-                background: '#6c757d',
+                background: 'var(--secondary-color, #6c757d)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
