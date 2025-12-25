@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { invoicesApi, usersApi } from '../../services/api';
 import {
   InvoiceSummary,
@@ -68,12 +68,7 @@ export default function Invoices() {
   const [submitting, setSubmitting] = useState(false);
   const [downloading, setDownloading] = useState<number | null>(null);
 
-  useEffect(() => {
-    loadInvoices();
-    loadUsers();
-  }, [statusFilter, userFilter]);
-
-  const loadInvoices = async () => {
+  const loadInvoices = useCallback(async () => {
     try {
       setLoading(true);
       const data = await invoicesApi.list(
@@ -88,9 +83,9 @@ export default function Invoices() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, userFilter]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const data = await usersApi.list();
       // Filter to only livery users
@@ -98,7 +93,12 @@ export default function Invoices() {
     } catch (err) {
       console.error('Failed to load users:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadInvoices();
+    loadUsers();
+  }, [loadInvoices, loadUsers]);
 
   const loadInvoiceDetail = async (invoiceId: number) => {
     try {

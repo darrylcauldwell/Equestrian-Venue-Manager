@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { complianceApi, usersApi } from '../../services/api';
 import type { ComplianceItem, CreateComplianceItem, ComplianceCategory, ComplianceDashboard, User } from '../../types';
 import { format } from 'date-fns';
@@ -53,11 +53,7 @@ export function AdminCompliance() {
     cost: '',
   });
 
-  useEffect(() => {
-    loadData();
-  }, [filterCategory, showInactive]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [dashboardData, itemsData, usersData] = await Promise.all([
         complianceApi.getDashboard(),
@@ -72,7 +68,11 @@ export function AdminCompliance() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filterCategory, showInactive]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const openModal = (item?: ComplianceItem) => {
     if (item) {
