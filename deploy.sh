@@ -313,8 +313,6 @@ services:
   frontend:
     image: ghcr.io/\${GITHUB_REPOSITORY}/frontend:\${IMAGE_TAG:-latest}
     restart: unless-stopped
-    ports:
-      - "80:80"
     environment:
       - VITE_API_URL=http://\${SERVER_ADDRESS}/api
     depends_on:
@@ -383,9 +381,6 @@ http {
     }
 }
 NGINX_EOF
-
-  # Remove duplicate port mapping from frontend (nginx handles it)
-  sed -i 's/ports:/# ports:/g; s/- "80:80"/# - "80:80"/g' docker-compose.yml
 
 fi
 
