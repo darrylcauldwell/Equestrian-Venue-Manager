@@ -408,8 +408,8 @@ echo -e "${GREEN}Step 11: Running database migrations...${NC}"
 docker compose exec -T backend alembic upgrade head
 
 echo ""
-echo -e "${GREEN}Step 12: Seeding initial data...${NC}"
-docker compose exec -T backend python scripts/seed_database.py || true
+echo -e "${GREEN}Step 12: Creating admin user...${NC}"
+docker compose exec -T backend python scripts/init_database.py
 
 echo ""
 echo -e "${GREEN}=============================================="
@@ -426,6 +426,9 @@ echo -e "  Username: ${YELLOW}admin${NC}"
 echo -e "  Password: ${YELLOW}password${NC}"
 echo ""
 echo -e "${RED}IMPORTANT: Change the admin password immediately after first login!${NC}"
+echo ""
+echo "To load demo data (optional):"
+echo "  Log in as admin > Settings > Demo Data > Enable Demo Data"
 echo ""
 echo "Useful commands:"
 echo "  cd /opt/evm"
