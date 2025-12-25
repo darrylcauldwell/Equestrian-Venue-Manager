@@ -1,12 +1,18 @@
 # Deploying Equestrian Venue Manager on DigitalOcean
 
-This guide walks you through deploying the Equestrian Venue Manager application on a DigitalOcean Droplet using the automated deployment script.
+This guide walks you through deploying the Equestrian Venue Manager application on a DigitalOcean Droplet.
 
 ## Prerequisites
 
 - A DigitalOcean account
-- A domain name
-- A GitHub Personal Access Token with `read:packages` permission ([create one here](https://github.com/settings/tokens))
+- (Optional) A domain name for SSL - you can deploy with just an IP address
+
+## Deployment Options
+
+| Option | SSL | Requirements |
+|--------|-----|--------------|
+| IP Address Only | No (HTTP) | Just a droplet |
+| Domain with SSL | Yes (HTTPS) | Domain + email for certificates |
 
 ## Step 1: Create a DigitalOcean Droplet
 
@@ -22,150 +28,275 @@ This guide walks you through deploying the Equestrian Venue Manager application 
 4. Click "Create Droplet"
 5. Note the droplet's IP address
 
-## Step 2: Configure DNS
+## Step 2: Configure DNS (Optional - for SSL)
 
-Point your domain to the droplet's IP address:
+If you want SSL (HTTPS), point your domain to the droplet:
 
 1. Go to your domain registrar's DNS settings
 2. Add an A record:
    - **Host**: `@` (or your subdomain)
    - **Points to**: Your droplet's IP address
    - **TTL**: 300 (or default)
+3. Wait 5-10 minutes for DNS to propagate
+4. Verify: `dig your-domain.com` should show your droplet IP
 
-Wait a few minutes for DNS to propagate.
+## Step 3: Deploy
 
-## Step 3: Deploy with One Command
-
-SSH into your droplet and run the deployment script:
+SSH into your droplet:
 
 ```bash
 ssh root@your-droplet-ip
 ```
 
-Then run:
+Run the deployment script:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/darrylcauldwell/Equestrian-Venue-Manager/main/deploy.sh | sudo bash
 ```
 
 The script will prompt you for:
-- Your domain name (e.g., `yourvenue.com`)
-- Your email address (for SSL certificates)
-- Your GitHub repository (e.g., `darrylcauldwell/Equestrian-Venue-Manager`)
-- Your GitHub username and Personal Access Token
+- **Domain/IP**: Enter your domain name OR press Enter to use the detected IP
+- **SSL**: If using a domain, whether to enable SSL (recommended)
+- **Email**: If enabling SSL, your email for Let's Encrypt certificates
+- **GitHub repo**: Press Enter for the default repository
 
 The script automatically:
 - Updates the system
 - Installs Docker and Docker Compose
-- Configures the firewall (ports 80, 443, SSH)
-- Generates secure passwords and secret keys
-- Creates all configuration files
-- Pulls and starts all containers
-- Sets up automatic SSL with Let's Encrypt
+- Configures the firewall
+- Generates secure passwords
+- Pulls container images from GitHub Container Registry
 - Runs database migrations
-- Creates the default admin user
+- Creates the admin user
 
 ## Step 4: Access Your Application
 
-Once deployment completes, visit your domain: `https://your-domain.com`
+Once deployment completes (typically 3-5 minutes):
+
+**With domain + SSL:**
+```
+https://your-domain.com
+```
+
+**With IP only:**
+```
+http://your-droplet-ip
+```
 
 **Default admin credentials:**
 - Username: `admin`
 - Password: `password`
 
-**IMPORTANT: Change the admin password immediately after first login!**
+**IMPORTANT: Change the admin password immediately!**
 
-## Post-Deployment Tasks
+## Architecture
 
-### Change Admin Password
-
-1. Log in as admin
-2. Go to your profile settings
-3. Change the password to a secure one
-
-### Configure Site Settings
-
-1. Navigate to Admin → Settings
-2. Configure venue name, contact information, and other preferences
-
-### Enable Demo Data (Optional)
-
-To explore the application with sample data:
-
-1. Navigate to Admin → Settings
-2. Scroll to "Demo Data" section
-3. Click "Enable Demo Data Mode"
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      DigitalOcean Droplet                   │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐                                            │
+│  │   Traefik   │ ← Port 80/443 (with SSL)                   │
+│  │  or nginx   │ ← Port 80 (IP-only mode)                   │
+│  └──────┬──────┘                                            │
+│         │                                                   │
+│    ┌────┴────┐                                              │
+│    │         │                                              │
+│ ┌──▼──┐  ┌───▼───┐  ┌────────┐                              │
+│ │Front│  │Backend│  │Database│                              │
+│ │ end │  │  API  │──│ Postgres│                             │
+│ │React│  │FastAPI│  │        │                              │
+│ └─────┘  └───────┘  └────────┘                              │
+│                                                             │
+│  Container Network: evm-network                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Maintenance Commands
 
-All commands should be run from `/opt/evm`:
+All commands run from `/opt/evm`:
 
 ```bash
 cd /opt/evm
 
-# View logs
+# View all logs
 docker compose logs -f
 
-# View specific service logs
+# View specific service
 docker compose logs -f backend
 docker compose logs -f frontend
+docker compose logs -f db
 
-# Check container status
+# Check status
 docker compose ps
 
-# Restart services
+# Restart all services
 docker compose restart
 
-# Update to latest version
-docker compose pull && docker compose up -d
+# Restart specific service
+docker compose restart backend
+```
 
-# Run database migrations (after update)
-docker compose exec backend alembic upgrade head
+## Updating the Application
+
+```bash
+cd /opt/evm
+docker compose pull
+docker compose up -d
+docker compose exec -T backend alembic upgrade head
+```
+
+## Database Operations
+
+```bash
+cd /opt/evm
 
 # Backup database
-docker compose exec db pg_dump -U evm evm_db > backup-$(date +%Y%m%d).sql
+docker compose exec -T db pg_dump -U evm evm_db > backup-$(date +%Y%m%d).sql
 
 # Restore database
-cat backup-20240101.sql | docker compose exec -T db psql -U evm evm_db
+cat backup.sql | docker compose exec -T db psql -U evm evm_db
+
+# Access database shell
+docker compose exec db psql -U evm evm_db
 ```
 
 ## Troubleshooting
 
-### Application Won't Start
+### Cannot Access Application
+
+1. **Check containers are running:**
+   ```bash
+   cd /opt/evm
+   docker compose ps
+   ```
+   All containers should show "Up" status.
+
+2. **Check firewall:**
+   ```bash
+   ufw status
+   ```
+   Ports 80 (and 443 if SSL) should be allowed.
+
+3. **Check logs:**
+   ```bash
+   docker compose logs --tail=50
+   ```
+
+### Login Fails with "Invalid username or password"
+
+The admin user may not have been created. Create it manually:
 
 ```bash
-# Check logs
-docker compose logs -f
-
-# Check disk space
-df -h
-
-# Check memory
-free -m
+cd /opt/evm
+docker compose exec -T backend python -c "
+from app.database import SessionLocal
+from app.models.user import User, UserRole
+from app.utils.auth import get_password_hash
+db = SessionLocal()
+if not db.query(User).filter(User.username == 'admin').first():
+    admin = User(username='admin', email='admin@example.com', name='Administrator', password_hash=get_password_hash('password'), role=UserRole.ADMIN, is_active=True, must_change_password=True)
+    db.add(admin)
+    db.commit()
+    print('Admin user created')
+else:
+    print('Admin user already exists')
+db.close()
+"
 ```
+
+### Database Connection Errors
+
+If you see "password authentication failed":
+
+```bash
+cd /opt/evm
+
+# Remove old data and start fresh
+docker compose down -v
+docker compose up -d
+
+# Wait for startup, then run migrations
+sleep 30
+docker compose exec -T backend alembic upgrade head
+```
+
+### Backend Not Starting
+
+Check backend logs:
+```bash
+docker compose logs backend --tail=100
+```
+
+Common issues:
+- Database not ready: Wait and restart backend
+- Migration errors: Check migration logs
 
 ### SSL Certificate Issues
 
-1. Verify domain DNS is pointing to your droplet: `dig your-domain.com`
-2. Check Traefik logs: `docker compose logs traefik`
-3. Ensure ports 80 and 443 are open: `ufw status`
-
-### Container Images Not Found
-
-1. Re-login to GitHub Container Registry:
+1. Verify DNS is propagated:
    ```bash
-   echo "YOUR_PAT" | docker login ghcr.io -u YOUR_USERNAME --password-stdin
+   dig your-domain.com
    ```
-2. Pull images again: `docker compose pull`
+   Should show your droplet IP.
 
-### Database Connection Issues
+2. Check Traefik logs:
+   ```bash
+   docker compose logs traefik
+   ```
+
+3. Rate limits: Let's Encrypt has rate limits. Wait an hour if you've made many attempts.
+
+### API Returns 404
+
+If the frontend loads but API calls fail:
+
+1. Check if backend is healthy:
+   ```bash
+   docker compose exec -T backend curl -f http://localhost:8000/api/health
+   ```
+
+2. Check nginx/traefik routing:
+   ```bash
+   docker compose logs nginx   # IP-only mode
+   docker compose logs traefik # SSL mode
+   ```
+
+### Out of Memory
+
+If containers keep restarting:
 
 ```bash
-# Check database container
-docker compose logs db
+# Check memory
+free -m
 
-# Verify database is healthy
-docker compose ps
+# Check Docker memory usage
+docker stats --no-stream
+```
+
+Consider upgrading to a larger droplet (4GB RAM recommended).
+
+### Disk Space
+
+```bash
+# Check disk usage
+df -h
+
+# Clean up Docker
+docker system prune -a
+```
+
+## Fresh Reinstall
+
+To completely remove and reinstall:
+
+```bash
+cd /opt/evm
+docker compose down -v
+rm -rf /opt/evm
+
+# Then re-run the deployment script
+curl -sSL https://raw.githubusercontent.com/darrylcauldwell/Equestrian-Venue-Manager/main/deploy.sh | sudo bash
 ```
 
 ## Security Recommendations
@@ -173,26 +304,29 @@ docker compose ps
 1. **Change default passwords** immediately after deployment
 2. **Use SSH keys** instead of password authentication
 3. **Keep system updated**: Run `apt update && apt upgrade -y` regularly
-4. **Backup database** regularly
-5. **Monitor logs** for suspicious activity
+4. **Enable automatic updates**:
+   ```bash
+   apt install unattended-upgrades
+   dpkg-reconfigure unattended-upgrades
+   ```
+5. **Backup database** regularly
+6. **Monitor logs** for suspicious activity
 
-## Updating the Application
+## Configuration
 
-When new versions are released:
-
-```bash
-cd /opt/evm
-docker compose pull
-docker compose up -d
-docker compose exec backend alembic upgrade head
-```
-
-## Uninstalling
-
-To completely remove the application:
+All configuration is in `/opt/evm/.env`:
 
 ```bash
-cd /opt/evm
-docker compose down -v  # Warning: This deletes all data!
-rm -rf /opt/evm
+# View current config
+cat /opt/evm/.env
+
+# Edit config (then restart)
+nano /opt/evm/.env
+docker compose restart
 ```
+
+Key settings:
+- `POSTGRES_PASSWORD`: Database password (auto-generated)
+- `SECRET_KEY`: JWT signing key (auto-generated)
+- `FRONTEND_URL`: Public URL of the application
+- `STRIPE_*`: Payment integration (optional)
