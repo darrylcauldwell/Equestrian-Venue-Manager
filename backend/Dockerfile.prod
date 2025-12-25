@@ -14,9 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Copy and set up entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Copy and set up entrypoint script with execute permission
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
 
 # Create non-root user for security
 RUN adduser --disabled-password --gecos '' appuser && \
