@@ -112,6 +112,8 @@ jobs:
         continue-on-error: true  # Don't fail build on lint errors (tracked separately)
 
       - name: Run unit tests with coverage
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: |
           cd frontend
           npm run test:coverage -- --reporter=verbose --reporter=junit --outputFile=test-results.xml
