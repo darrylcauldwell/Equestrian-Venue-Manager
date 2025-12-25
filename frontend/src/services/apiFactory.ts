@@ -23,13 +23,18 @@
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
-// Use the current hostname with port 8000 for API calls
-// This allows accessing from both localhost and LAN IP addresses
+// Get the API base URL
+// - In production: use empty string (relative URLs to same host, nginx proxies /api)
+// - In development: use localhost:8000 or VITE_API_URL if set
 const getApiUrl = (): string => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  // In browser, use same hostname as frontend but with backend port
+  // In production build, VITE_API_URL is not set - use relative path
+  if (import.meta.env.PROD) {
+    return '';
+  }
+  // In development, use same hostname as frontend but with backend port
   if (typeof window !== 'undefined') {
     return `http://${window.location.hostname}:8000`;
   }

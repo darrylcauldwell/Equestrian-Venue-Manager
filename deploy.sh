@@ -313,8 +313,6 @@ services:
   frontend:
     image: ghcr.io/\${GITHUB_REPOSITORY}/frontend:\${IMAGE_TAG:-latest}
     restart: unless-stopped
-    environment:
-      - VITE_API_URL=http://\${SERVER_ADDRESS}/api
     depends_on:
       - backend
     networks:
