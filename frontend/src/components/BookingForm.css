@@ -1,0 +1,224 @@
+.booking-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.booking-form {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.booking-form h2 {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-primary);
+}
+
+.form-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.livery-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--color-success-bg);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-success);
+}
+
+.no-fee-badge {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.payment-notice {
+  background: var(--color-warning-bg);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-warning);
+}
+
+/* Field validation error styling */
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+  border-color: var(--color-error, #dc2626);
+  background-color: var(--color-error-bg, #fef2f2);
+}
+
+.form-group.has-error input:focus,
+.form-group.has-error select:focus,
+.form-group.has-error textarea:focus {
+  border-color: var(--color-error, #dc2626);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+.field-error {
+  display: block;
+  color: var(--color-error, #dc2626);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.optional-label {
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Sharing option styling */
+.sharing-option {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+.sharing-option .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.sharing-option .checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.sharing-option .field-hint {
+  display: block;
+  margin-top: 0.5rem;
+  margin-left: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-form-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .booking-form {
+    border-radius: 12px 12px 0 0;
+    padding: 1.25rem;
+    max-height: 90vh;
+    max-width: 100%;
+  }
+
+  .booking-form h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-error {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px;
+    padding: 0.65rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .livery-notice {
+    flex-direction: column;
+    text-align: center;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .no-fee-badge {
+    font-size: 0.7rem;
+  }
+
+  .payment-notice {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .field-error {
+    font-size: 0.8rem;
+  }
+
+  .sharing-option {
+    padding: 0.75rem;
+  }
+
+  .sharing-option .checkbox-label {
+    font-size: 0.9rem;
+  }
+
+  .sharing-option .field-hint {
+    margin-left: 1.25rem;
+    font-size: 0.7rem;
+  }
+}

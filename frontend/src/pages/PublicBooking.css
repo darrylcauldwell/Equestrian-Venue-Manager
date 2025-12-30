@@ -1,0 +1,748 @@
+.public-booking-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.booking-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.booking-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.booking-header > p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.logged-in-notice,
+.login-notice {
+  margin-top: 1rem !important;
+  padding: 0.75rem 1rem;
+  background: var(--color-success-bg);
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.login-notice {
+  background: var(--bg-secondary);
+}
+
+.login-notice a,
+.logged-in-notice a {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.arena-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.arena-selector label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.arena-selector select {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  max-width: 400px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.arena-details {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.arena-details h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.arena-description {
+  margin: 0 0 1rem 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.arena-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.arena-feature {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.select-arena-prompt {
+  text-align: center;
+  padding: 3rem;
+  background: var(--bg-card);
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+.calendar-section {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Booking Form Overlay */
+.booking-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.booking-form {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.booking-form h2 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.booking-form h3 {
+  margin: 1.5rem 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.booking-time {
+  margin: 0;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.arena-name {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-secondary);
+}
+
+.form-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.payment-info {
+  background: var(--color-warning-bg);
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.payment-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-warning);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Success State */
+.booking-success {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.booking-success h2 {
+  color: var(--color-primary);
+}
+
+.booking-success p {
+  color: var(--text-secondary);
+}
+
+.payment-note {
+  background: var(--color-warning-bg);
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  color: var(--color-warning) !important;
+}
+
+.booking-success .btn-primary {
+  margin-top: 1rem;
+}
+
+/* Pricing Info */
+.pricing-info {
+  margin-top: 0.5rem !important;
+  font-weight: 600;
+  color: var(--color-primary) !important;
+  font-size: 1.1rem;
+}
+
+/* Price Display in Form */
+.price-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--color-success-bg);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.price-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.price-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* Payment Status Banners */
+.payment-success-banner,
+.payment-canceled-banner {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.payment-success-banner {
+  background: var(--color-success-bg);
+  border: 2px solid var(--color-success);
+}
+
+.payment-success-banner h2 {
+  color: var(--color-success);
+  margin: 0 0 1rem 0;
+}
+
+.payment-success-banner p {
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem 0;
+}
+
+.payment-canceled-banner {
+  background: var(--color-warning-bg);
+  border: 2px solid var(--color-warning);
+}
+
+.payment-canceled-banner h2 {
+  color: var(--color-warning);
+  margin: 0 0 1rem 0;
+}
+
+.payment-canceled-banner p {
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem 0;
+}
+
+/* Account Created Info Box */
+.account-created-info {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.account-created-info h3 {
+  color: var(--color-primary);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.account-created-info > p {
+  color: var(--text-secondary);
+  margin: 0 0 1rem 0;
+}
+
+.credentials-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  font-family: monospace;
+}
+
+.credentials-box p {
+  margin: 0.25rem 0;
+  color: var(--text-primary);
+}
+
+.credentials-box strong {
+  color: var(--text-secondary);
+}
+
+.password-warning {
+  font-size: 0.875rem;
+  color: var(--color-warning) !important;
+  margin-bottom: 1rem !important;
+}
+
+.login-link {
+  display: inline-block;
+  text-decoration: none;
+  margin-bottom: 0;
+}
+
+/* Processing Payment State */
+.processing-payment {
+  text-align: center;
+  padding: 2rem;
+}
+
+.processing-payment h2 {
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.processing-payment p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+/* Spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  border: 4px solid var(--border-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Calendar Legend */
+.calendar-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legend-color.booked {
+  background: #999;
+}
+
+.legend-color.event {
+  background: var(--color-calendar-shared);
+}
+
+.legend-color.coach-available {
+  background: var(--color-purple-light);
+  border: 2px dashed #9c27b0;
+}
+
+/* Coach Availability Note */
+.coach-availability-note {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-purple-bg);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #6a1b9a;
+}
+
+.coach-availability-note a {
+  color: #9c27b0;
+  font-weight: 600;
+}
+
+/* Coach availability background events */
+.fc-bg-event.coach-availability {
+  opacity: 0.4;
+  border: 2px dashed #9c27b0 !important;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .public-booking-page {
+    padding: 0;
+  }
+
+  .booking-header {
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+  }
+
+  .booking-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .booking-header > p {
+    font-size: 0.875rem;
+  }
+
+  .pricing-info {
+    font-size: 1rem !important;
+  }
+
+  .logged-in-notice,
+  .login-notice {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Arena Selector - Stack on mobile */
+  .arena-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .arena-selector select {
+    max-width: 100%;
+    padding: 0.875rem;
+    font-size: 16px; /* Prevents iOS zoom */
+  }
+
+  /* Arena Details */
+  .arena-details {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .arena-details h3 {
+    font-size: 1.1rem;
+  }
+
+  .arena-description {
+    font-size: 0.875rem;
+  }
+
+  .arena-features {
+    gap: 0.5rem;
+  }
+
+  .arena-feature {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .select-arena-prompt {
+    padding: 2rem 1rem;
+  }
+
+  /* Calendar Section */
+  .calendar-section {
+    padding: 0.5rem;
+    border-radius: 0;
+  }
+
+  /* FullCalendar mobile overrides */
+  .calendar-section .fc {
+    font-size: 0.75rem;
+  }
+
+  .calendar-section .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .calendar-section .fc-toolbar-title {
+    font-size: 1rem !important;
+  }
+
+  .calendar-section .fc-button {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .calendar-section .fc-header-toolbar {
+    margin-bottom: 0.75rem !important;
+  }
+
+  /* Calendar Legend */
+  .calendar-legend {
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    justify-content: flex-start;
+  }
+
+  .legend-item {
+    font-size: 0.75rem;
+    gap: 0.35rem;
+  }
+
+  .legend-color {
+    width: 10px;
+    height: 10px;
+  }
+
+  .coach-availability-note {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Payment Banners */
+  .payment-success-banner,
+  .payment-canceled-banner {
+    padding: 1.5rem 1rem;
+    margin: 0 0 1rem 0;
+    border-radius: 0;
+  }
+
+  .payment-success-banner h2,
+  .payment-canceled-banner h2 {
+    font-size: 1.25rem;
+  }
+
+  .payment-success-banner p,
+  .payment-canceled-banner p {
+    font-size: 0.875rem;
+  }
+
+  /* Account Created Info */
+  .account-created-info {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .account-created-info h3 {
+    font-size: 1rem;
+  }
+
+  .credentials-box {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .password-warning {
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-header h1 {
+    font-size: 1.25rem;
+  }
+
+  /* Booking Form Modal - Full screen on mobile */
+  .booking-form-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .booking-form {
+    border-radius: 0;
+    padding: 1.25rem;
+    max-height: 100vh;
+    min-height: 100vh;
+  }
+
+  .booking-form h2 {
+    font-size: 1.25rem;
+  }
+
+  .booking-form h3 {
+    font-size: 0.9rem;
+    margin: 1rem 0 0.75rem 0;
+    padding-top: 0.75rem;
+  }
+
+  .booking-time {
+    font-size: 0.9rem;
+  }
+
+  .arena-name {
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Price Display */
+  .price-display {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .price-label {
+    font-size: 0.875rem;
+  }
+
+  .price-amount {
+    font-size: 1.25rem;
+  }
+
+  /* Form Error */
+  .form-error {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Form Groups */
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group label {
+    font-size: 0.875rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    padding: 0.65rem;
+    font-size: 16px; /* Prevents iOS zoom */
+  }
+
+  /* Form Row - Stack on mobile */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Payment Info */
+  .payment-info {
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  .payment-info p {
+    font-size: 0.8rem;
+  }
+
+  /* Form Actions */
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+
+  /* Processing Payment */
+  .processing-payment {
+    padding: 1.5rem;
+  }
+
+  .processing-payment h2 {
+    font-size: 1.25rem;
+  }
+
+  .processing-payment p {
+    font-size: 0.875rem;
+  }
+
+  /* FullCalendar extra small adjustments */
+  .calendar-section .fc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .calendar-section .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .calendar-section .fc-toolbar-chunk:last-child {
+    margin-bottom: 0;
+  }
+
+  .calendar-section .fc-timegrid-slot-label {
+    font-size: 0.65rem;
+  }
+
+  .calendar-section .fc-col-header-cell-cushion {
+    font-size: 0.7rem;
+    padding: 0.25rem;
+  }
+
+  /* Calendar Legend - Wrap more aggressively */
+  .calendar-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .legend-item {
+    font-size: 0.7rem;
+  }
+}

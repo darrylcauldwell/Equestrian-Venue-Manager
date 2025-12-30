@@ -1,0 +1,352 @@
+.my-registrations-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.my-registrations-page .page-header {
+  margin-bottom: 2rem;
+}
+
+.my-registrations-page .page-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.my-registrations-page .page-header p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.registrations-section {
+  margin-bottom: 3rem;
+}
+
+.registrations-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.registrations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.registration-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.my-registrations-page .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.my-registrations-page .card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-badge.confirmed {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-inverse);
+}
+
+.status-badge.pending {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row .label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.slot-info {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(var(--color-primary-rgb), 0.1);
+  border-radius: 6px;
+  border-left: 3px solid var(--color-primary);
+}
+
+.slot-info h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.slot-info .info-row {
+  border-bottom: none;
+  padding: 0.25rem 0;
+}
+
+.awaiting-slot {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+}
+
+.registrations-section.past h2 {
+  border-bottom-color: var(--text-muted);
+}
+
+.registrations-list {
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.registration-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr auto;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+}
+
+.registration-row:last-child {
+  border-bottom: none;
+}
+
+.registration-row .title {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.registration-row .date,
+.registration-row .coach {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.registration-row .status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+.registration-row .status.approved,
+.registration-row .status.completed {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.registration-row .status.pending {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.registration-row .status.cancelled {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.browse-more {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+@media (max-width: 480px) {
+  .registrations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-row {
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+  }
+
+  .registration-row .date,
+  .registration-row .coach {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .my-registrations-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .my-registrations-page .page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .my-registrations-page .page-header p {
+    font-size: 0.85rem;
+  }
+
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .empty-state h2 {
+    font-size: 1.1rem;
+  }
+
+  .empty-state p {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .registrations-section {
+    margin-bottom: 2rem;
+  }
+
+  .registrations-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .registrations-grid {
+    gap: 1rem;
+  }
+
+  .registration-card {
+    border-radius: 6px;
+  }
+
+  .my-registrations-page .card-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .my-registrations-page .card-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .info-row {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.4rem 0;
+  }
+
+  .info-row .label {
+    font-size: 0.8rem;
+  }
+
+  .slot-info {
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .slot-info h4 {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .awaiting-slot {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Past registrations list */
+  .registrations-list {
+    border-radius: 6px;
+  }
+
+  .registration-row {
+    padding: 0.75rem 1rem;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .registration-row .title {
+    font-size: 0.9rem;
+  }
+
+  .registration-row .status {
+    font-size: 0.7rem;
+    justify-self: start;
+  }
+
+  .browse-more {
+    margin-top: 1.5rem;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .my-registrations-page .registration-card,
+  .my-registrations-page .registrations-list,
+  .my-registrations-page .empty-state {
+    background: #3a3a3a;
+    border-color: #555555;
+  }
+
+  .my-registrations-page .card-body {
+    color: #e0e0e0;
+  }
+
+  .my-registrations-page .info-row {
+    border-color: #555555;
+  }
+
+  .my-registrations-page .slot-info {
+    background: rgba(25, 118, 210, 0.15);
+  }
+
+  .my-registrations-page .awaiting-slot {
+    background: #3a3a3a;
+    color: #b0b0b0;
+  }
+
+  .my-registrations-page .registration-row {
+    border-color: #555555;
+  }
+}

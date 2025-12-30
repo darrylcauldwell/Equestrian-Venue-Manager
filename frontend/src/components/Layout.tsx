@@ -1,0 +1,384 @@
+import { useState, useEffect, ReactNode } from 'react';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
+import { useFeatureFlags } from '../contexts/FeatureFlagsContext';
+import { uploadsApi } from '../services/api';
+import { FeedAlertPopup } from './FeedAlertPopup';
+import { QuoteAlertPopup } from './QuoteAlertPopup';
+import { VaccinationAlertPopup } from './VaccinationAlertPopup';
+import type { FeatureKey } from '../types';
+import './Layout.css';
+
+// Helper component for feature-gated links
+interface FeatureLinksProps {
+  feature: FeatureKey;
+  children: ReactNode;
+}
+
+function FeatureLink({ feature, children }: FeatureLinksProps) {
+  const { isFeatureEnabled } = useFeatureFlags();
+  if (!isFeatureEnabled(feature)) return null;
+  return <>{children}</>;
+}
+
+// Expandable dropdown component for slide-out menu
+interface NavDropdownProps {
+  title: string;
+  children: ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+function NavDropdown({ title, children, isOpen, onToggle }: NavDropdownProps) {
+  return (
+    <div className={`nav-dropdown ${isOpen ? 'open' : ''}`}>
+      <button
+        className="nav-dropdown-trigger"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+      >
+        <span>{title}</span>
+        <span className="dropdown-arrow">{isOpen ? '▲' : '▼'}</span>
+      </button>
+      <div className="nav-dropdown-menu">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function Layout() {
+  const { user, logout, isAdmin } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
+  const location = useLocation();
+
+  const toggleDropdown = (name: string) => {
+    setOpenDropdowns(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
+  };
+
+  // Close mobile menu and dropdowns when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setOpenDropdowns(new Set());
+  }, [location.pathname]);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (mobileMenuOpen && !target.closest('.header-content')) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [mobileMenuOpen]);
+  const isPublicOnly = user?.role === 'public'; // Clinic bookers only
+  const isCoachOnly = user?.role === 'coach'; // Coach but not admin
+  const isStaff = user?.role === 'staff'; // Staff role
+  const isYardStaff = (isStaff || user?.is_yard_staff) && !isAdmin; // Yard staff (simplified view)
+  const isLiveryOnly = user?.role === 'livery' && !user?.is_yard_staff; // Livery without staff duties
+  const { venueName, settings } = useSettings();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  // Render navigation based on role
+  const renderNavigation = () => {
+    // PUBLIC role - arena/clinic bookers
+    if (isPublicOnly) {
+      return (
+        <>
+          <FeatureLink feature="arena_bookings">
+            <Link to="/book">Book Arena</Link>
+          </FeatureLink>
+          <FeatureLink feature="arena_bookings">
+            <Link to="/book/my-bookings">My Bookings</Link>
+          </FeatureLink>
+          <FeatureLink feature="events_clinics">
+            <Link to="/book/clinics">Events & Clinics</Link>
+          </FeatureLink>
+          <FeatureLink feature="lessons">
+            <Link to="/book/lessons">Lessons</Link>
+          </FeatureLink>
+          <FeatureLink feature="events_clinics">
+            <Link to="/book/my-registrations">My Registrations</Link>
+          </FeatureLink>
+        </>
+      );
+    }
+
+    // COACH role - clinic management focused
+    if (isCoachOnly) {
+      return (
+        <>
+          <Link to="/book/clinics">My Clinics</Link>
+          <Link to="/book/lessons">My Lessons</Link>
+          <Link to="/book/noticeboard">My Noticeboard</Link>
+          <Link to="/book/professionals">My Directory</Link>
+        </>
+      );
+    }
+
+    // YARD STAFF - simplified view focused on yard work
+    if (isYardStaff) {
+      return (
+        <>
+          <FeatureLink feature="yard_tasks">
+            <Link to="/book/tasks">My Tasks</Link>
+          </FeatureLink>
+          <FeatureLink feature="feed_management">
+            <Link to="/book/feed-duties">Feed Board</Link>
+          </FeatureLink>
+          <FeatureLink feature="turnout_management">
+            <Link to="/book/turnout-board">Turnout Board</Link>
+          </FeatureLink>
+          <NavDropdown
+            title="My Administration"
+            isOpen={openDropdowns.has('staffAdmin')}
+            onToggle={() => toggleDropdown('staffAdmin')}
+          >
+            <FeatureLink feature="staff_management">
+              <Link to="/book/my-rota">My Rota</Link>
+            </FeatureLink>
+            <FeatureLink feature="timesheets">
+              <Link to="/book/my-timesheet">My Timesheet</Link>
+            </FeatureLink>
+            <FeatureLink feature="contract_management">
+              <Link to="/book/my-contracts">My Contracts</Link>
+            </FeatureLink>
+            <FeatureLink feature="noticeboard">
+              <Link to="/book/noticeboard">Noticeboard</Link>
+            </FeatureLink>
+          </NavDropdown>
+        </>
+      );
+    }
+
+    // LIVERY role (without staff duties) - horse care focused
+    if (isLiveryOnly) {
+      return (
+        <>
+          <NavDropdown
+            title="My Account"
+            isOpen={openDropdowns.has('account')}
+            onToggle={() => toggleDropdown('account')}
+          >
+            <Link to="/book/my-account">Account Details</Link>
+            <FeatureLink feature="contract_management">
+              <Link to="/book/my-contracts">My Contracts</Link>
+            </FeatureLink>
+            <FeatureLink feature="invoicing">
+              <Link to="/book/my-invoices">My Invoices</Link>
+            </FeatureLink>
+          </NavDropdown>
+          <NavDropdown
+            title="My Bookings"
+            isOpen={openDropdowns.has('bookings')}
+            onToggle={() => toggleDropdown('bookings')}
+          >
+            <FeatureLink feature="arena_bookings">
+              <Link to="/book">Book Arena</Link>
+            </FeatureLink>
+            <FeatureLink feature="events_clinics">
+              <Link to="/book/clinics">Events & Clinics</Link>
+            </FeatureLink>
+            <FeatureLink feature="lessons">
+              <Link to="/book/lessons">Lessons</Link>
+            </FeatureLink>
+          </NavDropdown>
+          <NavDropdown
+            title="My Horses"
+            isOpen={openDropdowns.has('horses')}
+            onToggle={() => toggleDropdown('horses')}
+          >
+            <Link to="/book/my-horses">Horses</Link>
+            <FeatureLink feature="livery_services">
+              <Link to="/book/services">Livery Service</Link>
+            </FeatureLink>
+            <FeatureLink feature="turnout_management">
+              <Link to="/book/turnout">Turnout Requests</Link>
+            </FeatureLink>
+          </NavDropdown>
+          <NavDropdown
+            title="Yard Info"
+            isOpen={openDropdowns.has('info')}
+            onToggle={() => toggleDropdown('info')}
+          >
+            <FeatureLink feature="professional_directory">
+              <Link to="/book/professionals">Yard Directory</Link>
+            </FeatureLink>
+            <FeatureLink feature="security_management">
+              <Link to="/book/security">Yard Security</Link>
+            </FeatureLink>
+          </NavDropdown>
+          <FeatureLink feature="noticeboard">
+            <Link to="/book/noticeboard">Yard Noticeboard</Link>
+          </FeatureLink>
+        </>
+      );
+    }
+
+    // ADMIN role - full admin navigation with dropdowns
+    if (isAdmin) {
+      return (
+        <>
+          {/* My Venue Dropdown */}
+          <NavDropdown
+            title="My Venue"
+            isOpen={openDropdowns.has('venue')}
+            onToggle={() => toggleDropdown('venue')}
+          >
+            <Link to="/book/admin/requests" className="dropdown-highlight">All Requests</Link>
+            <div className="dropdown-divider"></div>
+            <Link to="/book/admin/bookings">Bookings</Link>
+            <Link to="/book/admin/tasks">Yard Tasks</Link>
+            <Link to="/book/admin/staff">Staff Rota</Link>
+            <div className="dropdown-divider"></div>
+            <Link to="/book/admin/arenas">Arenas</Link>
+            <Link to="/book/admin/stables">Stables</Link>
+            <Link to="/book/admin/fields">Fields</Link>
+            <Link to="/book/admin/land-management">Land Management</Link>
+            <Link to="/book/admin/care-plans">Care Plans</Link>
+            <div className="dropdown-divider"></div>
+            <Link to="/book/admin/livery-packages">Livery Packages</Link>
+            <Link to="/book/admin/feed-schedule">Feed Schedule</Link>
+            <Link to="/book/admin/worming">Worm Counts</Link>
+            <Link to="/book/admin/services">Service Catalog</Link>
+            <Link to="/book/admin/coaches">Coach Profiles</Link>
+            <div className="dropdown-divider"></div>
+            <Link to="/book/admin/billing">Billing</Link>
+            <Link to="/book/admin/invoices">Invoices</Link>
+            <Link to="/book/admin/reports">Financial Reports</Link>
+            <Link to="/book/admin/contracts">Contracts</Link>
+            <Link to="/book/admin/contract-signatures">Signatures</Link>
+            <Link to="/book/admin/arena-usage">Arena Usage</Link>
+            <Link to="/book/admin/noticeboard">Noticeboard</Link>
+            <div className="dropdown-divider"></div>
+            <Link to="/book/admin/compliance">Compliance</Link>
+            <Link to="/book/admin/security">Security</Link>
+          </NavDropdown>
+
+          {/* My System Dropdown */}
+          <NavDropdown
+            title="My System"
+            isOpen={openDropdowns.has('system')}
+            onToggle={() => toggleDropdown('system')}
+          >
+            <Link to="/book/admin/backups">Backups</Link>
+            <Link to="/book/admin/settings">Site Settings</Link>
+            <Link to="/book/admin/users">User Accounts</Link>
+          </NavDropdown>
+
+          {/* My Horses Dropdown - for admin's own horses */}
+          <NavDropdown
+            title="My Horses"
+            isOpen={openDropdowns.has('horses')}
+            onToggle={() => toggleDropdown('horses')}
+          >
+            <Link to="/book/my-horses">Horses</Link>
+            <Link to="/book/turnout">Turnout Requests</Link>
+            <Link to="/book/services">Service Requests</Link>
+          </NavDropdown>
+        </>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="layout">
+      <header className="header">
+        <div className="header-content">
+          <Link to="/book" className="logo">
+            {settings?.logo_url ? (
+              <img
+                src={uploadsApi.getFileUrl(settings.logo_url)}
+                alt={venueName}
+                className="logo-image"
+              />
+            ) : (
+              <h1>{venueName}</h1>
+            )}
+          </Link>
+
+          {/* User name shown on header */}
+          <div className="header-user-info">
+            {user && <span className="user-name">{user.name}</span>}
+          </div>
+
+          {/* Hamburger menu button - always visible */}
+          <button
+            className={`hamburger-btn ${mobileMenuOpen ? 'open' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileMenuOpen(!mobileMenuOpen);
+            }}
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+          </button>
+
+          {/* Slide-out navigation menu */}
+          {mobileMenuOpen && <div className="nav-overlay" onClick={() => setMobileMenuOpen(false)} />}
+          <nav className={`nav ${mobileMenuOpen ? 'nav-open' : ''}`}>
+            <div className="nav-header">
+              <span className="nav-title">Menu</span>
+              <button className="nav-close-btn" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+                &times;
+              </button>
+            </div>
+            <div className="nav-content" onClick={(e) => {
+              // Close menu when clicking any link or button
+              const target = e.target as HTMLElement;
+              if (target.tagName === 'A' || target.classList.contains('nav-logout-btn')) {
+                setMobileMenuOpen(false);
+              }
+            }}>
+              {renderNavigation()}
+              {user && (
+                <>
+                  <div className="nav-divider"></div>
+                  <Link to="/change-password">Change Password</Link>
+                  <button onClick={handleLogout} className="nav-logout-btn">Logout</button>
+                </>
+              )}
+            </div>
+          </nav>
+        </div>
+      </header>
+      <main className="main">
+        <Outlet />
+      </main>
+      <footer className="footer">
+        <p>&copy; {new Date().getFullYear()} {venueName}</p>
+      </footer>
+
+      {/* Feed alert notification popup for livery users */}
+      <FeedAlertPopup />
+
+      {/* Quote notification popup for livery users */}
+      <QuoteAlertPopup />
+
+      {/* Vaccination reminder popup */}
+      <VaccinationAlertPopup />
+    </div>
+  );
+}

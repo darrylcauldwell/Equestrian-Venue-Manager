@@ -1,0 +1,354 @@
+.turnout-requests-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.turnout-requests-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.page-subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--text-secondary);
+}
+
+.add-btn {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-btn:hover {
+  opacity: 0.9;
+}
+
+/* Request Form */
+.request-form-container {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.request-form h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.form-description {
+  margin: 0 0 1.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.date-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.date-input-group input {
+  flex: 1;
+}
+
+.today-btn {
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.today-btn:hover {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  border-color: var(--color-primary);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+
+/* Requests Sections */
+.requests-section {
+  margin-bottom: 2rem;
+}
+
+.requests-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.request-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.request-card.pending {
+  border-left: 4px solid var(--color-warning, #f59e0b);
+}
+
+.request-card.approved {
+  border-left: 4px solid var(--color-success, #10b981);
+}
+
+.request-card.declined {
+  border-left: 4px solid var(--color-error, #ef4444);
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.request-header strong {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  background: var(--color-warning-bg, #fef3c7);
+  color: var(--color-warning-text, #92400e);
+}
+
+.status-approved {
+  background: var(--color-success-bg, #d1fae5);
+  color: var(--color-success-text, #065f46);
+}
+
+.status-declined {
+  background: var(--color-error-bg, #fef2f2);
+  color: var(--color-error, #dc2626);
+}
+
+.request-details {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.request-date {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.request-type {
+  color: var(--text-secondary);
+  padding: 0.1rem 0.5rem;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.request-reason {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.staff-message {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.staff-message.declined-reason {
+  background: var(--color-error-bg, #fef2f2);
+}
+
+.request-actions {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.delete-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--color-error, #ef4444);
+  border: 1px solid var(--color-error, #ef4444);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background: var(--color-error-bg);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .turnout-requests-page .page-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .turnout-requests-page {
+    padding: 0 0.5rem;
+  }
+
+  .turnout-requests-page h1 {
+    font-size: 1.25rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .add-btn {
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Request Form */
+  .request-form-container {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .request-form h2 {
+    font-size: 1.1rem;
+  }
+
+  .form-description {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px;
+    padding: 0.65rem;
+  }
+
+  .date-input-group {
+    flex-direction: column;
+  }
+
+  .today-btn {
+    width: 100%;
+    padding: 0.65rem;
+    font-size: 0.85rem;
+  }
+
+  /* Request Cards */
+  .requests-section h2 {
+    font-size: 1rem;
+  }
+
+  .request-card {
+    padding: 0.75rem;
+  }
+
+  .request-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .request-header strong {
+    font-size: 1rem;
+  }
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .request-details {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .request-date {
+    font-size: 0.9rem;
+  }
+
+  .request-type {
+    font-size: 0.8rem;
+    align-self: flex-start;
+  }
+
+  .request-reason {
+    font-size: 0.85rem;
+  }
+
+  .staff-message {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .delete-btn {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+}

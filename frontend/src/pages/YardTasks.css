@@ -1,0 +1,2413 @@
+.yard-tasks {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tasks-header h1 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* Info Text for non-admin users */
+.tasks-info {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--color-primary);
+}
+
+.tasks-info p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* Staff actions row */
+.staff-actions {
+  margin-bottom: 1rem;
+}
+
+/* Summary Cards */
+.tasks-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.yard-tasks .summary-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--text-secondary);
+}
+
+.yard-tasks .summary-card.urgent {
+  border-left-color: var(--color-error);
+}
+
+.yard-tasks .summary-card.high {
+  border-left-color: var(--color-warning);
+}
+
+.yard-tasks .summary-card.overdue {
+  border-left-color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.yard-tasks .summary-card.mine {
+  border-left-color: var(--color-primary);
+}
+
+.yard-tasks .summary-card.today {
+  border-left-color: var(--color-success);
+}
+
+.summary-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.summary-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 5px;
+}
+
+/* Filters */
+.tasks-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.tasks-filters select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-width: 150px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+/* Tab Selector (dropdown) */
+.tasks-tab-selector {
+  margin-bottom: 20px;
+}
+
+.tasks-tab-selector .tab-select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.tasks-tab-selector .tab-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light, rgba(59, 130, 246, 0.2));
+}
+
+/* Task List */
+.tasks-list {
+  display: grid;
+  gap: 15px;
+}
+
+.yard-tasks .task-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.yard-tasks .task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.yard-tasks .task-card.overdue {
+  border-left: 4px solid var(--color-error);
+}
+
+.yard-tasks .task-card-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.task-title {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.task-meta {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.task-category {
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.task-location {
+  color: var(--text-secondary);
+}
+
+.task-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Assignment type badges */
+.task-assignment {
+  margin-bottom: 8px;
+}
+
+.assignment-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.assigned-to-me {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.assigned-specific {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  border: 1px solid var(--color-info);
+}
+
+.assigned-pool {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.assigned-backlog {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+/* Assignment value in task detail view */
+.assignment-value {
+  font-weight: 500;
+}
+
+.assignment-value.specific {
+  color: var(--color-info);
+}
+
+.assignment-value.pool {
+  color: var(--color-success);
+}
+
+.assignment-value.backlog {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.comment-count {
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  margin-top: 10px;
+  display: inline-block;
+}
+
+/* Completion notes in task cards */
+.task-card .completion-notes {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border-left: 3px solid var(--color-success);
+}
+
+.task-card .completion-notes .notes-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Staff compact view - priority and title on same row */
+.task-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.task-title-row .priority-badge {
+  flex-shrink: 0;
+}
+
+.task-title-row .task-title {
+  margin: 0;
+  flex: 1;
+}
+
+.task-card.staff-compact {
+  padding: 12px 15px;
+}
+
+.task-card.staff-compact .health-task-info {
+  margin-top: 8px;
+}
+
+/* Completion notes in task detail modal */
+.task-detail-modal .completion-notes {
+  margin-top: 20px;
+  padding: 15px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-left: 4px solid var(--color-success);
+}
+
+.task-detail-modal .completion-notes h4 {
+  margin: 0 0 10px 0;
+  color: var(--text-primary);
+}
+
+.task-detail-modal .completion-notes p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* Priority Badges */
+.priority-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.priority-urgent {
+  background: var(--color-error);
+  color: var(--text-inverse);
+}
+
+.priority-high {
+  background: var(--color-warning);
+  color: var(--text-inverse);
+}
+
+.priority-medium {
+  background: var(--color-info);
+  color: var(--text-inverse);
+}
+
+.priority-low {
+  background: var(--color-success);
+  color: var(--text-inverse);
+}
+
+/* Service Type Badge */
+.service-type-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+/* Status Badges */
+.yard-tasks .status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-open {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.status-in-progress {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.status-completed {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.status-cancelled {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.status-scheduled {
+  background: var(--color-primary-bg, #e3f2fd);
+  color: var(--color-primary);
+}
+
+.overdue-badge {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.overdue-date {
+  color: var(--color-error) !important;
+  font-weight: 500;
+}
+
+/* Completed Section Divider */
+.completed-section-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 24px 0 16px 0;
+  gap: 12px;
+}
+
+.completed-section-divider::before,
+.completed-section-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.completed-section-divider span {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 4px 12px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+/* Completed task card styling */
+.task-card.completed-task {
+  opacity: 0.7;
+  border-left: 3px solid var(--color-success);
+}
+
+.task-card.completed-task:hover {
+  opacity: 0.85;
+}
+
+/* Modal Styles */
+.yard-tasks .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.yard-tasks .modal {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.yard-tasks .modal h2 {
+  margin: 0 0 20px 0;
+  color: var(--text-primary);
+}
+
+.task-detail-modal {
+  max-width: 700px;
+}
+
+.task-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.task-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  line-height: 1;
+}
+
+.task-detail-info {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 120px;
+}
+
+.task-description,
+.completion-notes {
+  margin-bottom: 20px;
+}
+
+.task-description h4,
+.completion-notes h4 {
+  margin: 0 0 10px 0;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.task-description p,
+.completion-notes p {
+  margin: 0;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+.completion-notes {
+  background: var(--color-success-bg);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.task-assign {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.task-assign label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.task-assign select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.task-assign select optgroup {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.task-assign .rota-warning {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.75rem;
+  color: var(--color-warning);
+}
+
+.task-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Comments Section */
+.comments-section {
+  border-top: 1px solid var(--border-light);
+  padding-top: 20px;
+}
+
+.comments-section h4 {
+  margin: 0 0 15px 0;
+  color: var(--text-primary);
+}
+
+.comments-list {
+  margin-bottom: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.comment {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.comment-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.comment-content {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.delete-comment-btn {
+  background: none;
+  border: none;
+  color: var(--color-error);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 8px;
+}
+
+.delete-comment-btn:hover {
+  text-decoration: underline;
+}
+
+.add-comment-form {
+  display: flex;
+  gap: 10px;
+}
+
+.add-comment-form textarea {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  resize: none;
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.add-comment-form button {
+  align-self: flex-end;
+}
+
+/* Form Styles */
+.yard-tasks .form-group {
+  margin-bottom: 20px;
+}
+
+.yard-tasks .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.yard-tasks .form-group input,
+.yard-tasks .form-group select,
+.yard-tasks .form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.yard-tasks .form-group textarea {
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Buttons */
+.yard-tasks .btn-primary {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.yard-tasks .btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.yard-tasks .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.yard-tasks .btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.yard-tasks .btn-secondary:hover {
+  background: var(--bg-card-hover);
+}
+
+.yard-tasks .btn-small {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.yard-tasks .btn-success {
+  background: var(--color-success);
+  color: var(--text-inverse);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.yard-tasks .btn-success:hover {
+  opacity: 0.9;
+}
+
+.yard-tasks .btn-danger {
+  background: var(--color-error);
+  color: var(--text-inverse);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.yard-tasks .btn-danger:hover {
+  opacity: 0.9;
+}
+
+/* Utility Classes */
+.yard-tasks .loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.yard-tasks .error-message {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.yard-tasks .empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tasks-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .tasks-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tasks-filters {
+    flex-direction: column;
+  }
+
+  .tasks-tabs {
+    overflow-x: auto;
+  }
+
+  .tasks-tabs .tab {
+    padding: 10px 15px;
+    white-space: nowrap;
+  }
+
+  .yard-tasks .modal {
+    margin: 10px;
+    padding: 20px;
+  }
+
+  .task-detail-info .info-row {
+    flex-direction: column;
+  }
+
+  .info-label {
+    margin-bottom: 3px;
+  }
+
+  .task-actions {
+    flex-wrap: wrap;
+  }
+
+  .add-comment-form {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .yard-tasks {
+    padding: 0.5rem;
+  }
+
+  .tasks-header h1 {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .header-actions {
+    flex-direction: row;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .header-actions .btn-primary {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  /* Info and Report button */
+  .tasks-info {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .tasks-info p {
+    font-size: 0.85rem;
+  }
+
+  .staff-actions {
+    margin-bottom: 0.75rem;
+  }
+
+  .staff-actions .btn-secondary {
+    width: 100%;
+  }
+
+  /* Summary Cards - single column on very small screens */
+  .tasks-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .yard-tasks .summary-card {
+    padding: 0.75rem;
+  }
+
+  .summary-value {
+    font-size: 1.5rem;
+  }
+
+  .summary-label {
+    font-size: 0.75rem;
+  }
+
+  /* Filters */
+  .tasks-filters {
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tasks-filters select {
+    padding: 0.6rem;
+    font-size: 16px;
+    min-width: unset;
+  }
+
+  /* Tab selector */
+  .tasks-tab-selector {
+    margin-bottom: 0.75rem;
+  }
+
+  .tasks-tab-selector .tab-select {
+    padding: 10px 12px;
+    font-size: 16px; /* Prevents iOS zoom */
+    padding-right: 32px;
+  }
+
+  /* Task Cards */
+  .tasks-list {
+    gap: 0.75rem;
+  }
+
+  .yard-tasks .task-card {
+    padding: 0.875rem;
+  }
+
+  .yard-tasks .task-card-header {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .task-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .task-meta {
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .task-category {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+  }
+
+  .task-info {
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  .priority-badge,
+  .yard-tasks .status-badge,
+  .overdue-badge {
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+
+  .assignment-badge {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+  }
+
+  .health-task-info {
+    gap: 4px;
+    margin: 6px 0;
+  }
+
+  .horse-badge,
+  .feed-time-badge,
+  .dosage-info,
+  .wound-info,
+  .program-info {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+  }
+
+  .health-type-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  .task-quick-actions {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
+  .btn-health-complete,
+  .btn-task-complete {
+    padding: 0.65rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .cost-indicator,
+  .billable-indicator {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+  }
+
+  /* Quick Assign Row */
+  .quick-assign-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .quick-assign-label {
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  .quick-assign-buttons {
+    justify-content: center;
+  }
+
+  .quick-assign-btn {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  /* Rota Summary Panel */
+  .rota-summary-panel {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .rota-summary-panel h3 {
+    font-size: 0.9rem;
+  }
+
+  .rota-staff-chips {
+    gap: 0.35rem;
+  }
+
+  .staff-chip {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .staff-chip .shift-type {
+    font-size: 0.7rem;
+  }
+
+  .rota-hint {
+    font-size: 0.75rem;
+  }
+
+  /* Today Staff Groups */
+  .today-staff-group {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .today-staff-group .staff-group-header {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .today-staff-group .staff-group-header .task-count {
+    font-size: 0.8rem;
+  }
+
+  .today-staff-group .staff-tasks-list {
+    gap: 0.5rem;
+  }
+
+  /* Scheduled View */
+  .scheduled-date-group {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .scheduled-date-header {
+    font-size: 0.95rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .scheduled-date-header .task-count {
+    font-size: 0.8rem;
+  }
+
+  .today-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .edit-day-btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .staff-task-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .staff-name {
+    font-size: 0.85rem;
+  }
+
+  .scheduled-task-item {
+    padding: 0.5rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .scheduled-task-item .task-title {
+    font-size: 0.85rem;
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+
+  .scheduled-task-item .task-category {
+    font-size: 0.7rem;
+  }
+
+  .scheduled-task-item .task-cost,
+  .scheduled-task-item .task-billable {
+    font-size: 0.75rem;
+  }
+
+  /* Modals */
+  .yard-tasks .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .yard-tasks .modal {
+    border-radius: 12px 12px 0 0;
+    padding: 1rem;
+    margin: 0;
+    max-height: 90vh;
+  }
+
+  .yard-tasks .modal h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-description {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .task-detail-modal,
+  .health-complete-modal,
+  .task-complete-modal,
+  .maintenance-modal,
+  .edit-scheduled-modal {
+    max-width: 100%;
+  }
+
+  .task-detail-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .task-badges {
+    gap: 0.4rem;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .task-detail-info,
+  .health-task-details,
+  .task-complete-details {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-row {
+    font-size: 0.85rem;
+    padding: 0.35rem 0;
+  }
+
+  .info-label {
+    font-size: 0.8rem;
+    min-width: 90px;
+  }
+
+  .task-description h4,
+  .completion-notes h4 {
+    font-size: 0.9rem;
+  }
+
+  .task-description p,
+  .completion-notes p {
+    font-size: 0.85rem;
+  }
+
+  .task-assign {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .task-assign label {
+    font-size: 0.9rem;
+  }
+
+  .task-assign select {
+    font-size: 16px;
+    padding: 0.65rem;
+  }
+
+  .task-actions {
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .task-actions button {
+    flex: 1;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Comments Section */
+  .comments-section {
+    padding-top: 1rem;
+  }
+
+  .comments-section h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .comments-list {
+    max-height: 200px;
+    margin-bottom: 0.75rem;
+  }
+
+  .comment {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .comment-header {
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .comment-author {
+    font-size: 0.85rem;
+  }
+
+  .comment-date {
+    font-size: 0.75rem;
+  }
+
+  .comment-content {
+    font-size: 0.85rem;
+  }
+
+  .add-comment-form textarea {
+    font-size: 16px;
+    padding: 0.65rem;
+  }
+
+  .add-comment-form button {
+    padding: 0.65rem;
+  }
+
+  /* Form Styles in Modals */
+  .yard-tasks .form-group {
+    margin-bottom: 0.875rem;
+  }
+
+  .yard-tasks .form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .yard-tasks .form-group input,
+  .yard-tasks .form-group select,
+  .yard-tasks .form-group textarea {
+    font-size: 16px;
+    padding: 0.65rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .modal-actions button {
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  /* Buttons */
+  .yard-tasks .btn-primary,
+  .yard-tasks .btn-secondary,
+  .yard-tasks .btn-success,
+  .yard-tasks .btn-danger {
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .yard-tasks .btn-small {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  /* Toggle buttons for health forms */
+  .toggle-group {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .toggle-btn {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .checkbox-label {
+    font-size: 0.9rem;
+  }
+
+  /* Task Selection Lists */
+  .task-selection-list,
+  .edit-task-list,
+  .add-task-list {
+    max-height: 200px;
+    padding: 0.35rem;
+  }
+
+  .task-selection-item,
+  .edit-task-item,
+  .add-task-item {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .task-selection-title,
+  .edit-task-title,
+  .add-task-title {
+    font-size: 0.85rem;
+  }
+
+  .task-selection-meta,
+  .edit-task-meta,
+  .add-task-meta {
+    font-size: 0.75rem;
+  }
+
+  .edit-task-actions {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .reassign-select {
+    font-size: 14px;
+    padding: 0.35rem;
+  }
+
+  /* Rota staff buttons in schedule modal */
+  .rota-today-section {
+    padding: 0.75rem;
+  }
+
+  .rota-today-section h4 {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .rota-quick-buttons {
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .rota-staff-btn {
+    padding: 0.4rem 0.6rem;
+    min-width: 70px;
+    font-size: 0.8rem;
+  }
+
+  .rota-staff-btn .shift-info {
+    font-size: 0.65rem;
+  }
+
+  .quick-schedule-section {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .quick-schedule-section h4 {
+    font-size: 0.8rem;
+  }
+
+  .quick-schedule-section .btn-accent {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .maintenance-day-info {
+    font-size: 0.75rem;
+  }
+
+  /* Empty State */
+  .yard-tasks .empty-state {
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Error Message */
+  .yard-tasks .error-message {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* No shifts warning */
+  .no-shifts-warning {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Cost Indicator */
+.cost-indicator {
+  background: var(--color-warning);
+  color: var(--text-inverse);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.cost-badge {
+  background: var(--color-warning);
+  color: var(--text-inverse);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Billable amount indicators (service requests) */
+.billable-indicator {
+  background: var(--color-success);
+  color: var(--text-inverse);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.billable-badge {
+  background: var(--color-success);
+  color: var(--text-inverse);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.task-billable {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-success);
+}
+
+/* Maintenance Day Modal */
+.maintenance-modal {
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-description {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.task-selection-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.task-selection-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.task-selection-item:hover {
+  background: var(--bg-secondary);
+}
+
+.task-selection-item input[type="checkbox"] {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.task-selection-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.task-selection-title {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.task-selection-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* No shifts warning */
+.no-shifts-warning {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ==================== Health Task Styles ==================== */
+
+/* Health task cards get a subtle left border to distinguish them */
+.health-task-card {
+  border-left: 4px solid var(--color-info);
+}
+
+/* Health type badges */
+.health-type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.health-type-medication {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.health-type-wound_care {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.health-type-health_check {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.health-type-rehab_exercise {
+  background: var(--color-purple-bg, #f3e5f5);
+  color: var(--color-purple, #7b1fa2);
+}
+
+/* Health task info section within card */
+.health-task-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.horse-badge {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.feed-time-badge {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.dosage-info,
+.wound-info,
+.program-info {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+/* Quick action buttons on health task cards */
+.task-quick-actions {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+}
+
+.btn-health-complete,
+.btn-task-complete {
+  background: var(--color-success);
+  color: var(--text-inverse);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.btn-health-complete:hover,
+.btn-task-complete:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.btn-task-reopen {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.btn-task-reopen:hover {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  border-color: var(--color-primary);
+}
+
+/* Task complete modal - similar style to health complete modal */
+.task-complete-modal {
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.task-complete-details {
+  background: var(--bg-secondary);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.task-complete-details h3 {
+  margin: 10px 0 5px 0;
+  color: var(--text-primary);
+}
+
+.task-complete-details .task-location-info {
+  margin: 0 0 5px 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.task-complete-details .task-description-info {
+  margin: 5px 0 0 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Category badges for task completion modal */
+.category-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.category-maintenance {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.category-cleaning {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.category-health {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.category-feeding {
+  background: var(--color-purple-bg, #f3e5f5);
+  color: var(--color-purple, #7b1fa2);
+  border-color: var(--color-purple, #7b1fa2);
+}
+
+.category-turnout {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.category-equipment {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.category-other {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Health complete modal */
+.health-complete-modal {
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.health-task-details {
+  background: var(--bg-secondary);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.health-task-details h3 {
+  margin: 10px 0 5px 0;
+  color: var(--text-primary);
+}
+
+.health-task-details .horse-info {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.health-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Toggle group for yes/no buttons */
+.toggle-group {
+  display: flex;
+  gap: 10px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+  border-color: var(--color-primary);
+}
+
+.toggle-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+/* Checkbox labels in health forms */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Responsive for health task modal and task complete modal */
+@media (max-width: 480px) {
+  .toggle-group {
+    flex-direction: column;
+  }
+
+  .health-complete-modal,
+  .task-complete-modal {
+    margin: 10px;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .yard-tasks .summary-card,
+  .yard-tasks .task-card {
+    background: #3a3a3a;
+    border-color: #555555;
+  }
+
+  .yard-tasks .modal {
+    background: #2d2d2d;
+    border: 1px solid #555555;
+  }
+
+  .task-detail-info,
+  .task-assign,
+  .comment,
+  .health-task-details,
+  .task-complete-details {
+    background: #3a3a3a;
+  }
+
+  .completion-notes {
+    background: rgba(76, 175, 80, 0.15);
+  }
+
+  .health-type-rehab_exercise {
+    background: rgba(156, 39, 176, 0.2);
+    color: #ce93d8;
+  }
+
+  .toggle-btn {
+    background: #3a3a3a;
+    border-color: #555555;
+    color: #e0e0e0;
+  }
+
+  .toggle-btn.active {
+    background: var(--color-primary);
+    color: var(--text-inverse);
+  }
+
+  .task-selection-list {
+    background: #2d2d2d;
+    border-color: #555555;
+  }
+
+  .task-selection-item:hover {
+    background: #3a3a3a;
+  }
+}
+
+/* Scheduled Maintenance View */
+.scheduled-date-group {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.scheduled-date-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.scheduled-date-header .task-count {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.staff-task-group {
+  margin-bottom: 1rem;
+}
+
+.staff-task-group:last-child {
+  margin-bottom: 0;
+}
+
+.staff-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  margin: 0 0 0.5rem 0;
+  padding-left: 0.5rem;
+}
+
+.scheduled-task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheduled-task-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.scheduled-task-item:hover {
+  background: var(--bg-hover);
+}
+
+.scheduled-task-item:last-child {
+  margin-bottom: 0;
+}
+
+.scheduled-task-item .task-title {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.scheduled-task-item .task-category {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+.scheduled-task-item .task-cost {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-success);
+}
+
+.scheduled-date-group.today {
+  border-left: 4px solid var(--color-primary);
+}
+
+.today-badge {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Pool group styling in scheduled view */
+.staff-task-group.pool-group {
+  background: var(--color-success-bg);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--color-success);
+}
+
+.staff-task-group.pool-group .staff-name {
+  color: var(--color-success);
+}
+
+.staff-task-group.pool-group .scheduled-task-item {
+  background: var(--bg-card);
+}
+
+/* Today's Tasks - Staff Groups */
+.today-staff-group {
+  margin-bottom: 1.5rem;
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.today-staff-group .staff-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-primary);
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.today-staff-group .staff-group-header .task-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: normal;
+}
+
+.today-staff-group.pool-group .staff-group-header {
+  border-bottom-color: var(--color-success);
+}
+
+.today-staff-group .staff-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.today-staff-group .task-card {
+  margin: 0;
+}
+
+.today-staff-group .task-card.my-task {
+  border-left: 4px solid var(--color-primary);
+}
+
+/* Rota Summary Panel - To Schedule tab */
+.rota-summary-panel {
+  background: linear-gradient(135deg, var(--color-primary-bg) 0%, var(--bg-card) 100%);
+  border: 1px solid var(--color-primary);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.rota-summary-panel h3 {
+  margin: 0 0 0.75rem 0;
+  color: var(--color-primary);
+  font-size: 1rem;
+}
+
+.rota-summary-panel.no-staff {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.rota-summary-panel.no-staff h3 {
+  color: var(--text-secondary);
+}
+
+.rota-summary-panel.no-staff p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.rota-staff-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.staff-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--color-primary);
+  border-radius: 20px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.staff-chip .shift-type {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.rota-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Quick Assign Row - Backlog tasks */
+.task-card.backlog-task {
+  display: flex;
+  flex-direction: column;
+}
+
+.task-card.backlog-task .task-card-content {
+  cursor: pointer;
+  flex: 1;
+}
+
+.quick-assign-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.quick-assign-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.quick-assign-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.quick-assign-btn {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--color-primary);
+  background: var(--bg-card);
+  color: var(--color-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-assign-btn:hover {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.quick-assign-btn.pool {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.quick-assign-btn.pool:hover {
+  background: var(--color-success);
+  color: var(--text-inverse);
+}
+
+/* Schedule Modal - Rota buttons */
+.rota-today-section {
+  background: var(--color-primary-bg);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rota-today-section h4 {
+  margin: 0 0 0.75rem 0;
+  color: var(--color-primary);
+}
+
+.rota-quick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rota-staff-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--border-color);
+  background: var(--bg-card);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 80px;
+}
+
+.rota-staff-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.rota-staff-btn.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.rota-staff-btn.selected .shift-info {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.rota-staff-btn .shift-info {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+.rota-staff-btn.pool-btn {
+  border-color: var(--color-success);
+}
+
+.rota-staff-btn.pool-btn:hover {
+  background: var(--color-success-bg);
+}
+
+.rota-staff-btn.pool-btn.selected {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+/* Edit day button in scheduled header */
+.edit-day-btn {
+  margin-left: auto;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+/* Edit Scheduled Day Modal */
+.edit-scheduled-modal {
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.edit-task-list,
+.add-task-list {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.edit-task-item,
+.add-task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  background: var(--bg-secondary);
+}
+
+.edit-task-item:last-child,
+.add-task-item:last-child {
+  margin-bottom: 0;
+}
+
+.edit-task-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.edit-task-title,
+.add-task-title {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.edit-task-meta,
+.add-task-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.pool-badge {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.assigned-badge {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.edit-task-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.reassign-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.add-task-item {
+  justify-content: space-between;
+}
+
+.add-task-item .add-task-title {
+  flex: 1;
+}
+
+.more-tasks {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 1rem;
+}
+
+/* Quick Schedule to Maintenance Day */
+.quick-schedule-section {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px dashed var(--border-color);
+}
+
+.quick-schedule-section h4 {
+  margin: 0 0 0.75rem 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quick-schedule-section .btn-accent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-accent);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.quick-schedule-section .btn-accent:hover {
+  background: var(--color-accent-hover, #059669);
+}
+
+.maintenance-day-info {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  font-weight: normal;
+}

@@ -1,0 +1,500 @@
+/* Import Design System */
+@import './styles/design-system.css';
+
+/* Theme Variables - Light Mode (default) */
+:root {
+  /* ============================================
+     SPACING SCALE
+     ============================================ */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* ============================================
+     TYPOGRAPHY SCALE
+     ============================================ */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ============================================
+     BORDER RADIUS SCALE
+     ============================================ */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* ============================================
+     BREAKPOINTS (for reference in JS)
+     ============================================ */
+  --bp-mobile: 480px;
+  --bp-tablet: 768px;
+  --bp-desktop: 1024px;
+  --bp-wide: 1280px;
+
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+
+  /* Typography */
+  --font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+
+  /* Primary colors */
+  --color-primary: #4a7c23;
+  --color-primary-hover: #3d6a1d;
+  --color-primary-light: rgba(74, 124, 35, 0.2);
+  --color-primary-dark: #2d5016;
+  --color-primary-bg: #e8f5e9;
+
+  /* Background colors */
+  --bg-body: #f5f5f5;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafafa;
+  --bg-input: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-muted: #e5e7eb;
+
+  /* Text colors */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --text-inverse: #ffffff;
+
+  /* Border colors */
+  --border-color: #dddddd;
+  --border-light: #eeeeee;
+  --border-focus: rgba(74, 124, 35, 0.5);
+
+  /* Status colors - Success */
+  --color-success: #388e3c;
+  --color-success-hover: #2e7d32;
+  --color-success-light: #c8e6c9;
+  --color-success-bg: #e8f5e9;
+  --color-success-text: #1b5e20;
+
+  /* Status colors - Warning */
+  --color-warning: #e65100;
+  --color-warning-hover: #d84315;
+  --color-warning-light: #ffe0b2;
+  --color-warning-bg: #fff3e0;
+  --color-warning-text: #bf360c;
+
+  /* Status colors - Error/Danger */
+  --color-error: #c00000;
+  --color-error-hover: #a00000;
+  --color-error-light: #ffcdd2;
+  --color-error-bg: #ffeeee;
+  --color-error-text: #b71c1c;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-light: #fecaca;
+  --color-danger-bg: #fef2f2;
+
+  /* Status colors - Info */
+  --color-info: #1976d2;
+  --color-info-hover: #1565c0;
+  --color-info-light: #bbdefb;
+  --color-info-bg: #e3f2fd;
+  --color-info-text: #0d47a1;
+
+  /* Purple/Event colors */
+  --color-purple: #7b1fa2;
+  --color-purple-hover: #6a1b9a;
+  --color-purple-light: #e1bee7;
+  --color-purple-bg: #f3e5f5;
+  --color-purple-text: #4a148c;
+
+  /* Badge colors */
+  --badge-public-bg: #e3f2fd;
+  --badge-public-text: #1976d2;
+  --badge-livery-bg: #e8f5e9;
+  --badge-livery-text: #388e3c;
+  --badge-staff-bg: #fff3e0;
+  --badge-staff-text: #e65100;
+  --badge-admin-bg: #fce4ec;
+  --badge-admin-text: #c2185b;
+  --badge-event-bg: #f3e5f5;
+  --badge-event-text: #7b1fa2;
+  --badge-maintenance-bg: #ffebee;
+  --badge-maintenance-text: #c62828;
+  --badge-high-bg: #ffebee;
+  --badge-high-text: #c62828;
+
+  /* Social media colors */
+  --color-facebook: #1877f2;
+  --color-facebook-bg: #e7f3ff;
+  --color-twitter: #1da1f2;
+  --color-twitter-bg: #e8f5fd;
+  --color-whatsapp: #25d366;
+  --color-whatsapp-bg: #e7ffe7;
+
+  /* Calendar/Booking colors */
+  --color-calendar-event: #3788d8;
+  --color-calendar-livery: #4a7c23;
+  --color-calendar-maintenance: #f44336;
+  --color-calendar-training: #00bcd4;
+  --color-calendar-shared: #9c27b0;
+
+  /* Request type colors */
+  --color-indigo: #6366f1;
+  --color-indigo-bg: rgba(99, 102, 241, 0.1);
+  --color-teal: #10b981;
+  --color-teal-bg: rgba(16, 185, 129, 0.1);
+  --color-amber: #f59e0b;
+  --color-amber-bg: rgba(245, 158, 11, 0.1);
+  --color-pink: #ec4899;
+  --color-pink-bg: rgba(236, 72, 153, 0.1);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --shadow-focus: 0 0 0 3px rgba(74, 124, 35, 0.3);
+
+  /* Header/Footer */
+  --header-bg: #2d5016;
+  --header-text: #ffffff;
+  --header-overlay: rgba(255, 255, 255, 0.1);
+  --footer-bg: #333333;
+  --footer-text: #ffffff;
+}
+
+/* Theme Variables - Dark Mode (class-based for manual toggle) */
+body.dark-mode {
+  /* Primary colors */
+  --color-primary: #6ba33a;
+  --color-primary-hover: #7db84a;
+  --color-primary-light: rgba(107, 163, 58, 0.3);
+  --color-primary-dark: #4a7c23;
+  --color-primary-bg: #1b3d1b;
+
+  /* Background colors */
+  --bg-body: #1a1a1a;
+  --bg-card: #2d2d2d;
+  --bg-card-hover: #363636;
+  --bg-input: #3a3a3a;
+  --bg-secondary: #242424;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+  --bg-muted: #3a3a3a;
+
+  /* Text colors */
+  --text-primary: #e8e8e8;
+  --text-secondary: #b0b0b0;
+  --text-muted: #808080;
+  --text-inverse: #1a1a1a;
+
+  /* Border colors */
+  --border-color: #444444;
+  --border-light: #3a3a3a;
+  --border-focus: rgba(107, 163, 58, 0.5);
+
+  /* Status colors - Success */
+  --color-success: #66bb6a;
+  --color-success-hover: #81c784;
+  --color-success-light: #2e5a2e;
+  --color-success-bg: #1b3d1b;
+  --color-success-text: #a5d6a7;
+
+  /* Status colors - Warning */
+  --color-warning: #ffb74d;
+  --color-warning-hover: #ffc86b;
+  --color-warning-light: #5a4a2e;
+  --color-warning-bg: #3d2e1b;
+  --color-warning-text: #ffe0b2;
+
+  /* Status colors - Error/Danger */
+  --color-error: #ef5350;
+  --color-error-hover: #f77574;
+  --color-error-light: #5a2e2e;
+  --color-error-bg: #3d1b1b;
+  --color-error-text: #ef9a9a;
+  --color-danger: #ef5350;
+  --color-danger-hover: #f77574;
+  --color-danger-light: #5a2e2e;
+  --color-danger-bg: #3d1b1b;
+
+  /* Status colors - Info */
+  --color-info: #42a5f5;
+  --color-info-hover: #64b5f6;
+  --color-info-light: #2e3d5a;
+  --color-info-bg: #1b2d3d;
+  --color-info-text: #90caf9;
+
+  /* Purple/Event colors */
+  --color-purple: #ce93d8;
+  --color-purple-hover: #e1bee7;
+  --color-purple-light: #3d2e4a;
+  --color-purple-bg: #2d1b3d;
+  --color-purple-text: #e1bee7;
+
+  /* Badge colors */
+  --badge-public-bg: #1b2d3d;
+  --badge-public-text: #64b5f6;
+  --badge-livery-bg: #1b3d1b;
+  --badge-livery-text: #81c784;
+  --badge-staff-bg: #3d2e1b;
+  --badge-staff-text: #ffb74d;
+  --badge-admin-bg: #3d1b2d;
+  --badge-admin-text: #f48fb1;
+  --badge-event-bg: #2d1b3d;
+  --badge-event-text: #ce93d8;
+  --badge-maintenance-bg: #3d1b1b;
+  --badge-maintenance-text: #ef9a9a;
+  --badge-high-bg: #3d1b1b;
+  --badge-high-text: #ef9a9a;
+
+  /* Social media colors */
+  --color-facebook: #1877f2;
+  --color-facebook-bg: #1b2d3d;
+  --color-twitter: #1da1f2;
+  --color-twitter-bg: #1b2d3d;
+  --color-whatsapp: #25d366;
+  --color-whatsapp-bg: #1b3d1b;
+
+  /* Calendar/Booking colors */
+  --color-calendar-event: #64b5f6;
+  --color-calendar-livery: #6ba33a;
+  --color-calendar-maintenance: #ef5350;
+  --color-calendar-training: #4dd0e1;
+  --color-calendar-shared: #ce93d8;
+
+  /* Request type colors */
+  --color-indigo: #818cf8;
+  --color-indigo-bg: rgba(129, 140, 248, 0.15);
+  --color-teal: #34d399;
+  --color-teal-bg: rgba(52, 211, 153, 0.15);
+  --color-amber: #fbbf24;
+  --color-amber-bg: rgba(251, 191, 36, 0.15);
+  --color-pink: #f472b6;
+  --color-pink-bg: rgba(244, 114, 182, 0.15);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  --shadow-focus: 0 0 0 3px rgba(107, 163, 58, 0.3);
+
+  /* Header/Footer */
+  --header-bg: #1e3a0f;
+  --header-text: #e8e8e8;
+  --header-overlay: rgba(255, 255, 255, 0.05);
+  --footer-bg: #242424;
+  --footer-text: #e8e8e8;
+}
+
+/* ============================================
+   SMOOTH THEME TRANSITIONS
+   ============================================ */
+body,
+body * {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Disable transitions during initial page load to prevent flash */
+body.no-transitions,
+body.no-transitions * {
+  transition: none !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ============================================
+   FORM INPUT STYLING
+   ============================================ */
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--text-muted);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Dark mode focus ring */
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: var(--bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Select dropdown styling */
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+}
+
+/* Remove dotted outlines from select and option elements */
+select:focus-visible,
+select:-moz-focusring {
+  outline: none;
+}
+
+select option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 0.5rem;
+}
+
+select option:checked {
+  background: var(--color-primary-bg);
+}
+
+body.dark-mode select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
+}
+
+/* Textarea specific */
+textarea {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Number input - hide spinners for cleaner look */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Date/time inputs */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  cursor: pointer;
+}
+
+/* Checkbox and radio - exclude from general styling */
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  padding: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+/* Color input */
+input[type="color"] {
+  padding: 0.25rem;
+  height: 2.5rem;
+  cursor: pointer;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+}
+
+.error-message {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}

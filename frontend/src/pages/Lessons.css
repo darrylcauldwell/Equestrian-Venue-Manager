@@ -1,0 +1,1614 @@
+.lessons-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.lessons-page .page-header {
+  margin-bottom: 2rem;
+}
+
+.lessons-page .page-header h1 {
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.lessons-page .page-header p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Tabs */
+.lessons-page .tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-light);
+  padding-bottom: 0;
+}
+
+.lessons-page .tab {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.lessons-page .tab:hover {
+  color: var(--color-primary);
+}
+
+.lessons-page .tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 500;
+}
+
+/* Filter Bar */
+.lessons-page .filter-bar {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.lessons-page .filter-bar label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-primary);
+}
+
+.lessons-page .filter-bar select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  min-width: 200px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+/* Coaches Grid */
+.lessons-page .coaches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Coach Card */
+.lessons-page .coach-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.lessons-page .coach-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.lessons-page .coach-card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.lessons-page .coach-card-body {
+  padding: 1rem;
+}
+
+.lessons-page .coach-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.lessons-page .coach-info-row:last-child {
+  border-bottom: none;
+}
+
+.lessons-page .coach-info-row.full-width {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.lessons-page .coach-info-row .label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.lessons-page .coach-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
+}
+
+/* Requests Grid */
+.requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Request Card */
+.lessons-page .request-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border-left: 4px solid var(--color-primary);
+}
+
+.lessons-page .request-card.incoming {
+  border-left-color: var(--color-warning);
+}
+
+.lessons-page .request-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.lessons-page .request-card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.lessons-page .request-card-body {
+  padding: 1rem;
+}
+
+.request-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.request-info-row:last-child {
+  border-bottom: none;
+}
+
+.request-info-row.full-width {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.request-info-row.confirmed {
+  background: var(--color-success-bg);
+  margin: 0.5rem -1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.request-info-row .label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.request-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
+}
+
+/* Profile Section */
+.profile-section {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.profile-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.price-summary {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.price-summary span {
+  color: var(--text-secondary);
+}
+
+.price-summary .total {
+  font-weight: 600;
+  color: var(--color-success);
+  margin-left: auto;
+}
+
+/* Booking Grid Styles */
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.week-nav .week-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.booking-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.booking-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.booking-legend .legend-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
+}
+
+.booking-legend .legend-box.slot-free {
+  background: var(--color-success-light, #d4edda);
+  border-color: var(--color-success);
+}
+
+.booking-legend .legend-box.slot-partial {
+  background: var(--color-warning-light, #fff3cd);
+  border-color: var(--color-warning);
+}
+
+.booking-legend .legend-box.slot-busy {
+  background: var(--color-danger-light, #f8d7da);
+  border-color: var(--color-danger);
+}
+
+.booking-legend .legend-box.slot-selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.booking-grid-container {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.booking-grid {
+  width: 100%;
+  min-width: 500px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  table-layout: fixed;
+  display: table;
+}
+
+.booking-grid thead {
+  display: table-header-group;
+}
+
+.booking-grid tbody {
+  display: table-row-group;
+}
+
+.booking-grid tr {
+  display: table-row;
+}
+
+.booking-grid th,
+.booking-grid td {
+  display: table-cell;
+  padding: 0.5rem;
+  text-align: center;
+  border: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.booking-grid th {
+  background: var(--bg-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.booking-grid th.day-header {
+  min-width: 70px;
+  /* Distribute remaining width evenly across 7 days */
+  width: calc((100% - 60px) / 7);
+}
+
+.booking-grid th.today {
+  background: var(--color-primary-light, #cce5ff);
+  color: var(--color-primary);
+}
+
+.booking-grid .time-col {
+  width: 60px;
+  min-width: 60px;
+}
+
+.booking-grid .time-label {
+  font-weight: 500;
+  background: var(--bg-secondary);
+  white-space: nowrap;
+}
+
+.booking-cell {
+  /* Width is determined by table-layout: fixed and column widths */
+  min-width: 70px;
+  height: 40px;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.booking-cell.unavailable {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+}
+
+.booking-cell.slot-free {
+  background: var(--color-success-light, #d4edda);
+  color: var(--color-success-dark, #155724);
+}
+
+.booking-cell.slot-partial {
+  background: var(--color-warning-light, #fff3cd);
+  color: var(--color-warning-dark, #856404);
+}
+
+.booking-cell.slot-busy {
+  background: var(--color-danger-light, #f8d7da);
+  color: var(--color-danger-dark, #721c24);
+}
+
+.booking-cell.clickable {
+  cursor: pointer;
+}
+
+.booking-cell.clickable:hover {
+  filter: brightness(0.95);
+  transform: scale(1.05);
+}
+
+.booking-cell.selected {
+  background: var(--color-primary) !important;
+  color: white !important;
+  font-weight: bold;
+}
+
+.loading-grid {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.no-slots {
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.no-slots p {
+  margin: 0.5rem 0;
+}
+
+/* Available Slots List - Compact Mobile-Friendly View */
+.available-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+.date-slots-group {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.date-slots-group .date-header {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.time-slots-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.time-slot-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--color-success);
+  background: var(--color-success-light, #d4edda);
+  color: var(--color-success-dark, #155724);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 70px;
+  text-align: center;
+}
+
+.time-slot-btn:hover {
+  background: var(--color-success);
+  color: var(--text-inverse);
+  transform: scale(1.05);
+}
+
+.time-slot-btn.selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-inverse);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.selected-slot-summary {
+  padding: 0.75rem 1rem;
+  background: var(--color-primary-light, #cce5ff);
+  border-radius: 6px;
+  margin: 1rem 0;
+  color: var(--color-primary-dark, #004085);
+}
+
+.no-profile {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.no-profile p {
+  margin: 0.5rem 0;
+}
+
+.profile-status {
+  margin-bottom: 1rem;
+}
+
+.profile-content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.profile-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Availability Section */
+.availability-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.schedules-list,
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.schedule-item,
+.slot-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  color: var(--text-primary);
+}
+
+.slot-item.booked {
+  opacity: 0.7;
+}
+
+/* Availability Info in Coach Modal */
+.availability-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.availability-info h3 {
+  margin: 0 0 1rem;
+  color: var(--text-primary);
+}
+
+.availability-mode {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.schedules-display,
+.slots-display {
+  margin-top: 1rem;
+}
+
+.schedules-display h4,
+.slots-display h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Detail Section */
+.detail-section {
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.detail-section h3 {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: none;
+  color: var(--text-primary);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row.full-width {
+  flex-direction: column;
+}
+
+.detail-row.full-width .label {
+  margin-bottom: 0.5rem;
+}
+
+.detail-row .label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Badges */
+.lessons-page .badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.badge-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.badge-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.badge-danger {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.badge-info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.badge-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.badge-primary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* Buttons */
+.lessons-page .btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.lessons-page .btn-primary {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.lessons-page .btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.lessons-page .btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.lessons-page .btn-secondary:hover {
+  background: var(--bg-card-hover);
+}
+
+.lessons-page .btn-success {
+  background: var(--color-success);
+  color: var(--text-inverse);
+}
+
+.lessons-page .btn-success:hover {
+  opacity: 0.9;
+}
+
+.lessons-page .btn-danger {
+  background: var(--color-error);
+  color: var(--text-inverse);
+}
+
+.lessons-page .btn-danger:hover {
+  opacity: 0.9;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.lessons-page .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.lessons-page .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.lessons-page .modal {
+  background: var(--bg-card);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+.lessons-page .modal-large {
+  max-width: 900px;
+}
+
+.lessons-page .modal-small {
+  max-width: 450px;
+}
+
+.lessons-page .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  z-index: 1;
+}
+
+.lessons-page .modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.lessons-page .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  line-height: 1;
+}
+
+.lessons-page .close-btn:hover {
+  color: var(--text-primary);
+}
+
+.lessons-page .modal-body {
+  padding: 1.5rem;
+}
+
+.lessons-page .modal-body h3 {
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.lessons-page .modal-body h3:first-child {
+  margin-top: 0;
+}
+
+.lessons-page .modal-body hr {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 1px solid var(--border-light);
+}
+
+.lessons-page .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-light);
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-card);
+}
+
+/* Form Elements */
+.lessons-page .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.lessons-page label {
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.lessons-page input[type="text"],
+.lessons-page input[type="email"],
+.lessons-page input[type="tel"],
+.lessons-page input[type="date"],
+.lessons-page input[type="time"],
+.lessons-page input[type="number"],
+.lessons-page select,
+.lessons-page textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.lessons-page textarea {
+  resize: vertical;
+}
+
+.lessons-page input:focus,
+.lessons-page select:focus,
+.lessons-page textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.lessons-page small {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+.form-hint {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem;
+  font-style: italic;
+}
+
+/* Utility Classes */
+.text-danger {
+  color: var(--color-error);
+}
+
+.text-success {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.no-data {
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}
+
+.lessons-page .loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--text-secondary);
+}
+
+.lessons-page .error-message {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .lessons-page {
+    padding: 1rem;
+  }
+
+  .lessons-page .tabs-container {
+    flex-wrap: wrap;
+  }
+
+  .lessons-page .tab {
+    padding: 0.5rem 1rem;
+  }
+
+  .coaches-grid,
+  .requests-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lessons-page .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-grid,
+  .profile-details {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .schedule-item,
+  .slot-item {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .lessons-page {
+    padding: 0.75rem;
+  }
+
+  .lessons-page .page-header {
+    margin-bottom: 1rem;
+  }
+
+  .lessons-page .page-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .lessons-page .page-header p {
+    font-size: 0.85rem;
+  }
+
+  /* Tabs - horizontal scroll */
+  .lessons-page .tabs-container {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .lessons-page .tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Filter bar */
+  .lessons-page .filter-bar {
+    padding: 0.75rem;
+  }
+
+  .lessons-page .filter-bar label {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .lessons-page .filter-bar select {
+    min-width: 100%;
+  }
+
+  /* Coach cards */
+  .lessons-page .coach-card-header,
+  .lessons-page .coach-card-body,
+  .lessons-page .coach-card-actions {
+    padding: 0.75rem;
+  }
+
+  .lessons-page .coach-card-header h3 {
+    font-size: 1rem;
+  }
+
+  .lessons-page .coach-card-actions {
+    flex-direction: column;
+  }
+
+  .lessons-page .coach-card-actions .btn {
+    width: 100%;
+  }
+
+  .lessons-page .coach-info-row {
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.5rem 0;
+  }
+
+  .lessons-page .coach-info-row .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  /* Request cards */
+  .lessons-page .request-card-header,
+  .lessons-page .request-card-body {
+    padding: 0.75rem;
+  }
+
+  .request-card-actions {
+    padding: 0.75rem;
+    flex-direction: column;
+  }
+
+  .request-card-actions .btn {
+    width: 100%;
+  }
+
+  .request-info-row {
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.5rem 0;
+  }
+
+  .request-info-row .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  /* Modals - full screen */
+  .lessons-page .modal-overlay {
+    padding: 0;
+  }
+
+  .lessons-page .modal,
+  .lessons-page .modal-large,
+  .lessons-page .modal-small {
+    max-width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+
+  .lessons-page .modal-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .lessons-page .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .lessons-page .modal-body {
+    padding: 1rem;
+  }
+
+  .lessons-page .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+
+  /* Booking info bar */
+  .booking-info-bar {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Week navigation */
+  .week-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .week-nav .week-label {
+    order: -1;
+    font-size: 0.9rem;
+  }
+
+  .week-nav .btn {
+    width: 100%;
+  }
+
+  /* Booking grid */
+  .booking-grid-container {
+    margin: 0 -1rem;
+    padding: 0 1rem;
+  }
+
+  .booking-grid {
+    font-size: 0.75rem;
+    min-width: 450px;
+  }
+
+  .booking-grid th,
+  .booking-grid td {
+    padding: 0.35rem;
+  }
+
+  .booking-grid th.day-header {
+    min-width: 55px;
+  }
+
+  .booking-cell {
+    min-width: 55px;
+    height: 32px;
+  }
+
+  /* Legend */
+  .booking-legend {
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .booking-legend .legend-box {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Available slots list - mobile */
+  .available-slots-list {
+    max-height: 250px;
+  }
+
+  .date-slots-group {
+    padding: 0.5rem;
+  }
+
+  .date-slots-group .date-header {
+    font-size: 0.85rem;
+  }
+
+  .time-slots-row {
+    gap: 0.375rem;
+  }
+
+  .time-slot-btn {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    min-width: 60px;
+    flex: 1;
+    max-width: calc(33% - 0.25rem);
+  }
+
+  /* Selected slot summary */
+  .selected-slot-summary {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Arena selection */
+  .arena-selection {
+    padding: 0.75rem;
+  }
+
+  .arena-selection h4 {
+    font-size: 0.85rem;
+  }
+
+  .arena-option {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Guest fields */
+  .guest-fields {
+    padding: 0.75rem;
+  }
+
+  /* Price summary */
+  .price-summary {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .price-summary .total {
+    margin-left: 0;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-light);
+  }
+
+  /* Profile section */
+  .profile-section {
+    padding: 1rem;
+  }
+
+  .detail-section {
+    padding: 0.75rem;
+  }
+
+  .detail-section h3 {
+    font-size: 0.9rem;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .detail-row .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  /* Availability section */
+  .availability-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .schedule-item,
+  .slot-item {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* ============== Availability Grid Section ============== */
+
+.booking-info-bar {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.booking-info-bar span {
+  color: var(--text-secondary);
+}
+
+.booking-info-bar strong {
+  color: var(--text-primary);
+}
+
+.availability-grid-section {
+  margin-bottom: 1.5rem;
+}
+
+.availability-grid-section h3 {
+  margin: 0 0 0.5rem !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.availability-grid-section .hint-text {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.availability-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.availability-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.availability-legend .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.availability-legend .dot.all-free {
+  background: var(--color-success);
+}
+
+.availability-legend .dot.some-booked {
+  background: var(--color-warning);
+}
+
+.availability-legend .dot.selected {
+  background: var(--color-primary);
+}
+
+.availability-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.date-group {
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.date-header {
+  padding: 0.5rem 1rem;
+  background: var(--header-bg);
+  color: var(--text-inverse);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+}
+
+.time-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+}
+
+.time-slot.all-free {
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success);
+}
+
+.time-slot.some-booked {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+}
+
+.time-slot:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.time-slot.selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.time-slot.selected .slot-time,
+.time-slot.selected .slot-arenas {
+  color: var(--text-inverse);
+}
+
+.slot-time {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.slot-arenas {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* No availability message */
+.no-availability {
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.no-availability p {
+  margin: 0.25rem 0;
+  color: var(--text-secondary);
+}
+
+/* Arena Selection */
+.arena-selection {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+}
+
+.arena-selection h4 {
+  margin: 0 0 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.arena-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.arena-option {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 120px;
+  transition: all 0.2s;
+}
+
+.arena-option.available {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.arena-option.available:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.arena-option.booked {
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.arena-option.selected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+.arena-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.arena-status {
+  font-size: 0.75rem;
+}
+
+.arena-status.available {
+  color: var(--color-success);
+}
+
+.arena-option.selected .arena-status {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.arena-status.booked {
+  color: var(--color-error);
+}
+
+/* Manual Entry Section */
+.manual-entry {
+  margin-top: 1rem;
+}
+
+.manual-entry h4 {
+  margin: 0 0 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Guest Fields */
+.guest-fields {
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.guest-fields h4 {
+  margin: 0 0 1rem !important;
+  padding: 0 !important;
+  border: none !important;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .availability-legend {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .time-slots {
+    justify-content: center;
+  }
+
+  .arena-options {
+    flex-direction: column;
+  }
+
+  .arena-option {
+    min-width: auto;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .lessons-page .coach-card,
+  .lessons-page .request-card {
+    background: #3a3a3a;
+    border-color: #555555;
+  }
+
+  .lessons-page .coach-card-header,
+  .lessons-page .request-card-header,
+  .lessons-page .coach-card-actions,
+  .lessons-page .request-card-actions {
+    background: #2d2d2d;
+    border-color: #555555;
+  }
+
+  .lessons-page .filter-bar,
+  .lessons-page .booking-info-bar,
+  .lessons-page .date-group,
+  .lessons-page .no-availability,
+  .lessons-page .arena-selection,
+  .lessons-page .profile-section,
+  .lessons-page .availability-grid-section {
+    background: #3a3a3a;
+    border-color: #555555;
+  }
+
+  .lessons-page .modal {
+    background: #2d2d2d;
+    border: 1px solid #555555;
+  }
+
+  .lessons-page .modal-header {
+    background: #3a3a3a;
+    border-color: #555555;
+  }
+
+  .lessons-page .booking-grid th {
+    background: #3a3a3a;
+  }
+
+  .lessons-page .booking-grid td {
+    background: #2d2d2d;
+    border-color: #555555;
+  }
+
+  .lessons-page .guest-fields {
+    background: #3a3a3a;
+  }
+}

@@ -1,0 +1,413 @@
+{
+  "site_settings": {
+    "venue_name": "E2E Test Venue",
+    "venue_tagline": "Testing Environment",
+    "contact_email": "test@example.com",
+    "contact_phone": "01234000000",
+    "address_street": "123 Test Lane",
+    "address_town": "Testville",
+    "address_county": "Testshire",
+    "address_postcode": "TE5 1NG",
+    "theme_primary_color": "#2E7D32",
+    "theme_accent_color": "#8D6E63",
+    "livery_billing_day": 1,
+    "livery_max_advance_days": 30,
+    "livery_max_booking_hours": 2.0,
+    "access_token_expire_minutes": 60,
+    "refresh_token_expire_days": 7
+  },
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@test.com",
+      "name": "Admin User",
+      "phone": "07700 900001",
+      "password": "password",
+      "role": "admin"
+    },
+    {
+      "username": "coach",
+      "email": "coach@test.com",
+      "name": "Sarah Coach",
+      "phone": "07700 900002",
+      "password": "password",
+      "role": "coach"
+    },
+    {
+      "username": "livery1",
+      "email": "livery1@test.com",
+      "name": "Jane Smith",
+      "phone": "07700 900003",
+      "password": "password",
+      "role": "livery"
+    },
+    {
+      "username": "livery2",
+      "email": "livery2@test.com",
+      "name": "Bob Jones",
+      "phone": "07700 900004",
+      "password": "password",
+      "role": "livery"
+    },
+    {
+      "username": "staff1",
+      "email": "staff1@test.com",
+      "name": "Tom Staff",
+      "phone": "07700 900005",
+      "password": "password",
+      "role": "staff"
+    },
+    {
+      "username": "public1",
+      "email": "public1@test.com",
+      "name": "Public User",
+      "phone": "07700 900006",
+      "password": "password",
+      "role": "public"
+    },
+    {
+      "username": "rehab1",
+      "email": "rehab1@test.com",
+      "name": "Rehab Owner",
+      "phone": "07700 900007",
+      "password": "password",
+      "role": "livery"
+    },
+    {
+      "username": "holiday1",
+      "email": "holiday1@test.com",
+      "name": "Holiday Owner",
+      "phone": "07700 900008",
+      "password": "password",
+      "role": "livery"
+    },
+    {
+      "username": "clinic1",
+      "email": "clinic1@test.com",
+      "name": "Clinic User One",
+      "phone": "07700 900009",
+      "password": "password",
+      "role": "public"
+    },
+    {
+      "username": "clinic2",
+      "email": "clinic2@test.com",
+      "name": "Clinic User Two",
+      "phone": "07700 900010",
+      "password": "password",
+      "role": "public"
+    },
+    {
+      "username": "clinic3",
+      "email": "clinic3@test.com",
+      "name": "Clinic User Three",
+      "phone": "07700 900011",
+      "password": "password",
+      "role": "public"
+    }
+  ],
+  "arenas": [
+    {
+      "name": "Indoor Arena",
+      "description": "Main indoor arena",
+      "is_active": true,
+      "hourly_rate": 25.00,
+      "allows_public_booking": true
+    },
+    {
+      "name": "Outdoor Arena",
+      "description": "Large outdoor arena",
+      "is_active": true,
+      "hourly_rate": 20.00,
+      "allows_public_booking": true
+    },
+    {
+      "name": "Round Pen",
+      "description": "Training round pen",
+      "is_active": true,
+      "hourly_rate": 15.00,
+      "allows_public_booking": false
+    }
+  ],
+  "livery_packages": [
+    {
+      "name": "Full Livery",
+      "description": "All inclusive care package",
+      "monthly_price": 800.00,
+      "is_active": true
+    },
+    {
+      "name": "Part Livery",
+      "description": "Partial care package",
+      "monthly_price": 500.00,
+      "is_active": true
+    },
+    {
+      "name": "DIY Livery",
+      "description": "Self-care stable rental",
+      "monthly_price": 300.00,
+      "is_active": true
+    }
+  ],
+  "horses": [
+    {
+      "name": "Shadowfax",
+      "owner_username": "livery1",
+      "breed": "Andalusian",
+      "color": "Grey",
+      "height_hands": 16.2
+    },
+    {
+      "name": "Spirit",
+      "owner_username": "livery1",
+      "breed": "Mustang",
+      "color": "Buckskin",
+      "height_hands": 15.0
+    },
+    {
+      "name": "Thunder",
+      "owner_username": "livery2",
+      "breed": "Thoroughbred",
+      "color": "Bay",
+      "height_hands": 16.3
+    },
+    {
+      "name": "Captain Comeback",
+      "owner_username": "rehab1",
+      "breed": "Irish Sport Horse",
+      "color": "Chestnut",
+      "height_hands": 16.1
+    },
+    {
+      "name": "Wanderlust",
+      "owner_username": "holiday1",
+      "breed": "Warmblood",
+      "color": "Bay",
+      "height_hands": 16.0
+    }
+  ],
+  "fields": [
+    {
+      "name": "North Paddock",
+      "size_acres": 5.0,
+      "surface_type": "grass",
+      "has_shelter": true,
+      "has_water": true,
+      "max_occupancy": 6,
+      "is_active": true
+    },
+    {
+      "name": "South Field",
+      "size_acres": 3.0,
+      "surface_type": "grass",
+      "has_shelter": false,
+      "has_water": true,
+      "max_occupancy": 4,
+      "is_active": true
+    }
+  ],
+  "stable_blocks": [
+    {
+      "name": "Main Yard",
+      "sequence": 1,
+      "is_active": true,
+      "stables": [
+        {"name": "Stable 1", "is_occupied": true, "horse_name": "Shadowfax"},
+        {"name": "Stable 2", "is_occupied": true, "horse_name": "Spirit"},
+        {"name": "Stable 3", "is_occupied": true, "horse_name": "Thunder"},
+        {"name": "Stable 4", "is_occupied": true, "horse_name": "Captain Comeback"},
+        {"name": "Stable 5", "is_occupied": true, "horse_name": "Wanderlust"},
+        {"name": "Stable 6", "is_occupied": false}
+      ]
+    }
+  ],
+  "services": [
+    {
+      "id": "extra-hay",
+      "name": "Extra Hay",
+      "description": "Additional hay net",
+      "price_gbp": 5.00,
+      "category": "grooming",
+      "is_active": true
+    },
+    {
+      "id": "turnout-service",
+      "name": "Turnout Service",
+      "description": "Horse turnout and bring in",
+      "price_gbp": 10.00,
+      "category": "exercise",
+      "is_active": true
+    },
+    {
+      "id": "rehab-walking",
+      "name": "Rehab Walking",
+      "description": "Controlled walking exercise for rehab horses",
+      "price_gbp": 15.00,
+      "category": "rehab",
+      "is_active": true
+    }
+  ],
+  "professionals": [
+    {
+      "business_name": "John Smith Farrier",
+      "category": "farrier",
+      "phone": "07700 800001",
+      "email": "john@farrier.test"
+    },
+    {
+      "business_name": "Valley Vets",
+      "category": "vet",
+      "phone": "07700 800002",
+      "email": "info@valleyvets.test"
+    }
+  ],
+  "notices": [
+    {
+      "title": "Welcome to E2E Test Venue",
+      "content": "This is a test noticeboard post.",
+      "author_username": "admin",
+      "category": "general",
+      "priority": "normal",
+      "is_pinned": true
+    }
+  ],
+  "coach_profiles": [
+    {
+      "username": "coach",
+      "disciplines": ["Dressage", "Show Jumping"],
+      "teaching_description": "Experienced coach for all levels",
+      "bio": "Experienced coach for testing",
+      "availability_mode": "calendar",
+      "booking_mode": "request",
+      "lesson_duration_minutes": 60,
+      "coach_fee": 35.00,
+      "venue_fee": 10.00,
+      "livery_venue_fee": 5,
+      "is_active": true,
+      "approved_by_username": "admin",
+      "recurring_schedules": []
+    }
+  ],
+  "clinics": [
+    {
+      "proposed_by_username": "coach",
+      "title": "Dressage Fundamentals",
+      "description": "Learn the basics of dressage",
+      "arena_name": "Indoor Arena",
+      "coach_name": "Sarah Coach",
+      "lesson_format": "group",
+      "max_participants": 6,
+      "status": "approved",
+      "days_from_now": 14,
+      "hour": 10,
+      "duration_hours": 2
+    },
+    {
+      "proposed_by_username": "coach",
+      "title": "Show Jumping Clinic",
+      "description": "Improve your jumping technique",
+      "arena_name": "Outdoor Arena",
+      "coach_name": "Sarah Coach",
+      "lesson_format": "group",
+      "max_participants": 4,
+      "status": "pending",
+      "days_from_now": 21,
+      "hour": 14,
+      "duration_hours": 3
+    }
+  ],
+  "rehab_programs": [
+    {
+      "horse_name": "Captain Comeback",
+      "owner_username": "rehab1",
+      "name": "Post-Surgery Recovery",
+      "description": "Recovery program following tendon surgery",
+      "reason": "Tendon injury requiring controlled exercise",
+      "prescribed_by": "Valley Vets",
+      "start_days_ago": 14,
+      "duration_weeks": 12,
+      "status": "active",
+      "current_phase": 1,
+      "created_by_username": "admin",
+      "notes": "Progressing well",
+      "phases": [
+        {
+          "phase_number": 1,
+          "name": "Box Rest",
+          "description": "Complete rest in stable",
+          "duration_weeks": 4,
+          "tasks": [
+            {
+              "name": "Hand walking",
+              "description": "10 minutes twice daily",
+              "frequency": "daily",
+              "duration_minutes": 10
+            }
+          ]
+        },
+        {
+          "phase_number": 2,
+          "name": "Controlled Walking",
+          "description": "Gradual increase in walking",
+          "duration_weeks": 4,
+          "tasks": [
+            {
+              "name": "Walking exercise",
+              "description": "20 minutes twice daily",
+              "frequency": "daily",
+              "duration_minutes": 20
+            }
+          ]
+        },
+        {
+          "phase_number": 3,
+          "name": "Light Work",
+          "description": "Introduction of light ridden work",
+          "duration_weeks": 4,
+          "tasks": [
+            {
+              "name": "Light schooling",
+              "description": "30 minutes walk and trot",
+              "frequency": "daily",
+              "duration_minutes": 30
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "holiday_livery_requests": [
+    {
+      "guest_name": "Test Guest",
+      "guest_email": "guest@test.com",
+      "guest_phone": "07700 800003",
+      "horse_name": "Visitor Horse",
+      "horse_breed": "Connemara",
+      "horse_age": 8,
+      "horse_colour": "Grey",
+      "horse_gender": "gelding",
+      "special_requirements": "Needs quiet stable",
+      "requested_arrival_days_from_now": 7,
+      "requested_departure_days_from_now": 14,
+      "message": "Looking forward to staying",
+      "status": "pending"
+    },
+    {
+      "guest_name": "Approved Guest",
+      "guest_email": "approved@test.com",
+      "guest_phone": "07700 800004",
+      "horse_name": "Welcome Horse",
+      "horse_breed": "Welsh Cob",
+      "horse_age": 10,
+      "horse_colour": "Bay",
+      "horse_gender": "mare",
+      "requested_arrival_days_from_now": 3,
+      "requested_departure_days_from_now": 10,
+      "status": "approved",
+      "confirmed_arrival_days_from_now": 3,
+      "confirmed_departure_days_from_now": 10,
+      "assigned_stable_name": "Stable 6",
+      "processed_by_username": "admin"
+    }
+  ]
+}

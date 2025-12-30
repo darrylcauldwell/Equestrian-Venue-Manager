@@ -1,0 +1,218 @@
+.home-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero {
+  background: linear-gradient(135deg, var(--header-bg) 0%, var(--color-primary) 100%);
+  color: var(--text-inverse);
+  padding: 4rem 2rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.hero h1 {
+  margin: 0 0 1rem 0;
+  font-size: 2.5rem;
+}
+
+.hero p {
+  margin: 0;
+  font-size: 1.25rem;
+  opacity: 0.95;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-weather {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-weather .weather-widget {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  color: var(--text-inverse);
+}
+
+.hero-weather .weather-temp,
+.hero-weather .weather-desc,
+.hero-weather .weather-details {
+  color: var(--text-inverse);
+}
+
+.hero-weather .weather-details {
+  opacity: 0.9;
+}
+
+.intro-section {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 3rem;
+}
+
+.intro-section h2 {
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+.intro-section p {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.features-section {
+  margin-bottom: 3rem;
+}
+
+.features-section h2 {
+  text-align: center;
+  margin: 0 0 2rem 0;
+  color: var(--text-primary);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+  margin: 0 0 0.75rem 0;
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  margin: 0 0 1rem 0;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+}
+
+.feature-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.feature-link:hover {
+  text-decoration: underline;
+}
+
+.weather-section {
+  max-width: 600px;
+  margin: 0 auto 3rem;
+}
+
+.facilities-summary {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 3rem;
+}
+
+.facilities-summary p {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.facilities-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.facilities-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .home-page {
+    padding: 0 1rem;
+  }
+
+  .hero {
+    padding: 2.5rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero p {
+    font-size: 1rem;
+  }
+
+  .intro-section {
+    margin-bottom: 2rem;
+  }
+
+  .intro-section p {
+    font-size: 1rem;
+  }
+
+  .features-section {
+    margin-bottom: 2rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .feature-card {
+    padding: 1.5rem;
+  }
+
+  .feature-icon {
+    font-size: 2.5rem;
+  }
+
+  .facilities-summary {
+    margin-bottom: 2rem;
+  }
+
+  .facilities-summary p {
+    font-size: 1rem;
+  }
+
+  .cta-section {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 2rem 1rem;
+  }
+
+  .hero h1 {
+    font-size: 1.5rem;
+  }
+}

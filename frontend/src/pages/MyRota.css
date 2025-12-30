@@ -1,0 +1,481 @@
+.my-rota-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.my-rota-page .page-header {
+  margin-bottom: 24px;
+}
+
+.my-rota-page .page-header h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.75rem;
+  color: var(--text-primary);
+}
+
+.my-rota-page .page-header p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.my-rota-page .error-message {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* Week Navigation */
+.my-rota-page .week-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.my-rota-page .week-navigation .btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transition: all 0.2s;
+}
+
+.my-rota-page .week-navigation .btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.my-rota-page .current-week {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  min-width: 200px;
+  text-align: center;
+}
+
+/* Week Summary */
+.my-rota-page .week-summary {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.my-rota-page .week-summary strong {
+  color: var(--text-primary);
+}
+
+/* Rota Grid */
+.my-rota-page .rota-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .my-rota-page .rota-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.my-rota-page .rota-day {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.my-rota-page .rota-day.today {
+  border-color: var(--color-info);
+  box-shadow: 0 0 0 2px var(--color-info-bg);
+}
+
+.my-rota-page .rota-day.past {
+  opacity: 0.7;
+}
+
+.my-rota-page .rota-day.has-shift {
+  background: linear-gradient(to bottom, var(--color-success-bg), var(--bg-card));
+}
+
+.my-rota-page .rota-day.on-holiday {
+  background: linear-gradient(to bottom, var(--color-info-bg), var(--bg-card));
+}
+
+.my-rota-page .rota-day.on-absence {
+  background: linear-gradient(to bottom, var(--color-error-bg), var(--bg-card));
+}
+
+/* Day Header */
+.my-rota-page .day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.my-rota-page .rota-day.today .day-header {
+  background: var(--color-info-bg);
+}
+
+.my-rota-page .day-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.my-rota-page .day-date {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.my-rota-page .rota-day.today .day-date {
+  color: var(--color-info);
+}
+
+/* Day Content */
+.my-rota-page .day-content {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Status Blocks (Holiday/Absence) */
+.my-rota-page .status-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.my-rota-page .status-block .status-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--text-inverse);
+}
+
+.my-rota-page .status-block.holiday .status-icon {
+  background: var(--color-info);
+}
+
+.my-rota-page .status-block.absence .status-icon {
+  background: var(--color-error);
+}
+
+.my-rota-page .status-block .status-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Shift Block */
+.my-rota-page .shift-block {
+  text-align: center;
+}
+
+.my-rota-page .shift-type {
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  display: inline-block;
+}
+
+.my-rota-page .shift-type.shift-morning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.my-rota-page .shift-type.shift-afternoon {
+  background: var(--color-amber-bg);
+  color: var(--color-amber);
+}
+
+.my-rota-page .shift-type.shift-full_day {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.my-rota-page .shift-type.shift-split {
+  background: var(--color-purple-bg);
+  color: var(--color-purple);
+}
+
+.my-rota-page .shift-role {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.my-rota-page .shift-time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.my-rota-page .shift-notes {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* No Shift */
+.my-rota-page .no-shift {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Legend */
+.my-rota-page .rota-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.my-rota-page .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.my-rota-page .legend-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.my-rota-page .legend-box.shift-morning {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+}
+
+.my-rota-page .legend-box.shift-afternoon {
+  background: var(--color-amber-bg);
+  border: 1px solid var(--color-amber);
+}
+
+.my-rota-page .legend-box.shift-full {
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success);
+}
+
+.my-rota-page .legend-box.on-holiday {
+  background: var(--color-info-light);
+  border: 1px solid var(--color-info);
+}
+
+.my-rota-page .legend-box.on-absence {
+  background: var(--color-error-light);
+  border: 1px solid var(--color-error);
+}
+
+/* Leave Balance Card */
+.my-rota-page .leave-balance-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.my-rota-page .leave-balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.my-rota-page .leave-balance-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.my-rota-page .year-selector {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.my-rota-page .leave-entitlement {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.my-rota-page .entitlement-label {
+  color: var(--text-secondary);
+}
+
+.my-rota-page .entitlement-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.my-rota-page .entitlement-note {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Progress Bar */
+.my-rota-page .leave-progress-container {
+  margin-bottom: 16px;
+}
+
+.my-rota-page .leave-progress-bar {
+  height: 24px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.my-rota-page .progress-taken {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--color-success);
+  border-radius: 12px 0 0 12px;
+  transition: width 0.3s ease;
+}
+
+.my-rota-page .progress-pending {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--color-warning);
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+/* Leave Breakdown */
+.my-rota-page .leave-breakdown {
+  display: flex;
+  justify-content: space-around;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.my-rota-page .leave-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.my-rota-page .leave-stat .stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.my-rota-page .leave-stat .stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.my-rota-page .leave-stat.taken .stat-value {
+  color: var(--color-success);
+}
+
+.my-rota-page .leave-stat.pending .stat-value {
+  color: var(--color-warning);
+}
+
+.my-rota-page .leave-stat.remaining .stat-value {
+  color: var(--color-info);
+}
+
+.my-rota-page .leave-stat.remaining.low .stat-value {
+  color: var(--color-error);
+}
+
+/* Absence Summary */
+.my-rota-page .absence-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.my-rota-page .absence-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.my-rota-page .absence-value {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.my-rota-page .absence-value.high {
+  color: var(--color-error);
+}
+
+@media (max-width: 480px) {
+  .my-rota-page .leave-breakdown {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .my-rota-page .leave-stat {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+}

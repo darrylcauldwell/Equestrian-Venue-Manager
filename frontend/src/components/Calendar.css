@@ -1,0 +1,370 @@
+.calendar-container {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legend-color.public {
+  background: var(--color-calendar-event);
+}
+
+.legend-color.livery {
+  background: var(--color-primary);
+}
+
+.legend-color.event {
+  background: var(--color-calendar-shared);
+}
+
+.legend-color.maintenance {
+  background: var(--color-error);
+}
+
+.legend-color.lesson {
+  background: var(--color-calendar-training);
+}
+
+.legend-color.coach-available {
+  background: var(--color-purple-light);
+  border: 2px dashed #9c27b0;
+}
+
+.fc {
+  font-family: inherit;
+}
+
+.fc-toolbar-title {
+  font-size: 1.25rem !important;
+  color: var(--text-primary) !important;
+}
+
+.fc-button-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.fc-button-primary:hover {
+  background-color: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
+}
+
+.fc-button-primary:disabled {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.fc-button-active {
+  background-color: var(--header-bg) !important;
+  border-color: var(--header-bg) !important;
+}
+
+/* FullCalendar dark mode overrides */
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: var(--border-color);
+}
+
+.fc-theme-standard .fc-scrollgrid {
+  border-color: var(--border-color);
+}
+
+.fc-col-header-cell {
+  background: var(--bg-secondary);
+}
+
+.fc-col-header-cell-cushion {
+  color: var(--text-primary);
+}
+
+.fc-daygrid-day-number,
+.fc-timegrid-slot-label-cushion {
+  color: var(--text-primary);
+}
+
+.fc-day-today {
+  background: var(--color-primary-light) !important;
+}
+
+.fc-timegrid-now-indicator-line {
+  border-color: var(--color-primary);
+}
+
+/* Pending booking styles */
+.pending-booking {
+  border-style: dashed !important;
+  border-width: 2px !important;
+}
+
+.pending-booking .fc-event-main {
+  font-style: italic;
+}
+
+/* Legend for pending status */
+.legend-color.pending {
+  background: linear-gradient(135deg, #4a7c2380 50%, transparent 50%);
+  border: 2px dashed #4a7c23;
+}
+
+/* Booking Tooltip */
+.booking-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  max-width: 300px;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+
+.tooltip-header {
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
+  font-weight: 600;
+  color: var(--text-primary);
+  border-radius: 8px 8px 0 0;
+}
+
+.tooltip-content {
+  padding: 0.75rem 1rem;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.25rem 0;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.tooltip-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.tooltip-row.sharing {
+  color: var(--color-success);
+  font-style: italic;
+  justify-content: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
+  margin-top: 0.25rem;
+}
+
+.tooltip-row.pending-note {
+  color: var(--color-warning);
+  font-style: italic;
+  justify-content: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
+  margin-top: 0.25rem;
+}
+
+.tooltip-footer {
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Coach Availability Tooltip */
+.coach-availability-tooltip .tooltip-header {
+  background: var(--color-purple-light);
+  color: var(--color-purple-text);
+}
+
+.tooltip-row.coach-note {
+  color: #9c27b0;
+  font-style: italic;
+  justify-content: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+}
+
+/* Coach availability background events */
+.fc-bg-event.coach-availability {
+  opacity: 0.4;
+  border: 2px dashed #9c27b0 !important;
+}
+
+/* Shareable booking styles */
+.shareable-booking {
+  border-width: 3px !important;
+  box-shadow: 0 0 0 1px #0ea5e9 !important;
+}
+
+.legend-color.shareable {
+  background: #4a7c23;
+  border: 3px solid #0ea5e9;
+}
+
+.tooltip-row.sharing {
+  color: var(--color-info, #0284c7);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.tooltip-row.sharing::before {
+  content: "👥 ";
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .calendar-container {
+    padding: 0.5rem;
+  }
+
+  .calendar-legend {
+    gap: 0.75rem;
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .legend-item {
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .legend-color {
+    width: 10px;
+    height: 10px;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1rem !important;
+  }
+
+  .fc-button {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-container {
+    padding: 0.25rem;
+    border-radius: 6px;
+  }
+
+  .calendar-legend {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .legend-item {
+    font-size: 0.7rem;
+    gap: 0.25rem;
+  }
+
+  .legend-color {
+    width: 8px;
+    height: 8px;
+  }
+
+  /* FullCalendar mobile adjustments */
+  .fc-toolbar-title {
+    font-size: 0.9rem !important;
+  }
+
+  .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .fc-toolbar-chunk {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .fc-button {
+    padding: 0.2rem 0.4rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .fc-button-group .fc-button {
+    padding: 0.2rem 0.5rem !important;
+  }
+
+  .fc-col-header-cell-cushion {
+    font-size: 0.75rem;
+    padding: 0.25rem !important;
+  }
+
+  .fc-daygrid-day-number {
+    font-size: 0.8rem;
+    padding: 0.25rem !important;
+  }
+
+  .fc-timegrid-slot-label-cushion {
+    font-size: 0.7rem;
+  }
+
+  .fc-event {
+    font-size: 0.7rem !important;
+    padding: 1px 2px !important;
+  }
+
+  /* Tooltip adjustments */
+  .booking-tooltip {
+    min-width: 180px;
+    max-width: 250px;
+    font-size: 0.85rem;
+  }
+
+  .tooltip-header {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .tooltip-content {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .tooltip-row {
+    font-size: 0.8rem;
+    padding: 0.2rem 0;
+  }
+
+  .tooltip-footer {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.7rem;
+  }
+}

@@ -1,0 +1,324 @@
+.weather-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg-card);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.weather-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.weather-loading {
+  min-height: 80px;
+  justify-content: center;
+}
+
+.weather-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.weather-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Weather icons using CSS gradients and shapes */
+.weather-sunny {
+  background: radial-gradient(circle at center, #fbbf24 30%, transparent 31%);
+}
+
+.weather-clear-night {
+  background: radial-gradient(circle at 60% 40%, #fbbf24 15%, transparent 16%),
+              radial-gradient(circle at center, #1e3a5f 40%, transparent 41%);
+}
+
+.weather-partly-cloudy {
+  background: radial-gradient(circle at 30% 30%, #fbbf24 20%, transparent 21%),
+              radial-gradient(ellipse 50% 30% at 60% 60%, #94a3b8 100%, transparent);
+}
+
+.weather-partly-cloudy-night {
+  background: radial-gradient(circle at 30% 30%, #94a3b8 15%, transparent 16%),
+              radial-gradient(ellipse 50% 30% at 60% 60%, #64748b 100%, transparent);
+}
+
+.weather-cloudy {
+  background: radial-gradient(ellipse 40% 25% at 35% 50%, #94a3b8 100%, transparent),
+              radial-gradient(ellipse 50% 30% at 60% 55%, #64748b 100%, transparent);
+}
+
+.weather-foggy {
+  background: linear-gradient(to right, transparent, #94a3b8 20%, #94a3b8 80%, transparent);
+}
+
+.weather-rainy {
+  background: radial-gradient(ellipse 50% 25% at 50% 35%, #64748b 100%, transparent),
+              linear-gradient(to bottom, transparent 50%, #60a5fa 55%, transparent 60%) 20% 0,
+              linear-gradient(to bottom, transparent 50%, #60a5fa 55%, transparent 60%) 50% 0,
+              linear-gradient(to bottom, transparent 50%, #60a5fa 55%, transparent 60%) 80% 0;
+  background-size: 100% 100%, 8px 100%, 8px 100%, 8px 100%;
+  background-repeat: no-repeat;
+}
+
+.weather-snowy {
+  background: radial-gradient(ellipse 50% 25% at 50% 35%, #94a3b8 100%, transparent),
+              radial-gradient(circle at 25% 70%, #e2e8f0 8%, transparent 9%),
+              radial-gradient(circle at 50% 80%, #e2e8f0 8%, transparent 9%),
+              radial-gradient(circle at 75% 65%, #e2e8f0 8%, transparent 9%);
+}
+
+.weather-stormy {
+  background: radial-gradient(ellipse 50% 25% at 50% 30%, #475569 100%, transparent),
+              linear-gradient(135deg, #fbbf24 40%, transparent 41%) 45% 55%,
+              linear-gradient(225deg, #fbbf24 40%, transparent 41%) 55% 55%;
+  background-size: 100% 100%, 20px 25px, 20px 25px;
+  background-repeat: no-repeat;
+}
+
+.weather-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.weather-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.weather-forecast {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.forecast-period {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.period-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.period-temps {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Rug Suggestions Section */
+.rug-suggestions {
+  border-top: 1px solid var(--border-light);
+  padding-top: 1rem;
+}
+
+.rug-suggestions h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.rug-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.rug-matrix th,
+.rug-matrix td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.rug-matrix th {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--bg-secondary);
+}
+
+.rug-matrix td {
+  color: var(--text-primary);
+}
+
+.rug-matrix tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rug-matrix .period-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.rug-matrix .period-cell strong {
+  font-weight: 600;
+}
+
+.rug-matrix .temp-range {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.rug-note {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@media (max-width: 480px) {
+  .weather-widget {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .weather-main {
+    gap: 0.75rem;
+  }
+
+  .weather-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .weather-forecast {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .forecast-period {
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+
+  .period-label {
+    min-width: 70px;
+  }
+
+  .rug-suggestions h4 {
+    font-size: 0.8rem;
+  }
+
+  /* Convert table to card layout on mobile */
+  .rug-matrix {
+    display: block;
+  }
+
+  .rug-matrix thead {
+    display: none;
+  }
+
+  .rug-matrix tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .rug-matrix tbody tr {
+    display: block;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 0.75rem;
+    border-bottom: none !important;
+  }
+
+  .rug-matrix td {
+    display: block;
+    border-bottom: none;
+    padding: 0.25rem 0;
+  }
+
+  .rug-matrix td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.125rem;
+  }
+
+  .rug-matrix .period-cell {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .rug-matrix .period-cell strong {
+    font-size: 0.9rem;
+    color: var(--color-primary);
+  }
+
+  .rug-matrix .temp-range {
+    font-size: 0.75rem;
+  }
+
+  /* Three column grid for rug types */
+  .rug-matrix tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.5rem;
+  }
+
+  .rug-matrix .period-cell {
+    grid-column: 1 / -1;
+    margin-bottom: 0.25rem;
+  }
+
+  .rug-note {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .rug-matrix tbody tr {
+    grid-template-columns: 1fr;
+  }
+
+  .rug-matrix td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .rug-matrix td:last-child {
+    border-bottom: none;
+  }
+
+  .rug-matrix td::before {
+    display: inline;
+    margin-bottom: 0;
+  }
+}

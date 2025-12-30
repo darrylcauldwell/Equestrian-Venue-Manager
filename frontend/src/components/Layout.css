@@ -1,0 +1,437 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: linear-gradient(135deg, var(--header-bg) 0%, var(--color-primary) 100%);
+  color: var(--header-text);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  text-decoration: none;
+  color: var(--header-text);
+  flex-shrink: 0;
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.logo-image {
+  max-height: 40px;
+  width: auto;
+  display: block;
+}
+
+/* User info in header */
+.header-user-info {
+  flex: 1;
+  text-align: right;
+  margin-right: 0.5rem;
+}
+
+.header-user-info .user-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Hamburger Button */
+.hamburger-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 10px;
+  gap: 5px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.hamburger-line {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--header-text);
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+/* Hamburger animation when open */
+.hamburger-btn.open .hamburger-line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger-btn.open .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-btn.open .hamburger-line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Navigation Overlay */
+.nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Slide-out Navigation */
+.nav {
+  position: fixed;
+  top: 0;
+  right: -320px;
+  width: 300px;
+  max-width: 85vw;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for iOS */
+  background: var(--bg-card);
+  box-shadow: var(--shadow-lg);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s ease-out;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.nav.nav-open {
+  right: 0;
+}
+
+/* Nav Header */
+.nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--header-bg);
+  color: var(--header-text);
+  flex-shrink: 0;
+}
+
+.nav-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.nav-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--header-text);
+  font-size: 1.5rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.nav-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Nav Content (scrollable) */
+.nav-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Nav Links */
+.nav-content > a {
+  display: block;
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.2s;
+}
+
+.nav-content > a:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* Dropdown in slide-out menu */
+.nav-content .nav-dropdown {
+  display: block;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.nav-content .nav-dropdown-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+
+.nav-content .nav-dropdown-trigger:hover {
+  background-color: var(--bg-secondary);
+}
+
+.nav-content .nav-dropdown-trigger .dropdown-arrow {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  color: var(--text-secondary);
+}
+
+/* Dropdown menu - hidden by default */
+.nav-content .nav-dropdown-menu {
+  display: none;
+  position: static;
+  box-shadow: none;
+  background: var(--bg-secondary);
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+/* Show dropdown menu when open */
+.nav-content .nav-dropdown.open .nav-dropdown-menu {
+  display: block;
+  max-height: 500px;
+}
+
+.nav-content .nav-dropdown-menu a {
+  display: block;
+  padding: 0.75rem 1.25rem 0.75rem 2rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.nav-content .nav-dropdown-menu a:last-child {
+  border-bottom: none;
+}
+
+.nav-content .nav-dropdown-menu a:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.nav-content .nav-dropdown-menu .dropdown-divider {
+  height: 1px;
+  margin: 0.5rem 1.25rem;
+  background-color: var(--border-color);
+}
+
+.nav-content .nav-dropdown-menu a.dropdown-highlight {
+  font-weight: 600;
+  color: var(--color-primary);
+  border-left: 3px solid var(--color-primary);
+  padding-left: calc(1.25rem - 3px);
+}
+
+/* Nav Divider */
+.nav-divider {
+  height: 1px;
+  margin: 0.5rem 0;
+  background-color: var(--border-color);
+}
+
+/* Logout Button - styled as regular menu item */
+.nav-logout-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: var(--color-error);
+  background: transparent;
+  border: none;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.2s;
+}
+
+.nav-logout-btn:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* Hide old user-menu (now in slide-out) */
+.user-menu.desktop-only {
+  display: none;
+}
+
+.main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.footer {
+  background: var(--footer-bg);
+  color: var(--footer-text);
+  text-align: center;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  margin-top: auto;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .logo h1 {
+    font-size: 1.1rem;
+  }
+
+  .logo-image {
+    max-height: 35px;
+  }
+
+  .header-user-info .user-name {
+    font-size: 0.8rem;
+  }
+
+  .main {
+    padding: 1rem;
+  }
+
+  .nav {
+    width: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0.5rem;
+  }
+
+  .header-content {
+    gap: 0.5rem;
+  }
+
+  .logo h1 {
+    font-size: 1rem;
+  }
+
+  .logo-image {
+    max-height: 30px;
+  }
+
+  .header-user-info {
+    display: none;
+  }
+
+  .hamburger-btn {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+  }
+
+  .hamburger-line {
+    width: 20px;
+  }
+
+  .main {
+    padding: 0.75rem 0.5rem;
+  }
+
+  /* Slide-out nav */
+  .nav {
+    width: 100%;
+    max-width: 100vw;
+    right: -100%;
+  }
+
+  .nav.nav-open {
+    right: 0;
+  }
+
+  .nav-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .nav-title {
+    font-size: 1rem;
+  }
+
+  .nav-content > a {
+    padding: 1rem 1rem;
+    font-size: 1rem;
+  }
+
+  .nav-content .nav-dropdown-trigger {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .nav-content .nav-dropdown-menu a {
+    padding: 0.875rem 1rem 0.875rem 2rem;
+    font-size: 0.95rem;
+  }
+
+  .nav-logout-btn {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .footer {
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    font-size: 0.8rem;
+  }
+}

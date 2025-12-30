@@ -1,0 +1,262 @@
+/* Holiday Livery Page Styles */
+
+.holiday-package-info {
+  margin: 2rem 0;
+}
+
+.package-card {
+  background: var(--color-surface, #fff);
+  border: 2px solid var(--color-primary, #2a5934);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.package-card h2 {
+  margin: 0 0 0.5rem 0;
+  color: var(--color-primary, #2a5934);
+}
+
+.package-price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--color-primary, #2a5934);
+  margin-bottom: 1rem;
+}
+
+.package-features {
+  text-align: left;
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+}
+
+.package-features li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.package-features li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--color-primary, #2a5934);
+  font-weight: bold;
+}
+
+/* Request Form Section */
+.request-form-section {
+  background: var(--color-surface, #f9f9f9);
+  padding: 2rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.request-form-section h2 {
+  margin-top: 0;
+  color: var(--color-primary, #2a5934);
+}
+
+.holiday-request-form {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.holiday-request-form fieldset {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: var(--bg-card);
+}
+
+.holiday-request-form legend {
+  font-weight: 600;
+  color: var(--color-primary, #2a5934);
+  padding: 0 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stay-summary {
+  background: var(--color-primary-light, #e8f5e9);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 500;
+  color: var(--color-primary, #2a5934);
+  margin-top: 0.5rem;
+}
+
+.form-actions {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.submit-button {
+  background: var(--color-primary, #2a5934);
+  color: var(--text-inverse);
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: var(--color-primary-dark, #1e4027);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success Message */
+.success-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: var(--color-surface, #fff);
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--color-primary, #2a5934);
+  color: var(--text-inverse);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  margin: 0 auto 1.5rem;
+}
+
+.success-message h2 {
+  color: var(--color-primary, #2a5934);
+  margin-bottom: 1rem;
+}
+
+.success-message p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .holiday-package-info {
+    margin: 1rem 0;
+  }
+
+  .package-card {
+    padding: 1.25rem;
+    max-width: 100%;
+  }
+
+  .package-card h2 {
+    font-size: 1.25rem;
+  }
+
+  .package-price {
+    font-size: 1.25rem;
+  }
+
+  .package-features {
+    font-size: 0.9rem;
+  }
+
+  .package-features li {
+    padding: 0.4rem 0;
+    padding-left: 1.25rem;
+  }
+
+  /* Request Form Section */
+  .request-form-section {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .request-form-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .holiday-request-form fieldset {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .holiday-request-form legend {
+    font-size: 0.9rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px;
+    padding: 0.65rem;
+  }
+
+  .stay-summary {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .form-actions {
+    margin-top: 1rem;
+  }
+
+  .submit-button {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  /* Success Message */
+  .success-message {
+    padding: 2rem 1rem;
+    margin: 1rem 0;
+  }
+
+  .success-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .success-message h2 {
+    font-size: 1.25rem;
+  }
+
+  .success-message p {
+    font-size: 0.9rem;
+  }
+
+  /* Error Message */
+  .error-message {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+}
