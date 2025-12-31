@@ -3384,6 +3384,9 @@ export interface ContractContent {
   previous_version_number?: number;
 }
 
+// Alias for API response naming consistency
+export type ContractContentResponse = ContractContent;
+
 export interface CreateContractTemplate {
   name: string;
   contract_type: ContractType;
@@ -3926,6 +3929,7 @@ export type FeatureKey =
   | 'e_signatures'
   | 'compliance'
   | 'security_management'
+  | 'risk_assessment'
   | 'backups'
   | 'stripe_integration'
   | 'docusign_integration'

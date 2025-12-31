@@ -442,7 +442,7 @@ export function AdminBackups() {
         {backups.length === 0 ? (
           <p className="no-data">No backups yet. Create your first backup above.</p>
         ) : (
-          <table className="data-table">
+          <table className="ds-table">
             <thead>
               <tr>
                 <th>Date</th>
@@ -472,18 +472,20 @@ export function AdminBackups() {
                   </td>
                   <td>{backup.created_by_name || '-'}</td>
                   <td className="actions">
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => handleDownload(backup)}
-                    >
-                      Download
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => setDeleteTarget(backup)}
-                    >
-                      Delete
-                    </button>
+                    <div className="action-buttons">
+                      <button
+                        className="ds-btn ds-btn-secondary ds-btn-sm"
+                        onClick={() => handleDownload(backup)}
+                      >
+                        Download
+                      </button>
+                      <button
+                        className="ds-btn ds-btn-danger ds-btn-sm"
+                        onClick={() => setDeleteTarget(backup)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -548,7 +550,7 @@ export function AdminBackups() {
               ) : null}
             </div>
             <div className="ds-modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowValidateModal(false)}>
+              <button className="ds-btn ds-btn-secondary" onClick={() => setShowValidateModal(false)}>
                 Close
               </button>
             </div>
@@ -659,12 +661,12 @@ export function AdminBackups() {
               )}
             </div>
             <div className="ds-modal-footer">
-              <button className="btn btn-secondary" onClick={closeRestoreModal}>
+              <button className="ds-btn ds-btn-secondary" onClick={closeRestoreModal}>
                 {restoreResult ? 'Close' : 'Cancel'}
               </button>
               {!restoreResult && restoreValidation?.is_valid && (
                 <button
-                  className={`btn ${clearBeforeRestore ? 'btn-danger' : 'btn-primary'}`}
+                  className={`ds-btn ${clearBeforeRestore ? 'ds-btn-danger' : 'ds-btn-primary'}`}
                   onClick={handleRestore}
                   disabled={isRestoring}
                 >

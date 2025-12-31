@@ -559,6 +559,7 @@ def import_database(
 
         # Build lookup maps as we import
         user_map = {}  # username -> id
+        user_id_map = {}  # old_id -> new_id (for backup format)
         arena_map = {}  # name -> id
         stable_map = {}  # name -> id
         package_map = {}  # name -> id
@@ -569,11 +570,11 @@ def import_database(
 
         # 2. Users (needed for relationships)
         if "users" in data:
-            user_map, counts["users"] = _import_users(db, data["users"], log)
+            user_map, user_id_map, counts["users"] = _import_users(db, data["users"], log)
 
         # 2b. Staff Profiles (depends on users)
         if "staff_profiles" in data:
-            counts["staff_profiles"] = _import_staff_profiles(db, data["staff_profiles"], user_map, log)
+            counts["staff_profiles"] = _import_staff_profiles(db, data["staff_profiles"], user_map, user_id_map, log)
 
         # 3. Livery Packages (before horses)
         if "livery_packages" in data:
@@ -746,7 +747,7 @@ def import_database(
         # 41. Contract Templates (with versions and signatures)
         if "contract_templates" in data:
             counts["contract_templates"], counts["contract_versions"], counts["contract_signatures"] = _import_contracts(
-                db, data["contract_templates"], user_map, package_map, log
+                db, data["contract_templates"], user_map, user_id_map, package_map, log
             )
 
         # 42. Flood Monitoring Stations
@@ -790,23 +791,30 @@ def _import_site_settings(db: Session, settings_data: Dict, log: Callable) -> in
     existing = db.query(SiteSettings).first()
     if existing:
         for key, value in settings_data.items():
+            # Skip id and timestamp fields when updating existing records
+            if key in ('id', 'created_at', 'updated_at'):
+                continue
             if hasattr(existing, key):
                 setattr(existing, key, value)
     else:
-        db.add(SiteSettings(**settings_data))
+        # Remove id from data when creating new record to let DB assign it
+        create_data = {k: v for k, v in settings_data.items() if k != 'id'}
+        db.add(SiteSettings(**create_data))
     db.flush()
     log(f"  Site settings configured for: {settings_data.get('venue_name')}")
     return 1
 
 
-def _import_users(db: Session, users_data: List[Dict], log: Callable) -> Tuple[Dict[str, int], int]:
-    """Import users. Returns (username->id map, count)."""
+def _import_users(db: Session, users_data: List[Dict], log: Callable) -> Tuple[Dict[str, int], Dict[int, int], int]:
+    """Import users. Returns (username->id map, old_id->new_id map, count)."""
     log("Importing users...")
-    user_map = {}
+    user_map = {}  # username -> new_id
+    user_id_map = {}  # old_id -> new_id (for backup format)
     count = 0
 
     for user_data in users_data:
         username = user_data.get("username")
+        old_id = user_data.get("id")  # Original ID from backup
         existing = db.query(User).filter(User.username == username).first()
         if existing:
             # Update existing user with seed data (name, email, phone, etc.)
@@ -818,6 +826,8 @@ def _import_users(db: Session, users_data: List[Dict], log: Callable) -> Tuple[D
                 existing.phone = user_data["phone"]
             log(f"  User '{username}' already exists, updated details")
             user_map[username] = existing.id
+            if old_id:
+                user_id_map[old_id] = existing.id
             continue
 
         # Handle password - seed format has 'password', backup format doesn't
@@ -857,26 +867,34 @@ def _import_users(db: Session, users_data: List[Dict], log: Callable) -> Tuple[D
         db.add(user)
         db.flush()
         user_map[username] = user.id
+        if old_id:
+            user_id_map[old_id] = user.id
         count += 1
         log(f"  Created user: {username} ({role_str})")
 
     db.flush()
-    return user_map, count
+    return user_map, user_id_map, count
 
 
-def _import_staff_profiles(db: Session, profiles_data: List[Dict], user_map: Dict, log: Callable) -> int:
+def _import_staff_profiles(db: Session, profiles_data: List[Dict], user_map: Dict, user_id_map: Dict, log: Callable) -> int:
     """Import staff profiles."""
     log("Importing staff profiles...")
     count = 0
 
     for profile_data in profiles_data:
         # Resolve user by ID or username
-        user_id = profile_data.get("user_id")
-        if not user_id and "username" in profile_data:
+        old_user_id = profile_data.get("user_id")
+        user_id = None
+
+        # First try to map old_id -> new_id (backup format)
+        if old_user_id and old_user_id in user_id_map:
+            user_id = user_id_map[old_user_id]
+        # Fall back to username lookup (seed format)
+        elif "username" in profile_data:
             user_id = user_map.get(profile_data["username"])
 
         if not user_id:
-            log(f"  Warning: User not found for staff profile, skipping")
+            log(f"  Warning: User not found for staff profile (old_id={old_user_id}), skipping")
             continue
 
         # Check if profile already exists
@@ -3634,6 +3652,7 @@ def _import_contracts(
     db: Session,
     templates_data: List[Dict],
     user_map: Dict[str, int],
+    user_id_map: Dict[int, int],
     package_map: Dict[str, int],
     log: Callable
 ) -> Tuple[int, int, int]:
@@ -3648,10 +3667,19 @@ def _import_contracts(
     today = date.today()
 
     for template_data in templates_data:
-        # Resolve created_by user
+        # Resolve created_by user - try ID map first (backup format), then username (seed format)
         created_by_id = None
-        if template_data.get("created_by_username"):
+        old_created_by_id = template_data.get("created_by_id")
+        if old_created_by_id and old_created_by_id in user_id_map:
+            created_by_id = user_id_map[old_created_by_id]
+        elif template_data.get("created_by_username"):
             created_by_id = user_map.get(template_data["created_by_username"])
+
+        # If still no created_by_id, use the first admin user as fallback
+        if not created_by_id:
+            admin_user = db.query(User).filter(User.role == UserRole.ADMIN).first()
+            if admin_user:
+                created_by_id = admin_user.id
 
         # Resolve optional livery package
         livery_package_id = None

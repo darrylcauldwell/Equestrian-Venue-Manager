@@ -11,6 +11,10 @@ from datetime import datetime
 import os
 import json
 import subprocess
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.database import get_db
 from app.models import User, UserRole, Backup, BackupSchedule
@@ -240,9 +244,14 @@ async def import_backup(
         logs.append(msg)
 
     try:
-        counts = import_database(db, data, clear_first=clear_first, log=log_message)
+        # Skip seed validation since backup format is different from seed format
+        # (backup uses IDs and absolute dates, seed uses usernames and relative dates)
+        # The backup was already validated above using validate_backup()
+        counts = import_database(db, data, clear_first=clear_first, validate=False, log=log_message)
     except Exception as e:
         db.rollback()
+        logger.error(f"Import failed: {str(e)}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
 
     return {
