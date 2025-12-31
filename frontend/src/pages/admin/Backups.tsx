@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { backupApi } from '../../services/api';
 import { useRequestState, useModalForm } from '../../hooks';
 import { Modal, ConfirmModal } from '../../components/ui';
-import type { Backup, BackupSchedule, BackupValidationResult, BackupImportResult } from '../../types';
+import type { Backup, BackupSchedule, BackupValidationResult, BackupImportResult, DatabaseBackup } from '../../types';
 import { format } from 'date-fns';
 import './Admin.css';
 
@@ -27,9 +27,15 @@ function formatFileSize(bytes: number | undefined): string {
 }
 
 export function AdminBackups() {
+  // Data Export state (JSON)
   const [backups, setBackups] = useState<Backup[]>([]);
   const [schedule, setSchedule] = useState<BackupSchedule | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isCreatingExport, setIsCreatingExport] = useState(false);
+
+  // Database Backup state (pg_dump)
+  const [dbBackups, setDbBackups] = useState<DatabaseBackup[]>([]);
+  const [isCreatingDbBackup, setIsCreatingDbBackup] = useState(false);
+  const [deleteDbTarget, setDeleteDbTarget] = useState<DatabaseBackup | null>(null);
 
   // Request state
   const { loading: isLoading, error, success, setError, setSuccess, setLoading } = useRequestState(true);
@@ -63,37 +69,83 @@ export function AdminBackups() {
   // Clear before restore confirmation
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
-      const [backupsData, scheduleData] = await Promise.all([
+      const [backupsData, scheduleData, dbBackupsData] = await Promise.all([
         backupApi.list(),
         backupApi.getSchedule(),
+        backupApi.listDatabaseBackups(),
       ]);
       setBackups(backupsData.backups);
       setSchedule(scheduleData);
+      setDbBackups(dbBackupsData.backups);
     } catch {
       setError('Failed to load backup data');
     } finally {
       setLoading(false);
     }
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // =====================================================
+  // Database Backup (pg_dump) handlers
+  // =====================================================
+
+  const handleCreateDbBackup = async () => {
+    setIsCreatingDbBackup(true);
+    setError('');
+    setSuccess('');
+    try {
+      const backup = await backupApi.createDatabaseBackup();
+      setDbBackups([backup, ...dbBackups]);
+      setSuccess('Database backup created successfully');
+    } catch {
+      setError('Failed to create database backup');
+    } finally {
+      setIsCreatingDbBackup(false);
+    }
   };
 
-  const handleCreateBackup = async () => {
-    setIsCreating(true);
+  const handleDownloadDbBackup = async (backup: DatabaseBackup) => {
+    try {
+      await backupApi.downloadDatabaseBackup(backup.filename);
+    } catch {
+      setError('Failed to download database backup');
+    }
+  };
+
+  const handleDeleteDbBackup = async () => {
+    if (!deleteDbTarget) return;
+    try {
+      await backupApi.deleteDatabaseBackup(deleteDbTarget.filename);
+      setDbBackups(dbBackups.filter(b => b.filename !== deleteDbTarget.filename));
+      setSuccess('Database backup deleted');
+    } catch {
+      setError('Failed to delete database backup');
+    } finally {
+      setDeleteDbTarget(null);
+    }
+  };
+
+  // =====================================================
+  // Data Export (JSON) handlers
+  // =====================================================
+
+  const handleCreateExport = async () => {
+    setIsCreatingExport(true);
     setError('');
     setSuccess('');
     try {
       const backup = await backupApi.create();
       setBackups([backup, ...backups]);
-      setSuccess('Backup created successfully');
+      setSuccess('Data export created successfully');
     } catch {
-      setError('Failed to create backup');
+      setError('Failed to create data export');
     } finally {
-      setIsCreating(false);
+      setIsCreatingExport(false);
     }
   };
 
@@ -246,76 +298,147 @@ export function AdminBackups() {
       {error && <div className="ds-alert ds-alert-error">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
-      {/* Actions Bar */}
-      <div className="actions-bar">
-        <button
-          className="btn btn-primary"
-          onClick={handleCreateBackup}
-          disabled={isCreating}
-        >
-          {isCreating ? 'Creating...' : 'Create Backup Now'}
-        </button>
-        <label className="btn btn-secondary">
-          Validate File
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleValidateFile}
-            ref={validateFileInputRef}
-            style={{ display: 'none' }}
-          />
-        </label>
-        <label className="btn btn-warning">
-          Restore from File
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleRestoreFileSelect}
-            ref={restoreFileInputRef}
-            style={{ display: 'none' }}
-          />
-        </label>
-        <button className="btn btn-secondary" onClick={openScheduleModal}>
-          Schedule Settings
-        </button>
+      {/* ============================================================ */}
+      {/* DATABASE BACKUP (pg_dump) - For disaster recovery */}
+      {/* ============================================================ */}
+      <div className="section">
+        <h2>Database Backup</h2>
+        <p className="section-description">
+          Full PostgreSQL backup for disaster recovery. Download to your laptop for safekeeping.
+        </p>
+
+        <div className="actions-bar" style={{ marginBottom: 'var(--space-4)' }}>
+          <button
+            className="ds-btn ds-btn-primary"
+            onClick={handleCreateDbBackup}
+            disabled={isCreatingDbBackup}
+          >
+            {isCreatingDbBackup ? 'Creating...' : 'Create Database Backup'}
+          </button>
+        </div>
+
+        {dbBackups.length === 0 ? (
+          <p className="no-data">No database backups yet. Create your first backup above.</p>
+        ) : (
+          <table className="ds-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Filename</th>
+                <th>Size</th>
+                <th>Created By</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dbBackups.map(backup => (
+                <tr key={backup.filename}>
+                  <td>{format(new Date(backup.created_at), 'PPp')}</td>
+                  <td>{backup.filename}</td>
+                  <td>{formatFileSize(backup.file_size)}</td>
+                  <td>{backup.created_by || '-'}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="ds-btn ds-btn-secondary ds-btn-sm"
+                        onClick={() => handleDownloadDbBackup(backup)}
+                      >
+                        Download
+                      </button>
+                      <button
+                        className="ds-btn ds-btn-danger ds-btn-sm"
+                        onClick={() => setDeleteDbTarget(backup)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      {/* Schedule Status */}
-      {schedule && (
-        <div className="info-card">
-          <h3>Automatic Backups</h3>
-          <div className="info-grid">
-            <div className="info-item">
-              <span className="label">Status:</span>
-              <span className={`badge ${schedule.is_enabled ? 'badge-success' : 'badge-secondary'}`}>
-                {schedule.is_enabled ? 'Enabled' : 'Disabled'}
-              </span>
-            </div>
-            {schedule.is_enabled && (
-              <>
-                <div className="info-item">
-                  <span className="label">Frequency:</span>
-                  <span className="capitalize">{schedule.frequency}</span>
-                </div>
-                <div className="info-item">
-                  <span className="label">Retention:</span>
-                  <span>{schedule.retention_days} days</span>
-                </div>
-                {schedule.next_run && (
-                  <div className="info-item">
-                    <span className="label">Next Run:</span>
-                    <span>{format(new Date(schedule.next_run), 'PPp')}</span>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {/* ============================================================ */}
+      {/* DATA EXPORT/IMPORT (JSON) - For seeding and portability */}
+      {/* ============================================================ */}
+      <div className="section" style={{ marginTop: 'var(--space-8)' }}>
+        <h2>Data Export / Import</h2>
+        <p className="section-description">
+          Human-readable JSON export for seeding new environments or data portability.
+        </p>
 
-      {/* Backups List */}
+        <div className="actions-bar">
+          <button
+            className="ds-btn ds-btn-primary"
+            onClick={handleCreateExport}
+            disabled={isCreatingExport}
+          >
+            {isCreatingExport ? 'Creating...' : 'Export Data Now'}
+          </button>
+          <label className="ds-btn ds-btn-secondary">
+            Validate File
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleValidateFile}
+              ref={validateFileInputRef}
+              style={{ display: 'none' }}
+            />
+          </label>
+          <label className="ds-btn ds-btn-warning">
+            Import from File
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleRestoreFileSelect}
+              ref={restoreFileInputRef}
+              style={{ display: 'none' }}
+            />
+          </label>
+          <button className="ds-btn ds-btn-secondary" onClick={openScheduleModal}>
+            Schedule Settings
+          </button>
+        </div>
+
+        {/* Schedule Status */}
+        {schedule && (
+          <div className="info-card" style={{ marginTop: 'var(--space-4)' }}>
+            <h3>Automatic Exports</h3>
+            <div className="info-grid">
+              <div className="info-item">
+                <span className="label">Status:</span>
+                <span className={`badge ${schedule.is_enabled ? 'badge-success' : 'badge-secondary'}`}>
+                  {schedule.is_enabled ? 'Enabled' : 'Disabled'}
+                </span>
+              </div>
+              {schedule.is_enabled && (
+                <>
+                  <div className="info-item">
+                    <span className="label">Frequency:</span>
+                    <span className="capitalize">{schedule.frequency}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Retention:</span>
+                    <span>{schedule.retention_days} days</span>
+                  </div>
+                  {schedule.next_run && (
+                    <div className="info-item">
+                      <span className="label">Next Run:</span>
+                      <span>{format(new Date(schedule.next_run), 'PPp')}</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Data Export History */}
       <div className="section">
-        <h2>Backup History</h2>
+        <h2>Export History</h2>
         {backups.length === 0 ? (
           <p className="no-data">No backups yet. Create your first backup above.</p>
         ) : (
@@ -615,13 +738,24 @@ export function AdminBackups() {
         )}
       </Modal>
 
-      {/* Delete Backup Confirmation */}
+      {/* Delete Data Export Confirmation */}
       <ConfirmModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Delete Backup"
-        message={`Delete backup ${deleteTarget?.filename}? This cannot be undone.`}
+        title="Delete Export"
+        message={`Delete export ${deleteTarget?.filename}? This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
+
+      {/* Delete Database Backup Confirmation */}
+      <ConfirmModal
+        isOpen={!!deleteDbTarget}
+        onClose={() => setDeleteDbTarget(null)}
+        onConfirm={handleDeleteDbBackup}
+        title="Delete Database Backup"
+        message={`Delete database backup ${deleteDbTarget?.filename}? This cannot be undone.`}
         confirmLabel="Delete"
         variant="danger"
       />

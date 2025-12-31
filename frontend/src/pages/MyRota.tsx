@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { staffApi } from '../services/api';
 import type { Shift, StaffManagementEnums, HolidayRequest, SickLeaveRecord, StaffLeaveSummary } from '../types';
@@ -48,34 +48,7 @@ export default function MyRota() {
   const [leaveSummary, setLeaveSummary] = useState<StaffLeaveSummary | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
-  useEffect(() => {
-    loadInitialData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    loadWeekData();
-  }, [weekStart, user?.id]);
-
-  useEffect(() => {
-    loadLeaveSummary();
-  }, [selectedYear, user?.id]);
-
-  const loadInitialData = async () => {
-    try {
-      setLoading(true);
-      const enumsData = await staffApi.getEnums();
-      setEnums(enumsData);
-      await Promise.all([loadWeekData(), loadLeaveSummary()]);
-    } catch (e) {
-      setError('Failed to load data');
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadLeaveSummary = async () => {
+  const loadLeaveSummary = useCallback(async () => {
     if (!user?.id) return;
     try {
       const response = await staffApi.getLeaveSummary(selectedYear);
@@ -84,14 +57,17 @@ export default function MyRota() {
     } catch (e) {
       console.error('Failed to load leave summary:', e);
     }
-  };
+  }, [selectedYear, user?.id]);
 
-  const loadWeekData = async () => {
+  const loadWeekData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
       const startDate = formatDateForApi(weekStart);
-      const endDate = formatDateForApi(weekDays[6]);
+      // Calculate end date from weekStart directly
+      const endOfWeek = new Date(weekStart);
+      endOfWeek.setDate(weekStart.getDate() + 6);
+      const endDate = formatDateForApi(endOfWeek);
 
       // Load shifts, holidays, and absences for the current user
       const [shiftsResponse, holidaysResponse, absencesResponse] = await Promise.all([
@@ -108,7 +84,33 @@ export default function MyRota() {
     } catch (e) {
       console.error('Failed to load week data:', e);
     }
-  };
+  }, [weekStart, user?.id]);
+
+  const loadInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const enumsData = await staffApi.getEnums();
+      setEnums(enumsData);
+      await Promise.all([loadWeekData(), loadLeaveSummary()]);
+    } catch (e) {
+      setError('Failed to load data');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [loadWeekData, loadLeaveSummary]);
+
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  useEffect(() => {
+    loadWeekData();
+  }, [loadWeekData]);
+
+  useEffect(() => {
+    loadLeaveSummary();
+  }, [loadLeaveSummary]);
 
   const getEnumLabel = (enumType: string, value: string): string => {
     if (!enums) return value;

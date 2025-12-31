@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import Response
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, and_
 
 from app.database import get_db
@@ -33,6 +33,9 @@ from app.schemas.contract import (
     BulkResignRequest,
     ContractSignatureResponse,
     ContractSignatureSummary,
+    SignatureUserSummary,
+    SignatureTemplateSummary,
+    SignatureVersionSummary,
     MyContractResponse,
     ContractContentResponse,
     InitiateSigningResponse,
@@ -449,10 +452,10 @@ async def list_signatures(
     current_user: User = Depends(require_roles(["admin"]))
 ):
     """List all contract signatures."""
-    query = db.query(ContractSignature).join(ContractVersion).join(ContractTemplate)
+    query = db.query(ContractSignature)
 
     if template_id:
-        query = query.filter(ContractVersion.template_id == template_id)
+        query = query.join(ContractVersion).filter(ContractVersion.template_id == template_id)
     if status_filter:
         query = query.filter(ContractSignature.status == SignatureStatusModel(status_filter))
     if user_id:
@@ -460,20 +463,45 @@ async def list_signatures(
 
     signatures = query.order_by(ContractSignature.requested_at.desc()).all()
 
-    return [
-        ContractSignatureSummary(
+    result = []
+    for sig in signatures:
+        # Build user summary
+        user_summary = None
+        if sig.user:
+            user_summary = SignatureUserSummary(
+                id=sig.user.id,
+                full_name=sig.user.name or "Unknown",
+                email=sig.user.email or "",
+            )
+
+        # Build version/template summary
+        version_summary = None
+        if sig.contract_version:
+            template_summary = None
+            if sig.contract_version.template:
+                template_summary = SignatureTemplateSummary(
+                    id=sig.contract_version.template.id,
+                    name=sig.contract_version.template.name,
+                )
+            version_summary = SignatureVersionSummary(
+                id=sig.contract_version.id,
+                template_id=sig.contract_version.template_id,
+                version_number=sig.contract_version.version_number,
+                template=template_summary,
+            )
+
+        result.append(ContractSignatureSummary(
             id=sig.id,
-            user_name=sig.user.name if sig.user else "Unknown",
-            user_email=sig.user.email if sig.user else "",
-            template_name=sig.contract_version.template.name,
-            version_number=sig.contract_version.version_number,
-            contract_type=ContractType(sig.contract_version.template.contract_type.value),
             status=SignatureStatus(sig.status.value),
             requested_at=sig.requested_at,
             signed_at=sig.signed_at,
-        )
-        for sig in signatures
-    ]
+            signed_pdf_filename=sig.signed_pdf_filename,
+            notes=sig.notes,
+            user=user_summary,
+            contract_version=version_summary,
+        ))
+
+    return result
 
 
 @router.post("/templates/{template_id}/request-signature", response_model=ContractSignatureResponse)
@@ -734,7 +762,7 @@ async def initiate_signing(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Initiate the DocuSign signing process for a contract."""
+    """Initiate the signing process for a contract (DocuSign or manual)."""
     signature = db.query(ContractSignature).filter(
         ContractSignature.id == signature_id,
         ContractSignature.user_id == current_user.id
@@ -748,8 +776,13 @@ async def initiate_signing(
     settings = _get_settings(db)
     docusign = get_docusign_service(db)
 
+    # If DocuSign is not configured, use manual signing mode
     if not docusign.is_configured:
-        raise HTTPException(status_code=500, detail="DocuSign is not configured")
+        return InitiateSigningResponse(
+            success=True,
+            manual_signing=True,
+            test_mode=True,
+        )
 
     version = signature.contract_version
     template = version.template
@@ -853,6 +886,44 @@ async def complete_signing(
         success=new_status == SignatureStatusModel.SIGNED,
         status=SignatureStatus(new_status.value),
         message=status_messages.get(new_status, f"Status updated to {new_status.value}"),
+    )
+
+
+@router.post("/signatures/{signature_id}/manual-sign", response_model=CompleteSigningResponse)
+async def manual_sign(
+    signature_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Complete a manual signing (when DocuSign is not configured)."""
+    signature = db.query(ContractSignature).filter(
+        ContractSignature.id == signature_id,
+        ContractSignature.user_id == current_user.id
+    ).first()
+    if not signature:
+        raise HTTPException(status_code=404, detail="Contract not found")
+
+    if signature.status not in [SignatureStatusModel.PENDING, SignatureStatusModel.SENT]:
+        if signature.status == SignatureStatusModel.SIGNED:
+            return CompleteSigningResponse(
+                success=True,
+                status=SignatureStatus.SIGNED,
+                message="Contract already signed",
+            )
+        raise HTTPException(status_code=400, detail="Contract cannot be signed in current state")
+
+    # Mark as signed
+    signature.status = SignatureStatusModel.SIGNED
+    signature.signed_at = datetime.utcnow()
+    signature.notes = (signature.notes or "") + "\nManually signed (no DocuSign)"
+
+    db.commit()
+    db.refresh(signature)
+
+    return CompleteSigningResponse(
+        success=True,
+        status=SignatureStatus.SIGNED,
+        message="Contract signed successfully",
     )
 
 

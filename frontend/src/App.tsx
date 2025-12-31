@@ -36,6 +36,9 @@ const TurnoutBoard = lazy(() => import('./pages/TurnoutBoard'));
 const StaffManagement = lazy(() => import('./pages/StaffManagement'));
 const MyTimesheet = lazy(() => import('./pages/MyTimesheet'));
 const MyRota = lazy(() => import('./pages/MyRota'));
+const MyLeave = lazy(() => import('./pages/MyLeave'));
+const MyThanks = lazy(() => import('./pages/MyThanks'));
+const SendThanks = lazy(() => import('./pages/SendThanks'));
 const Clinics = lazy(() => import('./pages/Clinics'));
 const Lessons = lazy(() => import('./pages/Lessons'));
 const MyRegistrations = lazy(() => import('./pages/MyRegistrations').then(m => ({ default: m.MyRegistrations })));
@@ -43,6 +46,7 @@ const SecurityInfo = lazy(() => import('./pages/SecurityInfo').then(m => ({ defa
 const MyAccount = lazy(() => import('./pages/MyAccount'));
 const MyContracts = lazy(() => import('./pages/MyContracts'));
 const SigningComplete = lazy(() => import('./pages/SigningComplete'));
+const MyProfile = lazy(() => import('./pages/MyProfile'));
 
 // Admin pages - lazy loaded
 const AdminUsers = lazy(() => import('./pages/admin/Users').then(m => ({ default: m.AdminUsers })));
@@ -71,6 +75,10 @@ const AdminRequests = lazy(() => import('./pages/admin/Requests'));
 const AdminWorming = lazy(() => import('./pages/admin/Worming').then(m => ({ default: m.AdminWorming })));
 const AdminContractTemplates = lazy(() => import('./pages/admin/ContractTemplates').then(m => ({ default: m.AdminContractTemplates })));
 const AdminContractSignatures = lazy(() => import('./pages/admin/ContractSignatures').then(m => ({ default: m.AdminContractSignatures })));
+const AdminStaffProfiles = lazy(() => import('./pages/admin/StaffProfiles').then(m => ({ default: m.AdminStaffProfiles })));
+const AdminLeaveOverview = lazy(() => import('./pages/admin/LeaveOverview'));
+const AdminRiskAssessments = lazy(() => import('./pages/admin/RiskAssessments').then(m => ({ default: m.AdminRiskAssessments })));
+const MyRiskAssessments = lazy(() => import('./pages/MyRiskAssessments').then(m => ({ default: m.MyRiskAssessments })));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -82,10 +90,15 @@ const PageLoader = () => (
 // Redirect users to their role-appropriate default page
 function DefaultBookingPage() {
   const { user } = useAuth();
-  const isYardStaff = user?.is_yard_staff && user?.role !== 'admin';
+  const isAdmin = user?.role === 'admin';
+  const isStaff = user?.role === 'staff' || (user?.is_yard_staff && user?.role !== 'admin');
   const isLivery = user?.role === 'livery';
 
-  if (isYardStaff) {
+  if (isAdmin) {
+    return <Navigate to="/book/tasks" replace />;
+  }
+
+  if (isStaff) {
     return <Navigate to="/book/tasks" replace />;
   }
 
@@ -146,10 +159,17 @@ function App() {
         <Route path="my-account" element={<ProtectedRoute requireLivery><MyAccount /></ProtectedRoute>} />
         <Route path="my-contracts" element={<ProtectedRoute><MyContracts /></ProtectedRoute>} />
         <Route path="signing-complete" element={<ProtectedRoute><SigningComplete /></ProtectedRoute>} />
+        <Route path="my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+        <Route path="risk-assessments" element={<ProtectedRoute><MyRiskAssessments /></ProtectedRoute>} />
 
         {/* Staff-only routes */}
         <Route path="my-rota" element={<ProtectedRoute requireStaff><MyRota /></ProtectedRoute>} />
         <Route path="my-timesheet" element={<ProtectedRoute requireStaff><MyTimesheet /></ProtectedRoute>} />
+        <Route path="my-leave" element={<ProtectedRoute requireStaff><MyLeave /></ProtectedRoute>} />
+        <Route path="my-thanks" element={<ProtectedRoute requireStaff><MyThanks /></ProtectedRoute>} />
+
+        {/* Livery-only routes for appreciation */}
+        <Route path="send-thanks" element={<ProtectedRoute requireLivery><SendThanks /></ProtectedRoute>} />
 
         {/* General protected routes */}
         <Route path="professionals" element={<ProfessionalDirectory />} />
@@ -178,6 +198,7 @@ function App() {
           <Route path="tasks" element={<ProtectedRoute requireAdmin><YardTasks /></ProtectedRoute>} />
           <Route path="noticeboard" element={<ProtectedRoute requireAdmin><Noticeboard /></ProtectedRoute>} />
           <Route path="staff" element={<ProtectedRoute requireAdmin><StaffManagement /></ProtectedRoute>} />
+          <Route path="leave-overview" element={<ProtectedRoute requireAdmin><AdminLeaveOverview /></ProtectedRoute>} />
           {/* Livery Section */}
           <Route path="livery-packages" element={<ProtectedRoute requireAdmin><AdminLiveryPackages /></ProtectedRoute>} />
           <Route path="holiday-livery" element={<ProtectedRoute requireAdmin><AdminHolidayLiveryRequests /></ProtectedRoute>} />
@@ -200,6 +221,9 @@ function App() {
           {/* Contracts Section */}
           <Route path="contracts" element={<ProtectedRoute requireAdmin><AdminContractTemplates /></ProtectedRoute>} />
           <Route path="contract-signatures" element={<ProtectedRoute requireAdmin><AdminContractSignatures /></ProtectedRoute>} />
+          {/* Staff Section */}
+          <Route path="staff-profiles" element={<ProtectedRoute requireAdmin><AdminStaffProfiles /></ProtectedRoute>} />
+          <Route path="risk-assessments" element={<ProtectedRoute requireAdmin><AdminRiskAssessments /></ProtectedRoute>} />
           {/* System Section */}
           <Route path="compliance" element={<ProtectedRoute requireAdmin><AdminCompliance /></ProtectedRoute>} />
           <Route path="backups" element={<ProtectedRoute requireAdmin><AdminBackups /></ProtectedRoute>} />

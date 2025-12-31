@@ -154,6 +154,14 @@ from app.models.land_management import (
     SuggestionType,
     SuggestionPriority,
 )
+from app.models.staff_profile import StaffProfile
+from app.models.risk_assessment import (
+    RiskAssessment,
+    RiskAssessmentReview,
+    RiskAssessmentAcknowledgement,
+    RiskAssessmentCategory,
+    ReviewTrigger,
+)
 
 __all__ = [
     "User",
@@ -279,4 +287,12 @@ __all__ = [
     "FloodRiskLevel",
     "SuggestionType",
     "SuggestionPriority",
+    # Staff Profile
+    "StaffProfile",
+    # Risk Assessment
+    "RiskAssessment",
+    "RiskAssessmentReview",
+    "RiskAssessmentAcknowledgement",
+    "RiskAssessmentCategory",
+    "ReviewTrigger",
 ]

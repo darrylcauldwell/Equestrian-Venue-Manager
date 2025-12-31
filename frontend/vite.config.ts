@@ -13,8 +13,28 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     exclude: ['**/node_modules/**', '**/e2e/**'],
 
-    /* Use vmThreads to avoid child process cleanup issues on macOS */
-    pool: 'vmThreads',
+    /* Use forks pool for better memory isolation in CI, vmThreads locally */
+    pool: process.env.CI ? 'forks' : 'vmThreads',
+
+    /* Limit parallel workers to prevent memory exhaustion */
+    poolOptions: {
+      forks: {
+        /* Single fork in CI for maximum memory efficiency */
+        maxForks: process.env.CI ? 1 : 2,
+        minForks: 1,
+        /* Isolate each test file to prevent memory accumulation */
+        isolate: true,
+      },
+      vmThreads: {
+        maxThreads: 4,
+        minThreads: 1,
+        /* Memory per thread limit */
+        memoryLimit: '512MB',
+      },
+    },
+
+    /* Retry failed tests once to handle flaky worker crashes */
+    retry: process.env.CI ? 1 : 0,
 
     /* Timeouts */
     testTimeout: 30000,

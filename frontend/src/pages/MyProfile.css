@@ -1,0 +1,107 @@
+/* My Profile Page Styles */
+
+.my-profile-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.profile-header h1 {
+  margin: 0;
+}
+
+/* Profile Cards */
+.profile-view .ds-card,
+.profile-form .ds-card {
+  margin-bottom: var(--space-4);
+}
+
+.profile-view .ds-card-header h2,
+.profile-form .ds-card-header h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+/* Profile Grid for View Mode */
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.profile-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.profile-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.profile-value {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+}
+
+/* Bio Section */
+.profile-bio {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.profile-bio p {
+  margin: 0;
+  line-height: var(--line-height-relaxed);
+  color: var(--text-primary);
+}
+
+/* Qualifications */
+.qualifications-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .ds-btn {
+    width: 100%;
+  }
+}

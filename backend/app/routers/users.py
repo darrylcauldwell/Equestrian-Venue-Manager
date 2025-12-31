@@ -91,11 +91,12 @@ def admin_create_user(
                 detail="Email already registered"
             )
 
-    # Only allow creating livery, coach, or admin roles
+    # Only allow creating livery, coach, or admin roles (not public or staff)
+    # Staff users should be created via Staff Profiles page which creates both user and profile
     if user_data.role not in [UserRole.LIVERY, UserRole.COACH, UserRole.ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid role. Must be livery, coach, or admin"
+            detail="Invalid role. Staff users must be created via Staff Profiles page."
         )
 
     # Generate temporary password

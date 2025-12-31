@@ -643,6 +643,7 @@ export default function YardTasks() {
       {isAdmin && (
         <div className="tasks-filters">
           <select
+            className="ds-select"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as TaskCategory | '')}
           >
@@ -654,6 +655,7 @@ export default function YardTasks() {
             ))}
           </select>
           <select
+            className="ds-select"
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value as TaskPriority | '')}
           >
@@ -665,6 +667,7 @@ export default function YardTasks() {
             ))}
           </select>
           <select
+            className="ds-select"
             value={assignedToFilter}
             onChange={(e) => setAssignedToFilter(e.target.value === '' ? '' : parseInt(e.target.value))}
           >
@@ -1776,9 +1779,8 @@ export default function YardTasks() {
               </div>
             )}
 
-            <div className="ds-form-group">
-              <label>Or Select Staff Member</label>
-              <select
+            <FormGroup label="Or Select Staff Member">
+              <Select
                 value={maintenanceAssignee === -1 ? '' : maintenanceAssignee}
                 onChange={(e) => handleStaffSelect(e.target.value ? parseInt(e.target.value) : '')}
               >
@@ -1799,17 +1801,16 @@ export default function YardTasks() {
                     </option>
                   ))}
                 </optgroup>
-              </select>
-            </div>
+              </Select>
+            </FormGroup>
 
-            <div className="ds-form-group">
-              <label>Scheduled Date *</label>
+            <FormGroup label="Scheduled Date" required>
               {maintenanceAssignee && staffShifts.length === 0 ? (
                 <p className="no-shifts-warning">No scheduled shifts found for this staff member. You can still select any date.</p>
               ) : null}
               {maintenanceAssignee && staffShifts.length > 0 ? (
                 <>
-                  <select
+                  <Select
                     value={maintenanceDate}
                     onChange={(e) => setMaintenanceDate(e.target.value)}
                     required
@@ -1821,11 +1822,11 @@ export default function YardTasks() {
                         {shift.shift_type && ` (${shift.shift_type.replace('_', ' ')})`}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <small className="form-help">Showing scheduled work days for the next 3 months</small>
                 </>
               ) : (
-                <input
+                <Input
                   type="date"
                   value={maintenanceDate}
                   onChange={(e) => setMaintenanceDate(e.target.value)}
@@ -1834,10 +1835,9 @@ export default function YardTasks() {
                   disabled={!maintenanceAssignee}
                 />
               )}
-            </div>
+            </FormGroup>
 
-            <div className="ds-form-group">
-              <label>Select Tasks from Backlog ({selectedTaskIds.length} selected)</label>
+            <FormGroup label={`Select Tasks from Backlog (${selectedTaskIds.length} selected)`}>
               <div className="task-selection-list">
                 {tasks?.backlog_tasks.length === 0 ? (
                   <p className="empty-message">No backlog tasks available</p>
@@ -1860,7 +1860,7 @@ export default function YardTasks() {
                   ))
                 )}
               </div>
-            </div>
+            </FormGroup>
 
             <div className="modal-actions">
               <button

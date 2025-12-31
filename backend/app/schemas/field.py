@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from decimal import Decimal
 from enum import Enum
 
@@ -77,8 +77,7 @@ class FieldResponse(BaseModel):
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FieldSummary(BaseModel):
@@ -112,8 +111,7 @@ class HorseCompanionResponse(BaseModel):
     companion_name: Optional[str] = None
     created_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HorseCompanionSummary(BaseModel):
@@ -142,8 +140,7 @@ class TurnoutGroupHorseResponse(BaseModel):
     turned_out_by_name: Optional[str] = None
     brought_in_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TurnoutGroupCreate(BaseModel):
@@ -170,8 +167,7 @@ class TurnoutGroupResponse(BaseModel):
     assigned_by_name: Optional[str] = None
     horses: List[TurnoutGroupHorseResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DailyTurnoutSummary(BaseModel):
@@ -208,8 +204,7 @@ class FieldUsageLogResponse(BaseModel):
     logged_by_name: Optional[str] = None
     horse_names: List[str] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Field Rotation Report ==============

@@ -1,0 +1,543 @@
+.my-leave-page {
+  padding: var(--space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.my-leave-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+}
+
+.my-leave-page .header-content h1 {
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--font-size-2xl);
+}
+
+.my-leave-page .header-content p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* Tab Navigation */
+.leave-tabs {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-6);
+  overflow-x: auto;
+  padding-bottom: 1px;
+}
+
+.tab-btn {
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.tab-btn.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* Leave Balance Card */
+.leave-balance-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.balance-header h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.balance-header .ds-select {
+  width: auto;
+  min-width: 100px;
+}
+
+.entitlement-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-base);
+}
+
+.leave-progress {
+  margin-bottom: var(--space-4);
+}
+
+.progress-bar {
+  height: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-taken {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+.progress-pending {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--color-warning);
+  opacity: 0.7;
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+.balance-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.balance-stats .stat {
+  text-align: center;
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.balance-stats .stat-value {
+  display: block;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.balance-stats .stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.balance-stats .stat.taken .stat-value {
+  color: var(--color-primary);
+}
+
+.balance-stats .stat.pending .stat-value {
+  color: var(--color-warning);
+}
+
+.balance-stats .stat.remaining .stat-value {
+  color: var(--color-success);
+}
+
+.balance-stats .stat.remaining.low .stat-value {
+  color: var(--color-error);
+}
+
+.absence-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+  font-size: var(--font-size-sm);
+}
+
+.absence-count {
+  font-weight: var(--font-weight-semibold);
+}
+
+.absence-count.high {
+  color: var(--color-error);
+}
+
+.no-entitlement {
+  text-align: center;
+  padding: var(--space-4);
+}
+
+.no-entitlement p {
+  margin: var(--space-2) 0;
+}
+
+/* Quick Stats */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.stat-icon {
+  font-size: 2rem;
+}
+
+.stat-info .stat-value {
+  display: block;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.stat-info .stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* Sections */
+.section {
+  margin-bottom: var(--space-6);
+}
+
+.section h3 {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--font-size-lg);
+}
+
+/* Request Cards */
+.request-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.request-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: var(--space-4);
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.request-card.pending {
+  border-left: 4px solid var(--color-warning);
+}
+
+.request-dates .date-range {
+  font-weight: var(--font-weight-semibold);
+}
+
+.request-dates .days-count {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.request-details .leave-type {
+  display: block;
+  font-weight: var(--font-weight-medium);
+}
+
+.request-details .reason {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.request-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Next Holiday Card */
+.next-holiday-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: var(--text-inverse);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.countdown {
+  text-align: center;
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  min-width: 100px;
+}
+
+.countdown-value {
+  display: block;
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.countdown-label {
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+}
+
+.holiday-details .date-range {
+  display: block;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.holiday-details .days,
+.holiday-details .type {
+  display: block;
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+}
+
+/* Holiday List */
+.holiday-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.holiday-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.holiday-card.approved {
+  border-left: 4px solid var(--color-success);
+}
+
+.holiday-dates {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.holiday-dates .start-date,
+.holiday-dates .end-date {
+  font-weight: var(--font-weight-semibold);
+}
+
+.holiday-dates .date-separator {
+  color: var(--text-secondary);
+}
+
+.holiday-info {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.holiday-card .reason {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: var(--space-2) 0;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: var(--space-8);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.empty-state p {
+  margin: 0 0 var(--space-4) 0;
+  color: var(--text-secondary);
+}
+
+/* History Tab */
+.history-section {
+  margin-bottom: var(--space-6);
+}
+
+.history-section h3 {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Absences Tab */
+.tab-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* Bank Holidays Tab */
+.bank-holidays-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.bank-holidays-header h2 {
+  margin: 0;
+}
+
+.bank-holiday-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.bank-holiday-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.bank-holiday-card.past {
+  opacity: 0.6;
+}
+
+.bank-holiday-card .holiday-date {
+  text-align: center;
+  min-width: 60px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-md);
+}
+
+.bank-holiday-card .holiday-date .day {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.bank-holiday-card .holiday-date .month {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  text-transform: uppercase;
+}
+
+.bank-holiday-card .holiday-name {
+  flex: 1;
+}
+
+.bank-holiday-card .holiday-name .name {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+}
+
+.bank-holiday-card .holiday-name .weekday {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* Modal additions */
+.remaining-balance-note {
+  background: var(--bg-secondary);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.remaining-balance-note .warning {
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Helpers */
+.muted {
+  color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .my-leave-page {
+    padding: var(--space-4);
+  }
+
+  .my-leave-page .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .my-leave-page .page-header .ds-btn {
+    width: 100%;
+  }
+
+  .leave-tabs {
+    gap: 0;
+  }
+
+  .tab-btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-xs);
+  }
+
+  .balance-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2);
+  }
+
+  .balance-stats .stat {
+    padding: var(--space-2);
+  }
+
+  .balance-stats .stat-value {
+    font-size: var(--font-size-xl);
+  }
+
+  .quick-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .request-card {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .request-actions {
+    justify-content: flex-start;
+  }
+
+  .next-holiday-card {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-4);
+  }
+}

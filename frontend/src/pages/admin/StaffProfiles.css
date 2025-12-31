@@ -1,0 +1,131 @@
+/* Staff Profiles Admin Page Styles */
+
+.milestones-banner {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.milestones-banner h3 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+}
+
+.milestones-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.milestone-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.milestone-item.birthday {
+  background: var(--color-pink-bg);
+  color: var(--text-primary);
+}
+
+.milestone-item.anniversary {
+  background: var(--color-success-bg);
+  color: var(--text-primary);
+}
+
+.milestone-icon {
+  font-size: var(--font-size-lg);
+}
+
+.milestone-text strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Form Section Titles */
+.form-section-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: var(--space-6) 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.form-section-title:first-of-type {
+  margin-top: var(--space-4);
+}
+
+/* Form Help Text */
+.form-help {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Action Buttons in Table */
+.action-buttons {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+}
+
+/* Modal Subtitle */
+.modal-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+/* Temporary Password Display */
+.temp-password-display {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  text-align: center;
+  margin: var(--space-4) 0;
+}
+
+.temp-password-display code {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  letter-spacing: 0.1em;
+}
+
+/* Text muted helper */
+.text-muted {
+  color: var(--text-secondary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .milestones-list {
+    flex-direction: column;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-buttons .ds-btn {
+    width: 100%;
+  }
+}

@@ -232,3 +232,5 @@ test-results.xml
 # AI assistant local settings
 .claude/
 CLAUDE.md
+backups/
+backend/db_backups/

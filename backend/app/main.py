@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-from app.routers import auth, users, arenas, bookings, horses, health_records, feed, services, notices, professionals, tasks, staff_management, clinics, lessons, payments, settings, uploads, weather, stables, livery_packages, compliance, turnout, account, backup, rehab, fields, invoices, billing, holiday_livery, contracts, grants, land_features, flood_warnings, feature_flags
+from app.routers import auth, users, arenas, bookings, horses, health_records, feed, services, notices, professionals, tasks, staff_management, staff_profiles, clinics, lessons, payments, settings, uploads, weather, stables, livery_packages, compliance, turnout, account, backup, rehab, fields, invoices, billing, holiday_livery, contracts, grants, land_features, flood_warnings, feature_flags, risk_assessments
 from app.services.scheduler import start_scheduler, stop_scheduler
 from app.database import SessionLocal
 from app.models.settings import SiteSettings
@@ -97,6 +97,7 @@ app.include_router(notices.router, prefix="/api/notices", tags=["Noticeboard"])
 app.include_router(professionals.router, prefix="/api/professionals", tags=["Professional Directory"])
 app.include_router(tasks.router, prefix="/api/tasks", tags=["Task Management"])
 app.include_router(staff_management.router, prefix="/api/staff", tags=["Staff Management"])
+app.include_router(staff_profiles.router, prefix="/api/staff-profiles", tags=["Staff Profiles"])
 app.include_router(clinics.router, prefix="/api/clinics", tags=["Training Clinics"])
 app.include_router(lessons.router, prefix="/api/lessons", tags=["Ad-Hoc Lessons"])
 app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
@@ -118,6 +119,7 @@ app.include_router(grants.router, prefix="/api/grants", tags=["Grants & Schemes"
 app.include_router(land_features.router, prefix="/api/land-features", tags=["Land Features"])
 app.include_router(flood_warnings.router, prefix="/api/flood-warnings", tags=["Flood Monitoring"])
 app.include_router(feature_flags.router, prefix="/api", tags=["Feature Flags"])
+app.include_router(risk_assessments.router, prefix="/api", tags=["Risk Assessments"])
 
 
 @app.get("/api/health")

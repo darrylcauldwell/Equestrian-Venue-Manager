@@ -35,8 +35,8 @@ test.describe('Authentication', () => {
       await loginAs('livery');
       await logout();
       // After logout, user is redirected to home - verify we're not on a protected page
-      // The URL should be / or /book or similar public page, or login page
-      await expect(page).toHaveURL(/^\/(book)?$|\/login/);
+      // The URL should end with / or /book or contain /login
+      await expect(page).toHaveURL(/\/$|\/book$|\/login/);
     });
   });
 

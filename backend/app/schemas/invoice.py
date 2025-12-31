@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import Optional, List
 from decimal import Decimal
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from enum import Enum
 
 
@@ -36,8 +36,7 @@ class InvoiceLineItemResponse(BaseModel):
     item_date_start: Optional[date]
     item_date_end: Optional[date]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InvoiceGenerateRequest(BaseModel):
@@ -92,8 +91,7 @@ class InvoiceResponse(BaseModel):
     created_by_name: Optional[str] = None
     line_items: List[InvoiceLineItemResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InvoiceSummary(BaseModel):

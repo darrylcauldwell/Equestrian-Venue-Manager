@@ -68,6 +68,7 @@ jobs:
         uses: codecov/codecov-action@v4
         if: always()
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: backend/coverage.xml
           flags: backend
           name: backend-coverage
@@ -128,7 +129,7 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=8192 --expose-gc
         run: |
           cd frontend
-          npm run test:coverage -- --run --reporter=verbose --reporter=junit --outputFile=test-results.xml --no-isolate
+          npm run test:coverage -- --run --reporter=verbose --reporter=junit --outputFile=test-results.xml
 
       - name: Check test results
         run: |
@@ -155,6 +156,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: frontend/coverage/coverage-final.json
           flags: frontend
           name: frontend-coverage

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { bookingsApi } from '../../services/api';
 import { useRequestState } from '../../hooks';
 import type { ArenaUsageReport, PeriodUsageReport } from '../../types';
@@ -11,11 +11,7 @@ export function AdminArenaUsageReport() {
   // Request state
   const { loading: isLoading, error, setError, setLoading } = useRequestState(true);
 
-  useEffect(() => {
-    loadReport();
-  }, []);
-
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     try {
       const data = await bookingsApi.getUsageReport();
       setReport(data);
@@ -24,7 +20,11 @@ export function AdminArenaUsageReport() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadReport();
+  }, [loadReport]);
 
   const formatHours = (hours: number): string => {
     if (hours === 0) return '0h';

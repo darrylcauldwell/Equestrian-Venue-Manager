@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 from app.models.booking import BookingType, BookingStatus, PaymentStatus
 
 
@@ -47,8 +47,7 @@ class BookingResponse(BaseModel):
     temporary_password: Optional[str] = None
     username: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BookingPublicResponse(BaseModel):
@@ -61,8 +60,7 @@ class BookingPublicResponse(BaseModel):
     open_to_share: bool = False
     title: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GuestBookingCreate(BaseModel):

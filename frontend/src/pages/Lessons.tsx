@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { lessonsApi, horsesApi, arenasApi } from '../services/api';
 import { useRequestState } from '../hooks';
-import { ConfirmModal } from '../components/ui';
+import { ConfirmModal, FormGroup, Select, Input, Textarea } from '../components/ui';
 import type {
   CoachProfile,
   LessonRequest,
@@ -794,9 +794,8 @@ export default function Lessons() {
       {/* Filter */}
       {activeTab === 'coaches' && (
         <div className="filter-bar">
-          <label>
-            Filter by Discipline:
-            <select
+          <FormGroup label="Filter by Discipline">
+            <Select
               value={disciplineFilter}
               onChange={(e) => setDisciplineFilter(e.target.value)}
             >
@@ -804,8 +803,8 @@ export default function Lessons() {
               {enums?.disciplines.map(d => (
                 <option key={d.value} value={d.value}>{d.label}</option>
               ))}
-            </select>
-          </label>
+            </Select>
+          </FormGroup>
         </div>
       )}
 
@@ -1462,15 +1461,14 @@ export default function Lessons() {
                 {selectedCoach.booking_mode !== 'auto_accept' && (
                   <>
                     <hr />
-                    <label>
-                      Alternative Dates (optional)
-                      <textarea
+                    <FormGroup label="Alternative Dates (optional)">
+                      <Textarea
                         value={(requestForm as CreateLessonRequest).alternative_dates || ''}
                         onChange={e => setRequestForm({ ...requestForm, alternative_dates: e.target.value })}
                         placeholder="If your preferred times aren't shown, suggest alternative dates here..."
                         rows={2}
                       />
-                    </label>
+                    </FormGroup>
                   </>
                 )}
 
@@ -1478,43 +1476,39 @@ export default function Lessons() {
                 {!user && (
                   <div className="guest-fields">
                     <h4>Your Details</h4>
-                    <label>
-                      Name *
-                      <input
+                    <FormGroup label="Name" required>
+                      <Input
                         type="text"
                         value={(requestForm as CreateLessonRequest).guest_name || ''}
                         onChange={e => setRequestForm({ ...requestForm, guest_name: e.target.value })}
                         required
                         placeholder="Your full name"
                       />
-                    </label>
+                    </FormGroup>
                     <div className="form-row">
-                      <label>
-                        Email *
-                        <input
+                      <FormGroup label="Email" required>
+                        <Input
                           type="email"
                           value={(requestForm as CreateLessonRequest).guest_email || ''}
                           onChange={e => setRequestForm({ ...requestForm, guest_email: e.target.value })}
                           required
                           placeholder="your@email.com"
                         />
-                      </label>
-                      <label>
-                        Phone
-                        <input
+                      </FormGroup>
+                      <FormGroup label="Phone">
+                        <Input
                           type="tel"
                           value={(requestForm as CreateLessonRequest).guest_phone || ''}
                           onChange={e => setRequestForm({ ...requestForm, guest_phone: e.target.value })}
                           placeholder="Your phone number"
                         />
-                      </label>
+                      </FormGroup>
                     </div>
                   </div>
                 )}
 
-                <label>
-                  Discipline
-                  <select
+                <FormGroup label="Discipline">
+                  <Select
                     value={(requestForm as CreateLessonRequest).discipline || ''}
                     onChange={e => setRequestForm({ ...requestForm, discipline: (e.target.value || undefined) as CreateLessonRequest['discipline'] })}
                   >
@@ -1522,13 +1516,12 @@ export default function Lessons() {
                     {enums?.disciplines.map(d => (
                       <option key={d.value} value={d.value}>{d.label}</option>
                     ))}
-                  </select>
-                </label>
+                  </Select>
+                </FormGroup>
 
                 {user && horses.length > 0 && (
-                  <label>
-                    Horse
-                    <select
+                  <FormGroup label="Horse">
+                    <Select
                       value={requestForm.horse_id || ''}
                       onChange={e => setRequestForm({ ...requestForm, horse_id: parseInt(e.target.value) || undefined })}
                     >
@@ -1536,19 +1529,18 @@ export default function Lessons() {
                       {horses.map(h => (
                         <option key={h.id} value={h.id}>{h.name}</option>
                       ))}
-                    </select>
-                  </label>
+                    </Select>
+                  </FormGroup>
                 )}
 
-                <label>
-                  Notes
-                  <textarea
+                <FormGroup label="Notes">
+                  <Textarea
                     value={(requestForm as CreateLessonRequest).notes || ''}
                     onChange={e => setRequestForm({ ...requestForm, notes: e.target.value })}
                     placeholder="Any specific requests or information..."
                     rows={3}
                   />
-                </label>
+                </FormGroup>
               </div>
               <div className="ds-modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowRequestModal(false)}>

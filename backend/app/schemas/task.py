@@ -1,7 +1,7 @@
 from datetime import datetime, date, time
 from decimal import Decimal
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.models.task import TaskCategory, TaskPriority, TaskStatus, RecurrenceType, AssignmentType, HealthTaskType
 from app.schemas.medication_log import HealingStatus, AppetiteStatus, DemeanorStatus
@@ -24,8 +24,7 @@ class TaskCommentResponse(TaskCommentBase):
     created_at: datetime
     user_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Task Schemas ==============
@@ -107,15 +106,13 @@ class YardTaskResponse(YardTaskBase):
     rehab_program_name: Optional[str] = None
     rehab_task_description: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class YardTaskDetailResponse(YardTaskResponse):
     comments: List[TaskCommentResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== List Schemas ==============

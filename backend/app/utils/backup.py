@@ -2,9 +2,11 @@
 import json
 import os
 from datetime import datetime, date, timedelta, time as time_obj
+from decimal import Decimal
 from typing import Dict, Any, List, Tuple, Optional, Callable
 from sqlalchemy.orm import Session
-from sqlalchemy import text
+from sqlalchemy import text, inspect as sa_inspect
+from enum import Enum
 
 
 class SeedingError(Exception):
@@ -40,6 +42,18 @@ from app.models.coach import CoachProfile, CoachRecurringSchedule, CoachAvailabi
 from app.models.holiday_livery import HolidayLiveryRequest, HolidayLiveryStatus
 from app.models.booking import PaymentStatus, BookingStatus
 from app.models.contract import ContractTemplate, ContractVersion, ContractSignature, ContractType, SignatureStatus
+from app.models.land_management import (
+    FloodMonitoringStation,
+    LandFeature,
+    LandFeatureType,
+    FeatureCondition,
+    WaterSourceType,
+    Grant,
+    GrantSchemeType,
+    GrantStatus,
+)
+from app.models.staff_profile import StaffProfile
+from app.models.risk_assessment import RiskAssessment, RiskAssessmentCategory, RiskAssessmentReview, RiskAssessmentAcknowledgement, ReviewTrigger
 from app.utils.auth import get_password_hash
 from app.utils.seed_validator import validate_seed_data, SeedValidationError
 
@@ -60,218 +74,296 @@ def serialize_datetime(obj):
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 
+def model_to_dict(obj, exclude: Optional[List[str]] = None) -> Dict[str, Any]:
+    """
+    Convert any SQLAlchemy model to a dictionary using introspection.
+
+    This automatically handles:
+    - All column attributes
+    - Enum values (converts to string)
+    - Datetime/date objects (converts to ISO format)
+    - Decimal values (converts to float)
+    - None values (preserved)
+
+    Args:
+        obj: SQLAlchemy model instance
+        exclude: List of column names to exclude (e.g., ['password_hash'])
+
+    Returns:
+        Dictionary with all column values, suitable for JSON serialization
+    """
+    if exclude is None:
+        exclude = []
+
+    result = {}
+    mapper = sa_inspect(obj.__class__)
+
+    for column in mapper.columns:
+        key = column.key
+        if key in exclude:
+            continue
+
+        value = getattr(obj, key)
+
+        # Handle various types
+        if value is None:
+            result[key] = None
+        elif isinstance(value, Enum):
+            result[key] = value.value
+        elif isinstance(value, datetime):
+            result[key] = value.isoformat()
+        elif isinstance(value, date):
+            result[key] = value.isoformat()
+        elif isinstance(value, time_obj):
+            result[key] = value.isoformat()
+        elif isinstance(value, Decimal):
+            result[key] = float(value)
+        elif isinstance(value, bytes):
+            result[key] = value.decode('utf-8', errors='replace')
+        else:
+            result[key] = value
+
+    return result
+
+
+def export_models(db: Session, model_class, exclude: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+    """
+    Export all instances of a model using introspection.
+
+    Args:
+        db: SQLAlchemy session
+        model_class: The SQLAlchemy model class to export
+        exclude: List of column names to exclude from each record
+
+    Returns:
+        List of dictionaries representing all records
+    """
+    records = db.query(model_class).all()
+    return [model_to_dict(record, exclude=exclude) for record in records]
+
+
 def export_database(db: Session) -> Tuple[Dict[str, Any], Dict[str, int]]:
     """
-    Export all database tables to a dictionary.
+    Export all database tables to a dictionary using model introspection.
+    This automatically captures all fields from each model, so no manual
+    field listing is required. When models change, backup automatically adapts.
+
     Returns (data_dict, entity_counts).
     """
     entity_counts = {}
     data = {}
 
-    # Site Settings
+    # Site Settings (single record)
     settings = db.query(SiteSettings).first()
     if settings:
-        data["site_settings"] = {
-            "venue_name": settings.venue_name,
-            "venue_tagline": settings.venue_tagline,
-            "contact_email": settings.contact_email,
-            "contact_phone": settings.contact_phone,
-            "address_street": settings.address_street,
-            "address_town": settings.address_town,
-            "address_county": settings.address_county,
-            "address_postcode": settings.address_postcode,
-            "gate_code": settings.gate_code,
-            "key_safe_code": settings.key_safe_code,
-            "security_info": settings.security_info,
-            "what3words": settings.what3words,
-            "theme_primary_color": settings.theme_primary_color,
-            "theme_accent_color": settings.theme_accent_color,
-            "theme_font_family": settings.theme_font_family,
-            "logo_url": settings.logo_url,
-        }
+        data["site_settings"] = model_to_dict(settings)
         entity_counts["site_settings"] = 1
 
     # Users (excluding password hashes for security - will need to reset on restore)
-    users = db.query(User).all()
-    data["users"] = [
-        {
-            "id": u.id,
-            "username": u.username,
-            "email": u.email,
-            "name": u.name,
-            "phone": u.phone,
-            "role": u.role.value if hasattr(u.role, 'value') else u.role,
-            "is_yard_staff": u.is_yard_staff,
-            "is_active": u.is_active,
-            "emergency_contact_name": u.emergency_contact_name,
-            "emergency_contact_phone": u.emergency_contact_phone,
-            "livery_package_id": u.livery_package_id,
-            "stable_id": u.stable_id,
-        }
-        for u in users
-    ]
-    entity_counts["users"] = len(users)
+    data["users"] = export_models(db, User, exclude=["password_hash"])
+    entity_counts["users"] = len(data["users"])
+
+    # Staff Profiles
+    data["staff_profiles"] = export_models(db, StaffProfile)
+    entity_counts["staff_profiles"] = len(data["staff_profiles"])
 
     # Livery Packages
-    packages = db.query(LiveryPackage).all()
-    data["livery_packages"] = [
-        {
-            "id": p.id,
-            "name": p.name,
-            "description": p.description,
-            "monthly_price": float(p.monthly_price) if p.monthly_price else None,
-            "includes_feed": p.includes_feed,
-            "includes_turnout": p.includes_turnout,
-            "includes_mucking_out": p.includes_mucking_out,
-            "arena_hours_included": p.arena_hours_included,
-            "is_active": p.is_active,
-        }
-        for p in packages
-    ]
-    entity_counts["livery_packages"] = len(packages)
+    data["livery_packages"] = export_models(db, LiveryPackage)
+    entity_counts["livery_packages"] = len(data["livery_packages"])
 
     # Stable Blocks
-    blocks = db.query(StableBlock).all()
-    data["stable_blocks"] = [
-        {
-            "id": b.id,
-            "name": b.name,
-            "sequence": b.sequence,
-            "is_active": b.is_active,
-        }
-        for b in blocks
-    ]
-    entity_counts["stable_blocks"] = len(blocks)
+    data["stable_blocks"] = export_models(db, StableBlock)
+    entity_counts["stable_blocks"] = len(data["stable_blocks"])
 
     # Stables
-    stables = db.query(Stable).all()
-    data["stables"] = [
-        {
-            "id": s.id,
-            "name": s.name,
-            "block_id": s.block_id,
-            "is_available": s.is_available,
-            "notes": s.notes,
-        }
-        for s in stables
-    ]
-    entity_counts["stables"] = len(stables)
+    data["stables"] = export_models(db, Stable)
+    entity_counts["stables"] = len(data["stables"])
 
     # Arenas
-    arenas = db.query(Arena).all()
-    data["arenas"] = [
-        {
-            "id": a.id,
-            "name": a.name,
-            "description": a.description,
-            "is_active": a.is_active,
-            "size": a.size,
-            "surface_type": a.surface_type,
-            "price_per_hour": float(a.price_per_hour) if a.price_per_hour else None,
-            "has_lights": a.has_lights,
-            "jumps_type": a.jumps_type,
-            "image_url": a.image_url,
-            "booking_advance_days": a.booking_advance_days,
-            "min_booking_notice_hours": a.min_booking_notice_hours,
-            "allow_public_booking": a.allow_public_booking,
-        }
-        for a in arenas
-    ]
-    entity_counts["arenas"] = len(arenas)
+    data["arenas"] = export_models(db, Arena)
+    entity_counts["arenas"] = len(data["arenas"])
 
     # Horses
-    horses = db.query(Horse).all()
-    data["horses"] = [
-        {
-            "id": h.id,
-            "name": h.name,
-            "breed": h.breed,
-            "color": h.color,
-            "age": h.age,
-            "height": h.height,
-            "owner_id": h.owner_id,
-            "stable_id": h.stable_id,
-            "notes": h.notes,
-            "passport_number": h.passport_number,
-            "microchip_number": h.microchip_number,
-        }
-        for h in horses
-    ]
-    entity_counts["horses"] = len(horses)
+    data["horses"] = export_models(db, Horse)
+    entity_counts["horses"] = len(data["horses"])
 
     # Services
-    services = db.query(Service).all()
-    data["services"] = [
-        {
-            "id": s.id,
-            "name": s.name,
-            "description": s.description,
-            "category": s.category.value if hasattr(s.category, 'value') else s.category,
-            "base_price": float(s.base_price) if s.base_price else None,
-            "is_active": s.is_active,
-            "requires_horse": s.requires_horse,
-            "is_one_off": s.is_one_off,
-        }
-        for s in services
-    ]
-    entity_counts["services"] = len(services)
+    data["services"] = export_models(db, Service)
+    entity_counts["services"] = len(data["services"])
 
     # Professionals
-    professionals = db.query(Professional).all()
-    data["professionals"] = [
-        {
-            "id": p.id,
-            "name": p.name,
-            "category": p.category.value if hasattr(p.category, 'value') else p.category,
-            "phone": p.phone,
-            "email": p.email,
-            "address": p.address,
-            "website": p.website,
-            "notes": p.notes,
-            "is_active": p.is_active,
-        }
-        for p in professionals
-    ]
-    entity_counts["professionals"] = len(professionals)
+    data["professionals"] = export_models(db, Professional)
+    entity_counts["professionals"] = len(data["professionals"])
 
     # Compliance Items
-    compliance_items = db.query(ComplianceItem).all()
-    data["compliance_items"] = [
-        {
-            "id": c.id,
-            "name": c.name,
-            "category": c.category.value if hasattr(c.category, 'value') else c.category,
-            "description": c.description,
-            "renewal_frequency_months": c.renewal_frequency_months,
-            "last_completed_date": c.last_completed_date.isoformat() if c.last_completed_date else None,
-            "next_due_date": c.next_due_date.isoformat() if c.next_due_date else None,
-            "reminder_days_before": c.reminder_days_before,
-            "responsible_user_id": c.responsible_user_id,
-            "certificate_url": c.certificate_url,
-            "notes": c.notes,
-            "is_active": c.is_active,
-        }
-        for c in compliance_items
-    ]
-    entity_counts["compliance_items"] = len(compliance_items)
+    data["compliance_items"] = export_models(db, ComplianceItem)
+    entity_counts["compliance_items"] = len(data["compliance_items"])
 
     # Notices
-    notices = db.query(Notice).all()
-    data["notices"] = [
-        {
-            "id": n.id,
-            "title": n.title,
-            "content": n.content,
-            "category": n.category.value if hasattr(n.category, 'value') else n.category,
-            "priority": n.priority.value if hasattr(n.priority, 'value') else n.priority,
-            "created_by_id": n.created_by_id,
-            "is_pinned": n.is_pinned,
-            "expires_at": n.expires_at.isoformat() if n.expires_at else None,
-            "created_at": n.created_at.isoformat() if n.created_at else None,
-        }
-        for n in notices
-    ]
-    entity_counts["notices"] = len(notices)
+    data["notices"] = export_models(db, Notice)
+    entity_counts["notices"] = len(data["notices"])
+
+    # Bookings
+    data["bookings"] = export_models(db, Booking)
+    entity_counts["bookings"] = len(data["bookings"])
+
+    # Emergency Contacts
+    data["emergency_contacts"] = export_models(db, EmergencyContact)
+    entity_counts["emergency_contacts"] = len(data["emergency_contacts"])
+
+    # Fields
+    data["fields"] = export_models(db, Field)
+    entity_counts["fields"] = len(data["fields"])
+
+    # Feed Requirements
+    data["feed_requirements"] = export_models(db, FeedRequirement)
+    entity_counts["feed_requirements"] = len(data["feed_requirements"])
+
+    # Feed Additions
+    data["feed_additions"] = export_models(db, FeedAddition)
+    entity_counts["feed_additions"] = len(data["feed_additions"])
+
+    # Feed Supply Alerts
+    data["feed_supply_alerts"] = export_models(db, FeedSupplyAlert)
+    entity_counts["feed_supply_alerts"] = len(data["feed_supply_alerts"])
+
+    # Service Requests
+    data["service_requests"] = export_models(db, ServiceRequest)
+    entity_counts["service_requests"] = len(data["service_requests"])
+
+    # Yard Tasks
+    data["yard_tasks"] = export_models(db, YardTask)
+    entity_counts["yard_tasks"] = len(data["yard_tasks"])
+
+    # Clinic Requests
+    data["clinic_requests"] = export_models(db, ClinicRequest)
+    entity_counts["clinic_requests"] = len(data["clinic_requests"])
+
+    # Clinic Participants
+    data["clinic_participants"] = export_models(db, ClinicParticipant)
+    entity_counts["clinic_participants"] = len(data["clinic_participants"])
+
+    # Turnout Requests
+    data["turnout_requests"] = export_models(db, TurnoutRequest)
+    entity_counts["turnout_requests"] = len(data["turnout_requests"])
+
+    # Ledger Entries
+    data["ledger_entries"] = export_models(db, LedgerEntry)
+    entity_counts["ledger_entries"] = len(data["ledger_entries"])
+
+    # Coach Profiles
+    data["coach_profiles"] = export_models(db, CoachProfile)
+    entity_counts["coach_profiles"] = len(data["coach_profiles"])
+
+    # Lesson Requests
+    data["lesson_requests"] = export_models(db, LessonRequest)
+    entity_counts["lesson_requests"] = len(data["lesson_requests"])
+
+    # Holiday Livery Requests
+    data["holiday_livery_requests"] = export_models(db, HolidayLiveryRequest)
+    entity_counts["holiday_livery_requests"] = len(data["holiday_livery_requests"])
+
+    # Shifts
+    data["shifts"] = export_models(db, Shift)
+    entity_counts["shifts"] = len(data["shifts"])
+
+    # Timesheets
+    data["timesheets"] = export_models(db, Timesheet)
+    entity_counts["timesheets"] = len(data["timesheets"])
+
+    # Holiday Requests
+    data["holiday_requests"] = export_models(db, HolidayRequest)
+    entity_counts["holiday_requests"] = len(data["holiday_requests"])
+
+    # Unplanned Absences
+    data["unplanned_absences"] = export_models(db, UnplannedAbsence)
+    entity_counts["unplanned_absences"] = len(data["unplanned_absences"])
+
+    # Invoices
+    data["invoices"] = export_models(db, Invoice)
+    entity_counts["invoices"] = len(data["invoices"])
+
+    # Invoice Line Items
+    data["invoice_line_items"] = export_models(db, InvoiceLineItem)
+    entity_counts["invoice_line_items"] = len(data["invoice_line_items"])
+
+    # Contract Templates
+    data["contract_templates"] = export_models(db, ContractTemplate)
+    entity_counts["contract_templates"] = len(data["contract_templates"])
+
+    # Contract Versions
+    data["contract_versions"] = export_models(db, ContractVersion)
+    entity_counts["contract_versions"] = len(data["contract_versions"])
+
+    # Contract Signatures
+    data["contract_signatures"] = export_models(db, ContractSignature)
+    entity_counts["contract_signatures"] = len(data["contract_signatures"])
+
+    # Health Records
+    data["farrier_records"] = export_models(db, FarrierRecord)
+    entity_counts["farrier_records"] = len(data["farrier_records"])
+
+    data["dentist_records"] = export_models(db, DentistRecord)
+    entity_counts["dentist_records"] = len(data["dentist_records"])
+
+    data["vaccination_records"] = export_models(db, VaccinationRecord)
+    entity_counts["vaccination_records"] = len(data["vaccination_records"])
+
+    data["worming_records"] = export_models(db, WormingRecord)
+    entity_counts["worming_records"] = len(data["worming_records"])
+
+    data["weight_records"] = export_models(db, WeightRecord)
+    entity_counts["weight_records"] = len(data["weight_records"])
+
+    data["body_condition_records"] = export_models(db, BodyConditionRecord)
+    entity_counts["body_condition_records"] = len(data["body_condition_records"])
+
+    data["saddle_fit_records"] = export_models(db, SaddleFitRecord)
+    entity_counts["saddle_fit_records"] = len(data["saddle_fit_records"])
+
+    # Rehab Programs and Tasks
+    data["rehab_programs"] = export_models(db, RehabProgram)
+    entity_counts["rehab_programs"] = len(data["rehab_programs"])
+
+    data["rehab_tasks"] = export_models(db, RehabTask)
+    entity_counts["rehab_tasks"] = len(data["rehab_tasks"])
+
+    data["rehab_task_logs"] = export_models(db, RehabTaskLog)
+    entity_counts["rehab_task_logs"] = len(data["rehab_task_logs"])
+
+    # Health Observations
+    data["health_observations"] = export_models(db, HealthObservation)
+    entity_counts["health_observations"] = len(data["health_observations"])
+
+    # Medication Logs
+    data["medication_admin_logs"] = export_models(db, MedicationAdminLog)
+    entity_counts["medication_admin_logs"] = len(data["medication_admin_logs"])
+
+    data["wound_care_logs"] = export_models(db, WoundCareLog)
+    entity_counts["wound_care_logs"] = len(data["wound_care_logs"])
+
+    # Turnout Groups
+    data["turnout_groups"] = export_models(db, TurnoutGroup)
+    entity_counts["turnout_groups"] = len(data["turnout_groups"])
+
+    data["turnout_group_horses"] = export_models(db, TurnoutGroupHorse)
+    entity_counts["turnout_group_horses"] = len(data["turnout_group_horses"])
+
+    # Compliance History
+    data["compliance_history"] = export_models(db, ComplianceHistory)
+    entity_counts["compliance_history"] = len(data["compliance_history"])
+
+    # Flood Monitoring Stations
+    data["flood_monitoring_stations"] = export_models(db, FloodMonitoringStation)
+    entity_counts["flood_monitoring_stations"] = len(data["flood_monitoring_stations"])
+
+    # Land Features (water troughs, hedgerows, trees, etc.)
+    data["land_features"] = export_models(db, LandFeature)
+    entity_counts["land_features"] = len(data["land_features"])
+
+    # Grants and Environmental Schemes
+    data["grants"] = export_models(db, Grant)
+    entity_counts["grants"] = len(data["grants"])
 
     return data, entity_counts
 
@@ -479,6 +571,10 @@ def import_database(
         if "users" in data:
             user_map, counts["users"] = _import_users(db, data["users"], log)
 
+        # 2b. Staff Profiles (depends on users)
+        if "staff_profiles" in data:
+            counts["staff_profiles"] = _import_staff_profiles(db, data["staff_profiles"], user_map, log)
+
         # 3. Livery Packages (before horses)
         if "livery_packages" in data:
             package_map, counts["livery_packages"] = _import_livery_packages(db, data["livery_packages"], log)
@@ -653,6 +749,30 @@ def import_database(
                 db, data["contract_templates"], user_map, package_map, log
             )
 
+        # 42. Flood Monitoring Stations
+        if "flood_monitoring_stations" in data:
+            counts["flood_monitoring_stations"] = _import_flood_monitoring_stations(db, data["flood_monitoring_stations"], log)
+
+        # 43. Land Features (hedgerows, trees, water troughs, fences, etc.)
+        if "land_features" in data:
+            counts["land_features"] = _import_land_features(db, data["land_features"], log)
+
+        # 44. Grants
+        if "grants" in data:
+            counts["grants"] = _import_grants(db, data["grants"], log)
+
+        # 45. Risk Assessments
+        if "risk_assessments" in data:
+            counts["risk_assessments"] = _import_risk_assessments(db, data["risk_assessments"], user_map, log)
+
+        # 46. Risk Assessment Reviews (admin review history)
+        if "risk_assessment_reviews" in data:
+            counts["risk_assessment_reviews"] = _import_risk_assessment_reviews(db, data["risk_assessment_reviews"], user_map, log)
+
+        # 47. Risk Assessment Acknowledgements (staff acknowledgements)
+        if "risk_assessment_acknowledgements" in data:
+            counts["risk_assessment_acknowledgements"] = _import_risk_assessment_acknowledgements(db, data["risk_assessment_acknowledgements"], user_map, log)
+
         # Single commit at the end - all or nothing
         db.commit()
         log("All data imported successfully.")
@@ -722,6 +842,10 @@ def _import_users(db: Session, users_data: List[Dict], log: Callable) -> Tuple[D
             email=user_data.get("email"),
             name=user_data.get("name", username),
             phone=user_data.get("phone"),
+            address_street=user_data.get("address_street"),
+            address_town=user_data.get("address_town"),
+            address_county=user_data.get("address_county"),
+            address_postcode=user_data.get("address_postcode"),
             password_hash=password_hash,
             role=role,
             is_yard_staff=is_yard_staff,
@@ -738,6 +862,72 @@ def _import_users(db: Session, users_data: List[Dict], log: Callable) -> Tuple[D
 
     db.flush()
     return user_map, count
+
+
+def _import_staff_profiles(db: Session, profiles_data: List[Dict], user_map: Dict, log: Callable) -> int:
+    """Import staff profiles."""
+    log("Importing staff profiles...")
+    count = 0
+
+    for profile_data in profiles_data:
+        # Resolve user by ID or username
+        user_id = profile_data.get("user_id")
+        if not user_id and "username" in profile_data:
+            user_id = user_map.get(profile_data["username"])
+
+        if not user_id:
+            log(f"  Warning: User not found for staff profile, skipping")
+            continue
+
+        # Check if profile already exists
+        existing = db.query(StaffProfile).filter(StaffProfile.user_id == user_id).first()
+        if existing:
+            log(f"  Staff profile for user {user_id} already exists, skipping")
+            continue
+
+        # Parse date fields
+        date_fields = ["date_of_birth", "start_date", "dbs_check_date"]
+        for field in date_fields:
+            if field in profile_data and profile_data[field]:
+                if isinstance(profile_data[field], str):
+                    profile_data[field] = datetime.fromisoformat(profile_data[field].replace('Z', '+00:00')).date()
+
+        # Handle qualifications JSON
+        qualifications = profile_data.get("qualifications")
+        if qualifications and isinstance(qualifications, list):
+            qualifications = json.dumps(qualifications)
+        elif qualifications and isinstance(qualifications, str):
+            # Already JSON string from backup
+            pass
+        else:
+            qualifications = None
+
+        profile = StaffProfile(
+            user_id=user_id,
+            date_of_birth=profile_data.get("date_of_birth"),
+            bio=profile_data.get("bio"),
+            start_date=profile_data.get("start_date"),
+            job_title=profile_data.get("job_title"),
+            personal_email=profile_data.get("personal_email"),
+            personal_phone=profile_data.get("personal_phone"),
+            address_street=profile_data.get("address_street"),
+            address_town=profile_data.get("address_town"),
+            address_county=profile_data.get("address_county"),
+            address_postcode=profile_data.get("address_postcode"),
+            emergency_contact_name=profile_data.get("emergency_contact_name"),
+            emergency_contact_phone=profile_data.get("emergency_contact_phone"),
+            emergency_contact_relationship=profile_data.get("emergency_contact_relationship"),
+            qualifications=qualifications,
+            dbs_check_date=profile_data.get("dbs_check_date"),
+            dbs_certificate_number=profile_data.get("dbs_certificate_number"),
+            notes=profile_data.get("notes"),
+        )
+        db.add(profile)
+        count += 1
+        log(f"  Created staff profile for user {user_id}")
+
+    db.flush()
+    return count
 
 
 def _import_livery_packages(db: Session, packages_data: List[Dict], log: Callable) -> Tuple[Dict[str, int], int]:
@@ -3547,3 +3737,353 @@ def _import_contracts(
     db.flush()
     log(f"  Imported {template_count} templates, {version_count} versions, {signature_count} signatures")
     return template_count, version_count, signature_count
+
+
+def _import_flood_monitoring_stations(db: Session, stations_data: List[Dict], log: Callable) -> int:
+    """Import flood monitoring stations."""
+    log("Importing flood monitoring stations...")
+    count = 0
+
+    for station_data in stations_data:
+        station_id = station_data.get("station_id")
+        existing = db.query(FloodMonitoringStation).filter(
+            FloodMonitoringStation.station_id == station_id
+        ).first()
+        if existing:
+            log(f"  Station '{station_id}' already exists, skipping")
+            continue
+
+        station = FloodMonitoringStation(
+            station_id=station_id,
+            station_name=station_data.get("station_name"),
+            river_name=station_data.get("river_name"),
+            latitude=station_data.get("latitude"),
+            longitude=station_data.get("longitude"),
+            warning_threshold_meters=station_data.get("warning_threshold_meters"),
+            severe_threshold_meters=station_data.get("severe_threshold_meters"),
+            is_active=station_data.get("is_active", True),
+            notes=station_data.get("notes"),
+        )
+        db.add(station)
+        count += 1
+        log(f"  Created flood monitoring station: {station_data.get('station_name')} ({station_id})")
+
+    db.flush()
+    return count
+
+
+def _import_land_features(db: Session, features_data: List[Dict], log: Callable) -> int:
+    """Import land features (hedgerows, trees, water troughs, fences, etc.)."""
+    log("Importing land features...")
+    count = 0
+    today = date.today()
+
+    for feature_data in features_data:
+        name = feature_data.get("name")
+        existing = db.query(LandFeature).filter(LandFeature.name == name).first()
+        if existing:
+            log(f"  Land feature '{name}' already exists, skipping")
+            continue
+
+        # Parse enums
+        feature_type_str = feature_data.get("feature_type", "other")
+        try:
+            feature_type = LandFeatureType(feature_type_str)
+        except ValueError:
+            feature_type = LandFeatureType.OTHER
+
+        condition_str = feature_data.get("current_condition", "good")
+        try:
+            condition = FeatureCondition(condition_str)
+        except ValueError:
+            condition = FeatureCondition.GOOD
+
+        water_source = None
+        if feature_data.get("water_source_type"):
+            try:
+                water_source = WaterSourceType(feature_data["water_source_type"])
+            except ValueError:
+                pass
+
+        # Handle relative dates
+        last_fill_date = None
+        if feature_data.get("last_fill_days_ago") is not None:
+            last_fill_date = today - timedelta(days=feature_data["last_fill_days_ago"])
+        elif feature_data.get("last_fill_date"):
+            last_fill_date = datetime.fromisoformat(feature_data["last_fill_date"]).date()
+
+        last_maintenance_date = None
+        if feature_data.get("last_maintenance_days_ago") is not None:
+            last_maintenance_date = today - timedelta(days=feature_data["last_maintenance_days_ago"])
+
+        # Look up field by name if provided
+        field_id = None
+        if feature_data.get("field_name"):
+            field = db.query(Field).filter(Field.name == feature_data["field_name"]).first()
+            if field:
+                field_id = field.id
+
+        feature = LandFeature(
+            name=name,
+            feature_type=feature_type,
+            description=feature_data.get("description"),
+            field_id=field_id,
+            location_description=feature_data.get("location_description"),
+            length_meters=feature_data.get("length_meters"),
+            area_sqm=feature_data.get("area_sqm"),
+            current_condition=condition,
+            maintenance_frequency_days=feature_data.get("maintenance_frequency_days"),
+            last_maintenance_date=last_maintenance_date,
+            tpo_protected=feature_data.get("tpo_protected", False),
+            tpo_reference=feature_data.get("tpo_reference"),
+            tree_species=feature_data.get("tree_species"),
+            hedgerow_species_mix=feature_data.get("hedgerow_species_mix"),
+            fence_type=feature_data.get("fence_type"),
+            fence_height_cm=feature_data.get("fence_height_cm"),
+            water_source_type=water_source,
+            fill_frequency_days=feature_data.get("fill_frequency_days"),
+            last_fill_date=last_fill_date,
+            electric_fence_working=feature_data.get("electric_fence_working", True),
+            electric_fence_voltage=feature_data.get("electric_fence_voltage"),
+            notes=feature_data.get("notes"),
+            is_active=feature_data.get("is_active", True),
+        )
+        db.add(feature)
+        count += 1
+        log(f"  Created land feature: {name} ({feature_type_str})")
+
+    db.flush()
+    return count
+
+
+def _import_grants(db: Session, grants_data: List[Dict], log: Callable) -> int:
+    """Import grants and environmental schemes."""
+    log("Importing grants...")
+    count = 0
+    today = date.today()
+
+    for grant_data in grants_data:
+        name = grant_data.get("name")
+        existing = db.query(Grant).filter(Grant.name == name).first()
+        if existing:
+            log(f"  Grant '{name}' already exists, skipping")
+            continue
+
+        # Parse enums
+        scheme_type_str = grant_data.get("scheme_type", "other")
+        try:
+            scheme_type = GrantSchemeType(scheme_type_str)
+        except ValueError:
+            scheme_type = GrantSchemeType.OTHER
+
+        status_str = grant_data.get("status", "active")
+        try:
+            status = GrantStatus(status_str)
+        except ValueError:
+            status = GrantStatus.ACTIVE
+
+        # Handle relative dates
+        agreement_start = None
+        if grant_data.get("agreement_start_days_ago") is not None:
+            agreement_start = today - timedelta(days=grant_data["agreement_start_days_ago"])
+        elif grant_data.get("agreement_start_date"):
+            agreement_start = datetime.fromisoformat(grant_data["agreement_start_date"]).date()
+
+        agreement_end = None
+        if grant_data.get("agreement_end_days_from_now") is not None:
+            agreement_end = today + timedelta(days=grant_data["agreement_end_days_from_now"])
+        elif grant_data.get("agreement_end_date"):
+            agreement_end = datetime.fromisoformat(grant_data["agreement_end_date"]).date()
+
+        next_inspection = None
+        if grant_data.get("next_inspection_days_from_now") is not None:
+            next_inspection = today + timedelta(days=grant_data["next_inspection_days_from_now"])
+
+        grant = Grant(
+            name=name,
+            scheme_type=scheme_type,
+            status=status,
+            reference_number=grant_data.get("reference_number"),
+            agreement_start_date=agreement_start,
+            agreement_end_date=agreement_end,
+            total_value=grant_data.get("total_value"),
+            annual_payment=grant_data.get("annual_payment"),
+            scheme_provider=grant_data.get("scheme_provider"),
+            next_inspection_date=next_inspection,
+            inspection_notes=grant_data.get("inspection_notes"),
+            compliance_requirements=grant_data.get("compliance_requirements"),
+            notes=grant_data.get("notes"),
+        )
+        db.add(grant)
+        count += 1
+        log(f"  Created grant: {name}")
+
+    db.flush()
+    return count
+
+
+def _import_risk_assessments(db: Session, assessments_data: List[Dict], user_map: Dict[str, int], log: Callable) -> int:
+    """Import risk assessments."""
+    log("Importing risk assessments...")
+    count = 0
+    today = date.today()
+
+    # Get admin user for created_by
+    admin_user_id = user_map.get("admin")
+    if not admin_user_id:
+        # Fall back to first admin user
+        from app.models import User, UserRole
+        admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+        admin_user_id = admin.id if admin else 1
+
+    for assessment_data in assessments_data:
+        title = assessment_data.get("title")
+        existing = db.query(RiskAssessment).filter(RiskAssessment.title == title).first()
+        if existing:
+            log(f"  Risk assessment '{title}' already exists, skipping")
+            continue
+
+        # Parse category enum
+        category_str = assessment_data.get("category", "other")
+        try:
+            category = RiskAssessmentCategory(category_str)
+        except ValueError:
+            category = RiskAssessmentCategory.OTHER
+
+        # Handle relative dates for last_reviewed_at
+        last_reviewed_at = datetime.utcnow()
+        if assessment_data.get("last_review_days_ago") is not None:
+            last_reviewed_at = datetime.utcnow() - timedelta(days=assessment_data["last_review_days_ago"])
+
+        next_review_due = None
+        if assessment_data.get("next_review_days_from_now") is not None:
+            next_review_due = datetime.utcnow() + timedelta(days=assessment_data["next_review_days_from_now"])
+
+        # Handle applies_to_roles - convert list to JSON string
+        applies_to_roles = assessment_data.get("applies_to_roles")
+        if applies_to_roles and isinstance(applies_to_roles, list):
+            import json
+            applies_to_roles = json.dumps(applies_to_roles)
+
+        assessment = RiskAssessment(
+            title=title,
+            category=category,
+            summary=assessment_data.get("summary"),
+            content=assessment_data.get("content"),
+            version=assessment_data.get("version", 1),
+            is_active=assessment_data.get("is_active", True),
+            required_for_induction=assessment_data.get("required_for_induction", False),
+            applies_to_roles=applies_to_roles,
+            review_period_months=assessment_data.get("review_period_months", 12),
+            last_reviewed_at=last_reviewed_at,
+            last_reviewed_by_id=admin_user_id,
+            next_review_due=next_review_due,
+            created_by_id=admin_user_id,
+        )
+        db.add(assessment)
+        count += 1
+        log(f"  Created risk assessment: {title} ({category_str})")
+
+    db.flush()
+    return count
+
+
+def _import_risk_assessment_reviews(db: Session, reviews_data: List[Dict], user_map: Dict[str, int], log: Callable) -> int:
+    """Import risk assessment review history."""
+    log("Importing risk assessment reviews...")
+    count = 0
+
+    for review_data in reviews_data:
+        # Find the risk assessment by title
+        assessment_title = review_data.get("assessment_title")
+        assessment = db.query(RiskAssessment).filter(RiskAssessment.title == assessment_title).first()
+        if not assessment:
+            log(f"  Risk assessment '{assessment_title}' not found, skipping review")
+            continue
+
+        # Get reviewer user
+        reviewer_username = review_data.get("reviewed_by_username", "admin")
+        reviewer_id = user_map.get(reviewer_username)
+        if not reviewer_id:
+            log(f"  User '{reviewer_username}' not found, skipping review")
+            continue
+
+        # Parse trigger enum
+        trigger_str = review_data.get("trigger", "scheduled")
+        try:
+            trigger = ReviewTrigger(trigger_str)
+        except ValueError:
+            trigger = ReviewTrigger.SCHEDULED
+
+        # Handle relative dates
+        reviewed_at = datetime.utcnow()
+        if review_data.get("reviewed_days_ago") is not None:
+            reviewed_at = datetime.utcnow() - timedelta(days=review_data["reviewed_days_ago"])
+
+        review = RiskAssessmentReview(
+            risk_assessment_id=assessment.id,
+            reviewed_at=reviewed_at,
+            reviewed_by_id=reviewer_id,
+            trigger=trigger,
+            trigger_details=review_data.get("trigger_details"),
+            version_before=review_data.get("version_before", 1),
+            version_after=review_data.get("version_after", 1),
+            changes_made=review_data.get("changes_made", False),
+            changes_summary=review_data.get("changes_summary"),
+            notes=review_data.get("notes"),
+        )
+        db.add(review)
+        count += 1
+        log(f"  Created review for '{assessment_title}' by {reviewer_username}")
+
+    db.flush()
+    return count
+
+
+def _import_risk_assessment_acknowledgements(db: Session, acks_data: List[Dict], user_map: Dict[str, int], log: Callable) -> int:
+    """Import risk assessment acknowledgements."""
+    log("Importing risk assessment acknowledgements...")
+    count = 0
+
+    for ack_data in acks_data:
+        # Find the risk assessment by title
+        assessment_title = ack_data.get("assessment_title")
+        assessment = db.query(RiskAssessment).filter(RiskAssessment.title == assessment_title).first()
+        if not assessment:
+            log(f"  Risk assessment '{assessment_title}' not found, skipping acknowledgement")
+            continue
+
+        # Get user
+        username = ack_data.get("username")
+        user_id = user_map.get(username)
+        if not user_id:
+            log(f"  User '{username}' not found, skipping acknowledgement")
+            continue
+
+        # Check for existing acknowledgement for this user/assessment combo
+        existing = db.query(RiskAssessmentAcknowledgement).filter(
+            RiskAssessmentAcknowledgement.risk_assessment_id == assessment.id,
+            RiskAssessmentAcknowledgement.user_id == user_id
+        ).first()
+        if existing:
+            log(f"  Acknowledgement already exists for {username} on '{assessment_title}', skipping")
+            continue
+
+        # Handle relative dates
+        acknowledged_at = datetime.utcnow()
+        if ack_data.get("acknowledged_days_ago") is not None:
+            acknowledged_at = datetime.utcnow() - timedelta(days=ack_data["acknowledged_days_ago"])
+
+        ack = RiskAssessmentAcknowledgement(
+            risk_assessment_id=assessment.id,
+            assessment_version=ack_data.get("assessment_version", assessment.version),
+            user_id=user_id,
+            acknowledged_at=acknowledged_at,
+            notes=ack_data.get("notes"),
+        )
+        db.add(ack)
+        count += 1
+        log(f"  Created acknowledgement for {username} on '{assessment_title}'")
+
+    db.flush()
+    return count

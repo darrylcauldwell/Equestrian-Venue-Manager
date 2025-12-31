@@ -1,10 +1,16 @@
-"""Backup and restore API endpoints."""
+"""Backup and restore API endpoints.
+
+Two types of backups:
+1. Database Backup (pg_dump) - Full PostgreSQL dump for disaster recovery
+2. Data Export (JSON) - Human-readable export for portability/seeding
+"""
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from datetime import datetime
 import os
 import json
+import subprocess
 
 from app.database import get_db
 from app.models import User, UserRole, Backup, BackupSchedule
@@ -12,6 +18,7 @@ from app.schemas.backup import (
     BackupCreate, BackupResponse, BackupListResponse,
     BackupScheduleUpdate, BackupScheduleResponse,
     BackupValidationResult,
+    DatabaseBackupResponse, DatabaseBackupListResponse,
 )
 from app.utils.auth import get_current_user
 from app.utils.backup import (
@@ -19,6 +26,9 @@ from app.utils.backup import (
     validate_backup, delete_backup_file, generate_backup_filename,
     get_backup_file_size, BACKUP_DIR, ensure_backup_dir, import_database,
 )
+
+# Directory for pg_dump backups
+DB_BACKUP_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "db_backups")
 
 router = APIRouter()
 
@@ -287,3 +297,154 @@ def update_backup_schedule(
     db.refresh(schedule)
 
     return schedule
+
+
+# =============================================================================
+# DATABASE BACKUP (pg_dump) - For disaster recovery
+# =============================================================================
+
+def ensure_db_backup_dir():
+    """Ensure the database backups directory exists."""
+    if not os.path.exists(DB_BACKUP_DIR):
+        os.makedirs(DB_BACKUP_DIR)
+
+
+def get_db_connection_info():
+    """Get database connection info from environment."""
+    return {
+        "host": os.environ.get("POSTGRES_HOST", "db"),
+        "port": os.environ.get("POSTGRES_PORT", "5432"),
+        "user": os.environ.get("POSTGRES_USER", "evm"),
+        "password": os.environ.get("POSTGRES_PASSWORD", "evm_password"),
+        "database": os.environ.get("POSTGRES_DB", "evm_db"),
+    }
+
+
+@router.post("/database/create", response_model=DatabaseBackupResponse)
+def create_database_backup(
+    current_user: User = Depends(require_admin),
+):
+    """
+    Create a full database backup using pg_dump.
+
+    This creates a complete PostgreSQL dump that can be used for disaster recovery.
+    The backup includes all data, schema, sequences, and constraints.
+    """
+    ensure_db_backup_dir()
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"db_backup_{timestamp}.sql"
+    filepath = os.path.join(DB_BACKUP_DIR, filename)
+
+    db_info = get_db_connection_info()
+
+    # Set PGPASSWORD environment variable for pg_dump
+    env = os.environ.copy()
+    env["PGPASSWORD"] = db_info["password"]
+
+    try:
+        # Run pg_dump
+        result = subprocess.run(
+            [
+                "pg_dump",
+                "-h", db_info["host"],
+                "-p", db_info["port"],
+                "-U", db_info["user"],
+                "-d", db_info["database"],
+                "-f", filepath,
+                "--no-owner",  # Don't output ownership commands
+                "--no-acl",    # Don't output access privilege commands
+            ],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=300,  # 5 minute timeout
+        )
+
+        if result.returncode != 0:
+            raise HTTPException(
+                status_code=500,
+                detail=f"pg_dump failed: {result.stderr}"
+            )
+
+        file_size = os.path.getsize(filepath)
+
+        return DatabaseBackupResponse(
+            filename=filename,
+            created_at=datetime.now().isoformat(),
+            file_size=file_size,
+            created_by=current_user.name,
+        )
+
+    except subprocess.TimeoutExpired:
+        raise HTTPException(status_code=500, detail="Backup timed out")
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=500,
+            detail="pg_dump not found. Ensure PostgreSQL client tools are installed."
+        )
+
+
+@router.get("/database/list", response_model=DatabaseBackupListResponse)
+def list_database_backups(
+    current_user: User = Depends(require_admin),
+):
+    """List all database backups (pg_dump files)."""
+    ensure_db_backup_dir()
+
+    backups = []
+    for filename in os.listdir(DB_BACKUP_DIR):
+        if filename.endswith('.sql'):
+            filepath = os.path.join(DB_BACKUP_DIR, filename)
+            stat = os.stat(filepath)
+            backups.append(DatabaseBackupResponse(
+                filename=filename,
+                created_at=datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                file_size=stat.st_size,
+            ))
+
+    # Sort by creation date, newest first
+    backups.sort(key=lambda x: x.created_at, reverse=True)
+
+    return DatabaseBackupListResponse(backups=backups, total=len(backups))
+
+
+@router.get("/database/download/{filename}")
+def download_database_backup(
+    filename: str,
+    current_user: User = Depends(require_admin),
+):
+    """Download a database backup file."""
+    # Security: ensure filename doesn't contain path traversal
+    if "/" in filename or "\\" in filename or ".." in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    filepath = os.path.join(DB_BACKUP_DIR, filename)
+
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="Backup file not found")
+
+    return FileResponse(
+        filepath,
+        media_type="application/sql",
+        filename=filename,
+    )
+
+
+@router.delete("/database/{filename}")
+def delete_database_backup(
+    filename: str,
+    current_user: User = Depends(require_admin),
+):
+    """Delete a database backup file."""
+    # Security: ensure filename doesn't contain path traversal
+    if "/" in filename or "\\" in filename or ".." in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    filepath = os.path.join(DB_BACKUP_DIR, filename)
+
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="Backup file not found")
+
+    os.remove(filepath)
+    return {"message": "Database backup deleted successfully"}

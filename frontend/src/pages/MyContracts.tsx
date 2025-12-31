@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { contractsApi } from '../services/api';
 import { Modal } from '../components/ui';
-import type { MyContract, SignatureStatus } from '../types';
+import type { MyContract, SignatureStatus, ContractContentResponse } from '../types';
 import '../styles/MyContracts.css';
 
 const statusLabels: Record<SignatureStatus, string> = {
@@ -29,6 +29,9 @@ export default function MyContracts() {
   const [loadingContent, setLoadingContent] = useState(false);
   const [signingContract, setSigningContract] = useState<MyContract | null>(null);
   const [isInitiatingSigning, setIsInitiatingSigning] = useState(false);
+  const [manualSigningContract, setManualSigningContract] = useState<MyContract | null>(null);
+  const [manualSigningContent, setManualSigningContent] = useState<ContractContentResponse | null>(null);
+  const [isManualSigning, setIsManualSigning] = useState(false);
 
   useEffect(() => {
     loadContracts();
@@ -68,9 +71,15 @@ export default function MyContracts() {
       setSigningContract(contract);
       const result = await contractsApi.initiateSigning(contract.signature_id);
 
-      if (result.redirect_url) {
+      if (result.manual_signing) {
+        // DocuSign not configured - use manual signing
+        const content = await contractsApi.getMyContractContent(contract.signature_id);
+        setManualSigningContract(contract);
+        setManualSigningContent(content);
+        setError('');
+      } else if (result.redirect_url || result.signing_url) {
         // Redirect to DocuSign for signing
-        window.location.href = result.redirect_url;
+        window.location.href = result.redirect_url || result.signing_url!;
       } else if (result.envelope_id) {
         // In test mode, simulate completion
         setError('');
@@ -82,6 +91,25 @@ export default function MyContracts() {
     } finally {
       setIsInitiatingSigning(false);
       setSigningContract(null);
+    }
+  };
+
+  const handleManualSign = async () => {
+    if (!manualSigningContract) return;
+
+    try {
+      setIsManualSigning(true);
+      await contractsApi.manualSign(manualSigningContract.signature_id);
+      setManualSigningContract(null);
+      setManualSigningContent(null);
+      setError('');
+      // Reload contracts to show updated status
+      await loadContracts();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to sign contract';
+      setError(message);
+    } finally {
+      setIsManualSigning(false);
     }
   };
 
@@ -305,6 +333,53 @@ export default function MyContracts() {
             dangerouslySetInnerHTML={{ __html: contractContent }}
           />
         )}
+      </Modal>
+
+      {/* Manual Signing Modal */}
+      <Modal
+        isOpen={!!manualSigningContract}
+        onClose={() => {
+          setManualSigningContract(null);
+          setManualSigningContent(null);
+        }}
+        title={`Sign: ${manualSigningContract?.template_name || 'Contract'}`}
+        size="xl"
+        footer={
+          <>
+            <button
+              className="ds-btn ds-btn-secondary"
+              onClick={() => {
+                setManualSigningContract(null);
+                setManualSigningContent(null);
+              }}
+              disabled={isManualSigning}
+            >
+              Cancel
+            </button>
+            <button
+              className="ds-btn ds-btn-primary"
+              onClick={handleManualSign}
+              disabled={isManualSigning}
+            >
+              {isManualSigning ? 'Signing...' : 'I Accept and Sign'}
+            </button>
+          </>
+        }
+      >
+        <div className="manual-signing-content">
+          <div className="ds-alert ds-alert-info" style={{ marginBottom: 'var(--space-4)' }}>
+            Please read the contract below carefully. By clicking "I Accept and Sign", you acknowledge
+            that you have read, understood, and agree to the terms of this contract.
+          </div>
+          {manualSigningContent ? (
+            <div
+              className="contract-content"
+              dangerouslySetInnerHTML={{ __html: manualSigningContent.html_content }}
+            />
+          ) : (
+            <div className="ds-loading">Loading contract...</div>
+          )}
+        </div>
       </Modal>
     </div>
   );

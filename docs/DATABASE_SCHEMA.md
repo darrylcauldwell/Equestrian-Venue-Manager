@@ -1857,24 +1857,68 @@ Based on typical usage patterns:
 
 ---
 
-## Database Backup Strategy
+## Backup Strategy
 
-### Automated Backups
-Configured via `backup_schedules` table:
-- Daily backups with 30-day retention (default)
-- Local storage: `/backend/backups/`
+There are **two types of backups** available, serving different purposes:
+
+### 1. Database Backup (pg_dump) - Disaster Recovery
+
+**Purpose:** Full PostgreSQL backup for disaster recovery. Use this for production backups.
+
+**Location:** Admin → Settings → Backups → "Database Backup" section
+
+**Features:**
+- Creates a complete PostgreSQL dump (.sql file)
+- Includes all data, schema, sequences, and constraints
+- Download to your laptop for safekeeping
+- Restore using standard PostgreSQL tools
+
+**When to use:**
+- Before major updates or migrations
+- Regular scheduled backups (weekly recommended)
+- Before any destructive operations
+
+**Restore command:**
+```bash
+cat backup.sql | docker compose exec -T db psql -U evm evm_db
+```
+
+### 2. Data Export/Import (JSON) - Portability & Seeding
+
+**Purpose:** Human-readable JSON export for seeding new environments or data portability.
+
+**Location:** Admin → Settings → Backups → "Data Export / Import" section
+
+**Features:**
+- Creates a JSON file with all entity data
+- Human-readable and editable
+- Can be used to seed new environments
+- Validates data before import
+- Automated scheduling available
+
+**When to use:**
+- Setting up new development/staging environments
+- Migrating data between systems
+- Creating test data snapshots
+- Inspecting data without SQL access
+
+**Storage:**
+- Local: `/backend/backups/`
+- Metadata stored in `backups` table
 - Optional S3 storage for off-site backup
 
-### Manual Backups
-Via Admin Settings → Database Management:
-- Full database dump (SQL format)
-- Entity counts for verification
-- Backup metadata stored in `backups` table
+### Recommended Backup Schedule
 
-### Restoration
-- Standard PostgreSQL restore: `psql < backup.sql`
-- Verify entity counts match backup metadata
-- Re-run latest migration to ensure schema is current
+| Backup Type | Frequency | Retention | Purpose |
+|-------------|-----------|-----------|---------|
+| Database (pg_dump) | Weekly | 4 weeks | Disaster recovery |
+| Data Export (JSON) | Daily | 30 days | Quick restores, seeding |
+
+### Important Notes
+
+- **Always download Database Backups** to your laptop - they are the true disaster recovery option
+- Data Exports are useful but may not capture everything (e.g., sequences, constraints)
+- Test your restore process regularly - don't wait for a disaster to find out your backups don't work
 
 ---
 

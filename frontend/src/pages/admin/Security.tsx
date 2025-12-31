@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { settingsApi } from '../../services/api';
 import { useRequestState } from '../../hooks';
 import type { SiteSettingsUpdate } from '../../types';
@@ -16,11 +16,7 @@ export function AdminSecurity() {
   // Request state
   const { loading: isLoading, error, success, setError, setSuccess, setLoading } = useRequestState(true);
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       const data = await settingsApi.get();
       setFormData({
@@ -34,7 +30,11 @@ export function AdminSecurity() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

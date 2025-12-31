@@ -90,18 +90,16 @@
 /* Filters */
 .tasks-filters {
   display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
-.tasks-filters select {
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 0.9rem;
-  min-width: 150px;
-  background: var(--bg-input);
-  color: var(--text-primary);
+.tasks-filters .ds-select {
+  width: auto;
+  min-width: 160px;
+  flex: 1;
+  max-width: 220px;
 }
 
 /* Tab Selector (dropdown) */
@@ -563,12 +561,20 @@
 }
 
 .task-assign select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   flex: 1;
-  padding: 8px 12px;
+  padding: 8px 2.5rem 8px 12px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--bg-input);
   color: var(--text-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  cursor: pointer;
 }
 
 .task-assign select optgroup {
@@ -1863,13 +1869,13 @@
 @media (prefers-color-scheme: dark) {
   .yard-tasks .summary-card,
   .yard-tasks .task-card {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
 
   .yard-tasks .modal {
-    background: #2d2d2d;
-    border: 1px solid #555555;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
   }
 
   .task-detail-info,
@@ -1877,22 +1883,22 @@
   .comment,
   .health-task-details,
   .task-complete-details {
-    background: #3a3a3a;
+    background: var(--bg-card);
   }
 
   .completion-notes {
-    background: rgba(76, 175, 80, 0.15);
+    background: var(--color-success-bg);
   }
 
   .health-type-rehab_exercise {
-    background: rgba(156, 39, 176, 0.2);
-    color: #ce93d8;
+    background: var(--color-purple-bg);
+    color: var(--color-purple);
   }
 
   .toggle-btn {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .toggle-btn.active {
@@ -1901,12 +1907,12 @@
   }
 
   .task-selection-list {
-    background: #2d2d2d;
-    border-color: #555555;
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
   }
 
   .task-selection-item:hover {
-    background: #3a3a3a;
+    background: var(--bg-card);
   }
 }
 
@@ -2340,12 +2346,20 @@
 }
 
 .reassign-select {
-  padding: 0.25rem 0.5rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.25rem 2rem 0.25rem 0.5rem;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.8rem;
   background: var(--bg-input);
   color: var(--text-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 10px;
+  cursor: pointer;
 }
 
 .add-task-item {

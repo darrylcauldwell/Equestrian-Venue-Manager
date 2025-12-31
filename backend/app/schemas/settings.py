@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from decimal import Decimal
 from typing import Optional, Dict, Any
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from app.utils.validators import validate_uk_phone
 
 
@@ -75,6 +75,8 @@ class SiteSettingsBase(BaseModel):
     dev_mode: bool = True  # When True, disables browser caching
     # Turnout cutoff
     turnout_cutoff_date: Optional[date] = None
+    # Staff Leave Configuration
+    leave_year_start_month: int = 1  # Month when leave year starts (1=Jan, 4=Apr for financial year)
     # Scheduler Configuration
     scheduler_health_tasks_hour: int = 0
     scheduler_health_tasks_minute: int = 1
@@ -87,6 +89,12 @@ class SiteSettingsBase(BaseModel):
     scheduler_backup_minute: int = 0
     scheduler_cleanup_hour: int = 2
     scheduler_cleanup_minute: int = 30
+    # SSL/Domain Configuration
+    ssl_domain: Optional[str] = None
+    ssl_acme_email: Optional[str] = None
+    ssl_enabled: bool = False
+    ssl_traefik_dashboard_enabled: bool = False
+    ssl_traefik_dashboard_user: Optional[str] = None
 
     @field_validator('contact_phone')
     @classmethod
@@ -161,6 +169,8 @@ class SiteSettingsUpdate(BaseModel):
     dev_mode: Optional[bool] = None
     # Turnout cutoff
     turnout_cutoff_date: Optional[date] = None
+    # Staff Leave Configuration
+    leave_year_start_month: Optional[int] = None  # Month when leave year starts (1=Jan, 4=Apr for financial year)
     # Scheduler Configuration
     scheduler_health_tasks_hour: Optional[int] = None
     scheduler_health_tasks_minute: Optional[int] = None
@@ -173,6 +183,13 @@ class SiteSettingsUpdate(BaseModel):
     scheduler_backup_minute: Optional[int] = None
     scheduler_cleanup_hour: Optional[int] = None
     scheduler_cleanup_minute: Optional[int] = None
+    # SSL/Domain Configuration
+    ssl_domain: Optional[str] = None
+    ssl_acme_email: Optional[str] = None
+    ssl_enabled: Optional[bool] = None
+    ssl_traefik_dashboard_enabled: Optional[bool] = None
+    ssl_traefik_dashboard_user: Optional[str] = None
+    ssl_traefik_dashboard_password: Optional[str] = None  # Plain text, will be hashed
 
     @field_validator('contact_phone')
     @classmethod
@@ -184,5 +201,45 @@ class SiteSettingsResponse(SiteSettingsBase):
     id: int
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+# SSL/Domain Configuration Schemas
+class SSLSettingsResponse(BaseModel):
+    """SSL configuration visible to admin"""
+    ssl_domain: Optional[str] = None
+    ssl_acme_email: Optional[str] = None
+    ssl_enabled: bool = False
+    ssl_traefik_dashboard_enabled: bool = False
+    ssl_traefik_dashboard_user: Optional[str] = None
+    has_dashboard_password: bool = False  # Whether password is set (don't expose hash)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SSLSettingsUpdate(BaseModel):
+    """Update SSL settings"""
+    ssl_domain: Optional[str] = None
+    ssl_acme_email: Optional[str] = None
+    ssl_enabled: Optional[bool] = None
+    ssl_traefik_dashboard_enabled: Optional[bool] = None
+    ssl_traefik_dashboard_user: Optional[str] = None
+    ssl_traefik_dashboard_password: Optional[str] = None  # Plain text password
+
+
+class CertificateInfo(BaseModel):
+    """SSL certificate information"""
+    domain: str
+    issuer: Optional[str] = None
+    valid_from: Optional[datetime] = None
+    valid_until: Optional[datetime] = None
+    days_until_expiry: Optional[int] = None
+    is_valid: bool = False
+    error: Optional[str] = None
+
+
+class SSLStatusResponse(BaseModel):
+    """Full SSL status including certificate info"""
+    settings: SSLSettingsResponse
+    certificate: Optional[CertificateInfo] = None
+    traefik_config: Optional[str] = None  # Generated docker-compose snippet

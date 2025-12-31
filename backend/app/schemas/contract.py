@@ -1,7 +1,7 @@
 """Contract management schemas."""
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from enum import Enum
 
 
@@ -55,8 +55,7 @@ class ContractTemplateResponse(BaseModel):
     current_version_number: Optional[int] = None
     total_signatures: int = 0
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ContractTemplateSummary(BaseModel):
@@ -92,8 +91,7 @@ class ContractVersionResponse(BaseModel):
     # Enriched fields
     created_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ContractVersionSummary(BaseModel):
@@ -151,21 +149,40 @@ class ContractSignatureResponse(BaseModel):
     version_number: Optional[int] = None
     contract_type: Optional[ContractType] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SignatureUserSummary(BaseModel):
+    """User info for signature list."""
+    id: int
+    full_name: str
+    email: str
+
+
+class SignatureTemplateSummary(BaseModel):
+    """Template info for signature list."""
+    id: int
+    name: str
+
+
+class SignatureVersionSummary(BaseModel):
+    """Version info for signature list."""
+    id: int
+    template_id: int
+    version_number: int
+    template: Optional[SignatureTemplateSummary] = None
 
 
 class ContractSignatureSummary(BaseModel):
     """Contract signature summary for list views."""
     id: int
-    user_name: str
-    user_email: str
-    template_name: str
-    version_number: int
-    contract_type: ContractType
     status: SignatureStatus
     requested_at: Optional[datetime]
     signed_at: Optional[datetime]
+    signed_pdf_filename: Optional[str] = None
+    notes: Optional[str] = None
+    user: Optional[SignatureUserSummary] = None
+    contract_version: Optional[SignatureVersionSummary] = None
 
 
 # ============ User-facing Schemas ============
@@ -204,6 +221,7 @@ class InitiateSigningResponse(BaseModel):
     envelope_id: Optional[str] = None
     error: Optional[str] = None
     test_mode: bool = False
+    manual_signing: bool = False  # True when DocuSign is not configured
 
 
 class CompleteSigningRequest(BaseModel):

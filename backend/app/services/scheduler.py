@@ -13,6 +13,7 @@ import logging
 from datetime import date, datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
@@ -21,6 +22,7 @@ from app.services.billing_service import BillingService
 from app.models.user import User
 from app.models.task import YardTask, TaskStatus, AssignmentType
 from app.models.backup import Backup, BackupSchedule
+from app.models.land_management import FloodMonitoringStation
 
 logger = logging.getLogger(__name__)
 
@@ -234,13 +236,25 @@ def start_scheduler():
             coalesce=True
         )
 
+        # Add flood monitoring refresh job (every 60 minutes)
+        sched.add_job(
+            refresh_flood_readings,
+            trigger=IntervalTrigger(minutes=60),
+            id="flood_readings_refresh",
+            name="Refresh flood monitoring station readings",
+            replace_existing=True,
+            misfire_grace_time=3600,  # 1 hour grace time
+            coalesce=True
+        )
+
         sched.start()
         logger.info(
             f"Scheduler started with: health tasks ({times['health_tasks_hour']:02d}:{times['health_tasks_minute']:02d}), "
             f"rollover ({times['rollover_hour']:02d}:{times['rollover_minute']:02d}), "
             f"billing ({times['billing_day']}st @ {times['billing_hour']:02d}:{times['billing_minute']:02d}), "
             f"backup ({times['backup_hour']:02d}:{times['backup_minute']:02d}), "
-            f"cleanup ({times['cleanup_hour']:02d}:{times['cleanup_minute']:02d})"
+            f"cleanup ({times['cleanup_hour']:02d}:{times['cleanup_minute']:02d}), "
+            f"flood readings (every 60 min)"
         )
     except RuntimeError as e:
         # Event loop issues in test environments - recreate scheduler
@@ -551,6 +565,70 @@ def cleanup_old_backups():
 
     except Exception as e:
         logger.error(f"Error cleaning up old backups: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
+def refresh_flood_readings():
+    """
+    Job function: Refresh flood monitoring station readings from Environment Agency API.
+
+    This runs every 60 minutes to:
+    - Fetch latest water level readings for all active monitoring stations
+    - Update local database with current values
+    - Enable flood warning alerts when thresholds are exceeded
+    """
+    logger.info("Starting flood readings refresh...")
+
+    db = SessionLocal()
+    try:
+        from app.services.flood_api import FloodAPIService
+
+        stations = db.query(FloodMonitoringStation).filter(
+            FloodMonitoringStation.is_active == True
+        ).all()
+
+        if not stations:
+            logger.debug("No active flood monitoring stations configured")
+            return
+
+        updated_count = 0
+        error_count = 0
+        warnings_detected = 0
+
+        for station in stations:
+            try:
+                reading = FloodAPIService.get_latest_reading_sync(station.station_id)
+                if reading and reading.get("value") is not None:
+                    station.last_reading = reading["value"]
+                    if reading.get("date_time"):
+                        try:
+                            dt_str = reading["date_time"]
+                            if dt_str.endswith("Z"):
+                                dt_str = dt_str[:-1]
+                            station.last_reading_time = datetime.fromisoformat(dt_str)
+                        except (ValueError, TypeError):
+                            pass
+                    station.last_fetched = datetime.utcnow()
+                    station.updated_at = datetime.utcnow()
+                    updated_count += 1
+
+                    # Check if this reading exceeds warning thresholds
+                    if station.warning_threshold_meters and station.last_reading >= station.warning_threshold_meters:
+                        warnings_detected += 1
+            except Exception as e:
+                logger.warning(f"Failed to fetch reading for station {station.station_id}: {e}")
+                error_count += 1
+
+        db.commit()
+        logger.info(
+            f"Flood readings refresh complete: {updated_count} stations updated, "
+            f"{error_count} errors, {warnings_detected} stations at warning level"
+        )
+
+    except Exception as e:
+        logger.error(f"Error refreshing flood readings: {e}")
         db.rollback()
     finally:
         db.close()

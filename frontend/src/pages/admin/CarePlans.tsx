@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { rehabApi, horsesApi } from '../../services/api';
 import { useRequestState } from '../../hooks';
-import { ConfirmModal } from '../../components/ui';
+import { ConfirmModal, Select, FormGroup } from '../../components/ui';
 import { TaskHistoryPanel } from '../../components/TaskHistoryPanel';
 import type {
   RehabProgram,
@@ -372,18 +372,19 @@ export default function AdminCarePlans() {
       <header className="page-header">
         <h1>Care Plans</h1>
         <div className="header-actions">
-          <select
-            className="status-filter"
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-          >
-            <option value="">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="paused">Paused</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+          <FormGroup label="Status">
+            <Select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </Select>
+          </FormGroup>
           <button className="btn-add" onClick={openCreateModal}>
             + New Care Plan
           </button>
@@ -520,9 +521,8 @@ export default function AdminCarePlans() {
                 <section className="form-section">
                   <h3>Care Plan Details</h3>
                   <div className="form-row">
-                    <div className="ds-form-group">
-                      <label>Horse *</label>
-                      <select
+                    <FormGroup label="Horse" required>
+                      <Select
                         value={programForm.horse_id}
                         onChange={e => setProgramForm({ ...programForm, horse_id: Number(e.target.value) })}
                         required
@@ -531,8 +531,8 @@ export default function AdminCarePlans() {
                         {horses.map(horse => (
                           <option key={horse.id} value={horse.id}>{horse.name}</option>
                         ))}
-                      </select>
-                    </div>
+                      </Select>
+                    </FormGroup>
                     <div className="ds-form-group">
                       <label>Care Plan Name *</label>
                       <input
@@ -686,9 +686,8 @@ export default function AdminCarePlans() {
 
                         {phase.tasks.map((task, taskIndex) => (
                           <div key={taskIndex} className="task-row">
-                            <div className="ds-form-group">
-                              <label>Type</label>
-                              <select
+                            <FormGroup label="Type">
+                              <Select
                                 value={task.task_type}
                                 onChange={e => handleUpdateTask(phaseIndex, taskIndex, { task_type: e.target.value })}
                               >
@@ -700,8 +699,8 @@ export default function AdminCarePlans() {
                                 <option value="medication">Medication</option>
                                 <option value="observation">Observation</option>
                                 <option value="other">Other</option>
-                              </select>
-                            </div>
+                              </Select>
+                            </FormGroup>
                             <div className="ds-form-group flex-grow">
                               <label>Description *</label>
                               <input
@@ -721,17 +720,16 @@ export default function AdminCarePlans() {
                                 onChange={e => handleUpdateTask(phaseIndex, taskIndex, { duration_minutes: e.target.value ? Number(e.target.value) : undefined })}
                               />
                             </div>
-                            <div className="ds-form-group">
-                              <label>Frequency</label>
-                              <select
+                            <FormGroup label="Frequency">
+                              <Select
                                 value={task.frequency || 'daily'}
                                 onChange={e => handleUpdateTask(phaseIndex, taskIndex, { frequency: e.target.value as TaskFrequency })}
                               >
                                 {Object.entries(frequencyLabels).map(([value, label]) => (
                                   <option key={value} value={value}>{label}</option>
                                 ))}
-                              </select>
-                            </div>
+                              </Select>
+                            </FormGroup>
                             {phase.tasks.length > 1 && (
                               <button
                                 type="button"

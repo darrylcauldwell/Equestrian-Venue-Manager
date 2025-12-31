@@ -543,7 +543,7 @@
 }
 
 .accept-btn:hover {
-  background: #2e8b2e;
+  background: var(--color-success-hover);
 }
 
 .decline-btn {
@@ -947,7 +947,7 @@
 }
 
 .request-assistance-btn:hover {
-  background: #e68a00;
+  background: var(--color-warning-hover);
 }
 
 .request-assistance-btn:disabled {
@@ -964,7 +964,7 @@
 }
 
 .request-assistance-btn.accept:hover {
-  background: #218838;
+  background: var(--color-success-hover);
 }
 
 .request-assistance-btn.decline {
@@ -972,7 +972,7 @@
 }
 
 .request-assistance-btn.decline:hover {
-  background: #c82333;
+  background: var(--color-danger-hover);
 }
 
 .request-assistance-btn.approved {
@@ -1073,7 +1073,7 @@
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
   .service-requests-page .tab-content {
-    background: #2d2d2d;
+    background: var(--bg-secondary);
   }
 
   .service-requests-page .package-card,
@@ -1082,43 +1082,43 @@
   .service-requests-page .enquiry-section,
   .service-requests-page .rehab-program-card,
   .service-requests-page .quote-card {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
 
   .service-requests-page .modal {
-    background: #2d2d2d;
-    border: 1px solid #555555;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
   }
 
   .service-requests-page .filter-btn,
   .service-requests-page .day-checkbox {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
 
   .service-requests-page .quote-details {
-    background: rgba(74, 144, 226, 0.15);
+    background: var(--color-primary-bg);
   }
 
   .service-requests-page .quote-details h4,
   .service-requests-page .quote-notes p {
-    color: #e5e5e5;
+    color: var(--text-primary);
   }
 
   .service-requests-page .quote-amount .label,
   .service-requests-page .quote-notes .label,
   .service-requests-page .quote-meta {
-    color: #b0b0b0;
+    color: var(--text-muted);
   }
 
   .service-requests-page .quote-value {
-    color: #64b5f6;
+    color: var(--color-primary);
   }
 
   .service-requests-page .status-quoted {
-    background: rgba(74, 144, 226, 0.2);
-    color: #64b5f6;
+    background: var(--color-primary-bg);
+    color: var(--color-primary);
   }
 }
 

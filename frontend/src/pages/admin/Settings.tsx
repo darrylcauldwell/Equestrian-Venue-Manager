@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { settingsApi, uploadsApi, contractsApi } from '../../services/api';
 import { useSettings } from '../../contexts/SettingsContext';
 import { validateEmail, validatePhone } from '../../utils/validation';
 import { useRequestState, useLoadingStates } from '../../hooks';
-import type { SiteSettingsUpdate, RuggingGuide, DocuSignSettings, UpdateDocuSignSettings } from '../../types';
+import type { SiteSettingsUpdate, RuggingGuide, DocuSignSettings, UpdateDocuSignSettings, SSLStatusResponse, SSLSettingsUpdate } from '../../types';
 import { FeatureFlagsSettings } from '../../components/admin/FeatureFlagsSettings';
 import './Admin.css';
 
@@ -274,11 +274,328 @@ function DocuSignSettingsSection() {
   );
 }
 
+// SSL/Domain Configuration Section Component
+function SSLSettingsSection() {
+  const [sslStatus, setSSLStatus] = useState<SSLStatusResponse | null>(null);
+  const [formData, setFormData] = useState<SSLSettingsUpdate>({
+    ssl_domain: '',
+    ssl_acme_email: '',
+    ssl_enabled: false,
+    ssl_traefik_dashboard_enabled: false,
+    ssl_traefik_dashboard_user: '',
+    ssl_traefik_dashboard_password: '',
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    loadSSLStatus();
+  }, []);
+
+  const loadSSLStatus = async () => {
+    try {
+      const data = await settingsApi.getSSLStatus();
+      setSSLStatus(data);
+      setFormData({
+        ssl_domain: data.settings.ssl_domain || '',
+        ssl_acme_email: data.settings.ssl_acme_email || '',
+        ssl_enabled: data.settings.ssl_enabled,
+        ssl_traefik_dashboard_enabled: data.settings.ssl_traefik_dashboard_enabled,
+        ssl_traefik_dashboard_user: data.settings.ssl_traefik_dashboard_user || '',
+        ssl_traefik_dashboard_password: '',
+      });
+    } catch {
+      // SSL settings may not exist yet
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setError('');
+    setSuccess('');
+    setIsSaving(true);
+
+    try {
+      // Only send password if it was entered
+      const updateData: SSLSettingsUpdate = { ...formData };
+      if (!formData.ssl_traefik_dashboard_password) {
+        delete updateData.ssl_traefik_dashboard_password;
+      }
+
+      await settingsApi.updateSSLSettings(updateData);
+      setSuccess('SSL settings saved successfully');
+      await loadSSLStatus();
+      // Clear password field after save
+      setFormData(prev => ({ ...prev, ssl_traefik_dashboard_password: '' }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save settings';
+      setError(message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCheckCertificate = async () => {
+    if (!formData.ssl_domain) return;
+    setIsChecking(true);
+    setError('');
+
+    try {
+      await settingsApi.checkCertificate(formData.ssl_domain);
+      await loadSSLStatus();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to check certificate';
+      setError(message);
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  const copyConfig = () => {
+    if (sslStatus?.traefik_config) {
+      navigator.clipboard.writeText(sslStatus.traefik_config);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <details className="form-section">
+        <summary><h3 style={{ display: 'inline' }}>SSL/Domain Configuration</h3></summary>
+        <p>Loading...</p>
+      </details>
+    );
+  }
+
+  const cert = sslStatus?.certificate;
+
+  return (
+    <details className="form-section">
+      <summary><h3 style={{ display: 'inline' }}>SSL/Domain Configuration</h3></summary>
+      <p className="small-text">Configure your domain and Let's Encrypt SSL certificate for HTTPS access.</p>
+
+      {error && <div className="ds-alert ds-alert-error">{error}</div>}
+      {success && <div className="ds-alert ds-alert-success">{success}</div>}
+
+      <div className="docusign-form">
+        <div className="feature-toggle-row">
+          <div className="feature-toggle-info">
+            <span className="feature-toggle-label">Enable SSL</span>
+            <span className="feature-toggle-description">Activate HTTPS with automatic Let's Encrypt certificates</span>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={formData.ssl_enabled ?? false}
+              onChange={(e) => setFormData({ ...formData, ssl_enabled: e.target.checked })}
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div className="form-row" style={{ marginTop: '1rem' }}>
+          <div className="ds-form-group">
+            <label htmlFor="ssl_domain">Domain Name</label>
+            <input
+              id="ssl_domain"
+              type="text"
+              value={formData.ssl_domain || ''}
+              onChange={(e) => setFormData({ ...formData, ssl_domain: e.target.value })}
+              placeholder="yard.example.com"
+            />
+            <small>Your domain (DNS must point to this server)</small>
+          </div>
+          <div className="ds-form-group">
+            <label htmlFor="ssl_acme_email">ACME Email</label>
+            <input
+              id="ssl_acme_email"
+              type="email"
+              value={formData.ssl_acme_email || ''}
+              onChange={(e) => setFormData({ ...formData, ssl_acme_email: e.target.value })}
+              placeholder="admin@example.com"
+            />
+            <small>Email for Let's Encrypt notifications</small>
+          </div>
+        </div>
+
+        {/* Certificate Status */}
+        {formData.ssl_enabled && formData.ssl_domain && (
+          <div className="ssl-certificate-status" style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+            <h4 style={{ margin: '0 0 0.75rem 0' }}>Certificate Status</h4>
+            {cert ? (
+              cert.error ? (
+                <div className="ds-alert ds-alert-warning" style={{ margin: 0 }}>
+                  <strong>Certificate Check Failed:</strong> {cert.error}
+                  <br /><small>This is normal if SSL is not yet configured on the server.</small>
+                </div>
+              ) : (
+                <div className="certificate-details">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem' }}>
+                    <div>
+                      <strong>Status:</strong>
+                      <span className={`ds-badge ${cert.is_valid ? 'ds-badge-success' : 'ds-badge-error'}`} style={{ marginLeft: '0.5rem' }}>
+                        {cert.is_valid ? 'Valid' : 'Invalid/Expired'}
+                      </span>
+                    </div>
+                    <div><strong>Issuer:</strong> {cert.issuer || 'Unknown'}</div>
+                    <div><strong>Valid From:</strong> {formatDate(cert.valid_from)}</div>
+                    <div><strong>Valid Until:</strong> {formatDate(cert.valid_until)}</div>
+                    <div>
+                      <strong>Expires In:</strong>
+                      <span className={`ds-badge ${(cert.days_until_expiry ?? 0) > 30 ? 'ds-badge-success' : (cert.days_until_expiry ?? 0) > 7 ? 'ds-badge-warning' : 'ds-badge-error'}`} style={{ marginLeft: '0.5rem' }}>
+                        {cert.days_until_expiry} days
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : (
+              <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Save settings and check certificate status after configuring.</p>
+            )}
+            <button
+              type="button"
+              className="ds-btn ds-btn-secondary btn-small"
+              onClick={handleCheckCertificate}
+              disabled={isChecking || !formData.ssl_domain}
+              style={{ marginTop: '0.75rem' }}
+            >
+              {isChecking ? 'Checking...' : 'Refresh Certificate Status'}
+            </button>
+          </div>
+        )}
+
+        {/* Traefik Dashboard Settings */}
+        <details className="advanced-options" style={{ marginTop: '1rem' }}>
+          <summary>Traefik Dashboard (Advanced)</summary>
+          <div style={{ padding: '1rem 0' }}>
+            <div className="feature-toggle-row">
+              <div className="feature-toggle-info">
+                <span className="feature-toggle-label">Enable Dashboard</span>
+                <span className="feature-toggle-description">Access Traefik admin at traefik.{formData.ssl_domain || 'yourdomain.com'}</span>
+              </div>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={formData.ssl_traefik_dashboard_enabled ?? false}
+                  onChange={(e) => setFormData({ ...formData, ssl_traefik_dashboard_enabled: e.target.checked })}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+
+            {formData.ssl_traefik_dashboard_enabled && (
+              <div className="form-row" style={{ marginTop: '1rem' }}>
+                <div className="ds-form-group">
+                  <label htmlFor="ssl_dashboard_user">Dashboard Username</label>
+                  <input
+                    id="ssl_dashboard_user"
+                    type="text"
+                    value={formData.ssl_traefik_dashboard_user || ''}
+                    onChange={(e) => setFormData({ ...formData, ssl_traefik_dashboard_user: e.target.value })}
+                    placeholder="admin"
+                  />
+                </div>
+                <div className="ds-form-group">
+                  <label htmlFor="ssl_dashboard_password">
+                    Dashboard Password
+                    {sslStatus?.settings.has_dashboard_password && <small style={{ marginLeft: '0.5rem', color: 'var(--color-success)' }}>(set)</small>}
+                  </label>
+                  <input
+                    id="ssl_dashboard_password"
+                    type="password"
+                    value={formData.ssl_traefik_dashboard_password || ''}
+                    onChange={(e) => setFormData({ ...formData, ssl_traefik_dashboard_password: e.target.value })}
+                    placeholder={sslStatus?.settings.has_dashboard_password ? '••••••••' : 'Enter password'}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </details>
+
+        {/* Generated Traefik Config */}
+        {sslStatus?.traefik_config && formData.ssl_domain && formData.ssl_acme_email && (
+          <details className="advanced-options" style={{ marginTop: '1rem' }}>
+            <summary>Generated Docker Compose Configuration</summary>
+            <div style={{ padding: '1rem 0' }}>
+              <p className="small-text">Copy this configuration to your docker-compose.prod.yml file:</p>
+              <div style={{ position: 'relative' }}>
+                <pre style={{
+                  background: 'var(--bg-body)',
+                  padding: '1rem',
+                  borderRadius: 'var(--radius-md)',
+                  overflow: 'auto',
+                  maxHeight: '400px',
+                  fontSize: '0.8125rem',
+                  border: '1px solid var(--border-color)',
+                }}>
+                  {sslStatus.traefik_config}
+                </pre>
+                <button
+                  type="button"
+                  className="ds-btn ds-btn-secondary btn-small"
+                  onClick={copyConfig}
+                  style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}
+                >
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+          </details>
+        )}
+
+        <div className="test-button-row" style={{ marginTop: '1rem', gap: '12px', display: 'flex', alignItems: 'center' }}>
+          <button
+            type="button"
+            className="ds-btn ds-btn-primary btn-small"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Saving...' : 'Save Settings'}
+          </button>
+        </div>
+
+        <div className="ds-alert ds-alert-info" style={{ marginTop: '1rem' }}>
+          <strong>Deployment Steps:</strong>
+          <ol style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+            <li>Point your domain's DNS A record to your server's IP address</li>
+            <li>Configure the domain and ACME email above</li>
+            <li>Copy the generated Docker Compose configuration to your server</li>
+            <li>Run <code>docker compose -f docker-compose.prod.yml up -d</code></li>
+            <li>Traefik will automatically obtain and renew Let's Encrypt certificates</li>
+          </ol>
+        </div>
+      </div>
+    </details>
+  );
+}
+
 export function AdminSettings() {
   const { refreshSettings, applyThemePreview } = useSettings();
 
   // Consolidated loading states (replaces 7 separate useState calls)
-  const loading = useLoadingStates<LoadingKey>('initial');
+  // IMPORTANT: Destructure to get stable function references - the hook object itself
+  // is recreated each render, but the individual functions are stable (useCallback)
+  const { isLoading, stopLoading, withLoading } = useLoadingStates<LoadingKey>('initial');
+
+  // Track if initial load has completed to prevent form reset during edits
+  // This is a safety guard in case other re-renders somehow trigger loadSettings
+  const hasLoadedRef = useRef(false);
 
   // Consolidated error/success messages (replaces 2 useState calls)
   const { error, success, setError, setSuccess } = useRequestState();
@@ -353,6 +670,8 @@ export function AdminSettings() {
     refresh_token_expire_days: 7,
     frontend_url: 'http://localhost:3000',
     dev_mode: true,
+    // Staff Leave Configuration
+    leave_year_start_month: 1,
     // Scheduler times
     scheduler_health_tasks_hour: 0,
     scheduler_health_tasks_minute: 1,
@@ -376,12 +695,7 @@ export function AdminSettings() {
     { value: 'Nunito', label: 'Nunito' },
   ];
 
-  useEffect(() => {
-    loadSettings();
-    loadSchedulerStatus();
-  }, []);
-
-  const loadSchedulerStatus = async () => {
+  const loadSchedulerStatus = useCallback(async () => {
     try {
       const status = await settingsApi.getSchedulerStatus();
       setSchedulerRunning(status.scheduler_running);
@@ -390,115 +704,14 @@ export function AdminSettings() {
     } catch {
       // Silently fail - scheduler status is non-essential
     }
-  };
+  }, []);
 
-  const handlePreviewTasks = async () => {
-    try {
-      const result = await settingsApi.previewHealthTasks(selectedDate);
-      setPreviewData({
-        existing_tasks: result.existing_tasks,
-        already_generated: result.already_generated,
-      });
-    } catch {
-      setError('Failed to preview tasks');
+  const loadSettings = useCallback(async () => {
+    // Prevent re-loading form data after initial load (which would reset user edits)
+    if (hasLoadedRef.current) {
+      return;
     }
-  };
 
-  const handleGenerateTasks = async () => {
-    setError('');
-    setSuccess('');
-    await loading.withLoading('generating', async () => {
-      try {
-        const result = await settingsApi.generateHealthTasks(selectedDate);
-        setSuccess(result.message);
-        setPreviewData({
-          existing_tasks: result.tasks_generated,
-          already_generated: true,
-        });
-        if (selectedDate === new Date().toISOString().split('T')[0]) {
-          await loadSchedulerStatus();
-        }
-      } catch {
-        setError('Failed to generate health tasks');
-      }
-    });
-  };
-
-  const handleRollover = async () => {
-    setError('');
-    setSuccess('');
-    setRolloverResult(null);
-    await loading.withLoading('rollover', async () => {
-      try {
-        const result = await settingsApi.runTaskRollover();
-        setRolloverResult({
-          tasks_moved: result.tasks_moved,
-          message: result.message,
-        });
-        setSuccess(result.message);
-      } catch {
-        setError('Failed to run task rollover');
-      }
-    });
-  };
-
-  const handleSaveSchedule = async () => {
-    setError('');
-    setSuccess('');
-    await loading.withLoading('schedule', async () => {
-      try {
-        // Save schedule times to settings
-        await settingsApi.update({
-          scheduler_health_tasks_hour: formData.scheduler_health_tasks_hour,
-          scheduler_health_tasks_minute: formData.scheduler_health_tasks_minute,
-          scheduler_rollover_hour: formData.scheduler_rollover_hour,
-          scheduler_rollover_minute: formData.scheduler_rollover_minute,
-          scheduler_billing_day: formData.scheduler_billing_day,
-          scheduler_billing_hour: formData.scheduler_billing_hour,
-          scheduler_billing_minute: formData.scheduler_billing_minute,
-          scheduler_backup_hour: formData.scheduler_backup_hour,
-          scheduler_backup_minute: formData.scheduler_backup_minute,
-          scheduler_cleanup_hour: formData.scheduler_cleanup_hour,
-          scheduler_cleanup_minute: formData.scheduler_cleanup_minute,
-        });
-
-        // Reschedule jobs with new times
-        const result = await settingsApi.rescheduleJobs();
-        setSuccess(result.message);
-
-        // Refresh scheduler status to show updated schedules
-        await loadSchedulerStatus();
-      } catch {
-        setError('Failed to save schedule configuration');
-      }
-    });
-  };
-
-  const handleTestWhatsApp = async () => {
-    setError('');
-    setSuccess('');
-    setWhatsappTestResult(null);
-    await loading.withLoading('whatsapp', async () => {
-      try {
-        const result = await settingsApi.testWhatsApp();
-        setWhatsappTestResult({
-          success: true,
-          message: result.message,
-          test_mode: result.test_mode,
-        });
-        setSuccess(result.message);
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Failed to test WhatsApp';
-        setWhatsappTestResult({
-          success: false,
-          message: message,
-        });
-        setError(message);
-      }
-    });
-  };
-
-  const loadSettings = async () => {
     try {
       const data = await settingsApi.get();
       setFormData({
@@ -565,6 +778,8 @@ export function AdminSettings() {
         scheduler_backup_minute: data.scheduler_backup_minute ?? 0,
         scheduler_cleanup_hour: data.scheduler_cleanup_hour ?? 2,
         scheduler_cleanup_minute: data.scheduler_cleanup_minute ?? 30,
+        // Staff Leave Configuration
+        leave_year_start_month: data.leave_year_start_month ?? 1,
       });
       if (data.logo_url) {
         setLogoUrl(uploadsApi.getFileUrl(data.logo_url));
@@ -580,17 +795,131 @@ export function AdminSettings() {
         setCanEnableDemo(false);
         setDemoUsers({});
       }
+
+      // Mark as loaded to prevent re-loading during edits
+      hasLoadedRef.current = true;
     } catch {
       setError('Failed to load settings');
     } finally {
-      loading.stopLoading('initial');
+      stopLoading('initial');
     }
+  }, [setError, stopLoading]);
+
+  useEffect(() => {
+    loadSettings();
+    loadSchedulerStatus();
+  }, [loadSettings, loadSchedulerStatus]);
+
+  const handlePreviewTasks = async () => {
+    try {
+      const result = await settingsApi.previewHealthTasks(selectedDate);
+      setPreviewData({
+        existing_tasks: result.existing_tasks,
+        already_generated: result.already_generated,
+      });
+    } catch {
+      setError('Failed to preview tasks');
+    }
+  };
+
+  const handleGenerateTasks = async () => {
+    setError('');
+    setSuccess('');
+    await withLoading('generating', async () => {
+      try {
+        const result = await settingsApi.generateHealthTasks(selectedDate);
+        setSuccess(result.message);
+        setPreviewData({
+          existing_tasks: result.tasks_generated,
+          already_generated: true,
+        });
+        if (selectedDate === new Date().toISOString().split('T')[0]) {
+          await loadSchedulerStatus();
+        }
+      } catch {
+        setError('Failed to generate health tasks');
+      }
+    });
+  };
+
+  const handleRollover = async () => {
+    setError('');
+    setSuccess('');
+    setRolloverResult(null);
+    await withLoading('rollover', async () => {
+      try {
+        const result = await settingsApi.runTaskRollover();
+        setRolloverResult({
+          tasks_moved: result.tasks_moved,
+          message: result.message,
+        });
+        setSuccess(result.message);
+      } catch {
+        setError('Failed to run task rollover');
+      }
+    });
+  };
+
+  const handleSaveSchedule = async () => {
+    setError('');
+    setSuccess('');
+    await withLoading('schedule', async () => {
+      try {
+        // Save schedule times to settings
+        await settingsApi.update({
+          scheduler_health_tasks_hour: formData.scheduler_health_tasks_hour,
+          scheduler_health_tasks_minute: formData.scheduler_health_tasks_minute,
+          scheduler_rollover_hour: formData.scheduler_rollover_hour,
+          scheduler_rollover_minute: formData.scheduler_rollover_minute,
+          scheduler_billing_day: formData.scheduler_billing_day,
+          scheduler_billing_hour: formData.scheduler_billing_hour,
+          scheduler_billing_minute: formData.scheduler_billing_minute,
+          scheduler_backup_hour: formData.scheduler_backup_hour,
+          scheduler_backup_minute: formData.scheduler_backup_minute,
+          scheduler_cleanup_hour: formData.scheduler_cleanup_hour,
+          scheduler_cleanup_minute: formData.scheduler_cleanup_minute,
+        });
+
+        // Reschedule jobs with new times
+        const result = await settingsApi.rescheduleJobs();
+        setSuccess(result.message);
+
+        // Refresh scheduler status to show updated schedules
+        await loadSchedulerStatus();
+      } catch {
+        setError('Failed to save schedule configuration');
+      }
+    });
+  };
+
+  const handleTestWhatsApp = async () => {
+    setError('');
+    setSuccess('');
+    setWhatsappTestResult(null);
+    await withLoading('whatsapp', async () => {
+      try {
+        const result = await settingsApi.testWhatsApp();
+        setWhatsappTestResult({
+          success: true,
+          message: result.message,
+          test_mode: result.test_mode,
+        });
+        setSuccess(result.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to test WhatsApp';
+        setWhatsappTestResult({
+          success: false,
+          message: message,
+        });
+        setError(message);
+      }
+    });
   };
 
   const handleSeedDemoData = async () => {
     setError('');
     setSuccess('');
-    await loading.withLoading('demo', async () => {
+    await withLoading('demo', async () => {
       try {
         await settingsApi.seedDemoData();
         setDemoDataEnabled(true);
@@ -606,7 +935,7 @@ export function AdminSettings() {
   const handleCleanDemoData = async () => {
     setError('');
     setSuccess('');
-    await loading.withLoading('demo', async () => {
+    await withLoading('demo', async () => {
       try {
         await settingsApi.cleanDemoData();
         setDemoDataEnabled(false);
@@ -628,7 +957,7 @@ export function AdminSettings() {
     if (!file) return;
 
     setError('');
-    await loading.withLoading('uploading', async () => {
+    await withLoading('uploading', async () => {
       try {
         const result = await uploadsApi.uploadLogo(file);
         setLogoUrl(uploadsApi.getFileUrl(result.filename));
@@ -691,7 +1020,7 @@ export function AdminSettings() {
       }
     }
 
-    await loading.withLoading('saving', async () => {
+    await withLoading('saving', async () => {
       try {
         await settingsApi.update({ ...formData, rugging_guide: ruggingGuide });
         setSuccess('Settings saved successfully');
@@ -702,7 +1031,7 @@ export function AdminSettings() {
     });
   };
 
-  if (loading.isLoading('initial')) {
+  if (isLoading('initial')) {
     return <div className="ds-loading">Loading settings...</div>;
   }
 
@@ -872,6 +1201,34 @@ export function AdminSettings() {
           </details>
         </details>
 
+        {/* ========== SECTION: STAFF MANAGEMENT ========== */}
+        <details className="form-section">
+          <summary><h3 style={{ display: 'inline' }}>Staff Management</h3></summary>
+
+          <div className="ds-form-group" style={{ maxWidth: '250px' }}>
+            <label htmlFor="leave_year_start_month">Leave Year Start Month</label>
+            <select
+              id="leave_year_start_month"
+              value={formData.leave_year_start_month ?? 1}
+              onChange={(e) => setFormData({ ...formData, leave_year_start_month: parseInt(e.target.value) })}
+            >
+              <option value={1}>January (Calendar Year)</option>
+              <option value={2}>February</option>
+              <option value={3}>March</option>
+              <option value={4}>April (Financial Year)</option>
+              <option value={5}>May</option>
+              <option value={6}>June</option>
+              <option value={7}>July</option>
+              <option value={8}>August</option>
+              <option value={9}>September</option>
+              <option value={10}>October</option>
+              <option value={11}>November</option>
+              <option value={12}>December</option>
+            </select>
+            <small>When the leave year begins (e.g., January for calendar year, April for financial year). Leave entitlement is pro-rated for staff joining or leaving mid-year.</small>
+          </div>
+        </details>
+
         {/* ========== SECTION: RUGGING GUIDE ========== */}
         <details className="form-section">
           <summary><h3 style={{ display: 'inline' }}>Rugging Guide</h3></summary>
@@ -967,16 +1324,16 @@ export function AdminSettings() {
               {logoUrl ? (
                 <div className="logo-inline-preview">
                   <img src={logoUrl} alt="Logo" />
-                  <button type="button" className="btn-small" onClick={() => logoInputRef.current?.click()} disabled={loading.isLoading('uploading')}>
+                  <button type="button" className="btn-small" onClick={() => logoInputRef.current?.click()} disabled={isLoading('uploading')}>
                     Change
                   </button>
-                  <button type="button" className="btn-small btn-danger" onClick={handleDeleteLogo} disabled={loading.isLoading('uploading')}>
+                  <button type="button" className="btn-small btn-danger" onClick={handleDeleteLogo} disabled={isLoading('uploading')}>
                     Remove
                   </button>
                 </div>
               ) : (
-                <button type="button" className="ds-btn ds-btn-secondary btn-small" onClick={() => logoInputRef.current?.click()} disabled={loading.isLoading('uploading')}>
-                  {loading.isLoading('uploading') ? 'Uploading...' : 'Upload Logo'}
+                <button type="button" className="ds-btn ds-btn-secondary btn-small" onClick={() => logoInputRef.current?.click()} disabled={isLoading('uploading')}>
+                  {isLoading('uploading') ? 'Uploading...' : 'Upload Logo'}
                 </button>
               )}
               <input
@@ -1120,6 +1477,9 @@ export function AdminSettings() {
         {/* ========== SECTION: DOCUSIGN INTEGRATION ========== */}
         <DocuSignSettingsSection />
 
+        {/* ========== SECTION: SSL/DOMAIN CONFIGURATION ========== */}
+        <SSLSettingsSection />
+
         {/* ========== SECTION: WHATSAPP NOTIFICATIONS ========== */}
         <details className="form-section">
           <summary><h3 style={{ display: 'inline' }}>WhatsApp Notifications</h3></summary>
@@ -1209,9 +1569,9 @@ export function AdminSettings() {
                       type="button"
                       className="ds-btn ds-btn-secondary btn-small"
                       onClick={handleTestWhatsApp}
-                      disabled={loading.isLoading('whatsapp') || !formData.whatsapp_phone_number}
+                      disabled={isLoading('whatsapp') || !formData.whatsapp_phone_number}
                     >
-                      {loading.isLoading('whatsapp') ? 'Testing...' : 'Send Test Message'}
+                      {isLoading('whatsapp') ? 'Testing...' : 'Send Test Message'}
                     </button>
                     {whatsappTestResult && (
                       <span className={`test-result ${whatsappTestResult.success ? 'success' : 'error'}`}>
@@ -1298,8 +1658,8 @@ export function AdminSettings() {
 
         {/* ========== SAVE BUTTON ========== */}
         <div className="form-actions">
-          <button type="submit" className="ds-btn ds-btn-primary" disabled={loading.isLoading('saving')}>
-            {loading.isLoading('saving') ? 'Saving...' : 'Save Settings'}
+          <button type="submit" className="ds-btn ds-btn-primary" disabled={isLoading('saving')}>
+            {isLoading('saving') ? 'Saving...' : 'Save Settings'}
           </button>
         </div>
       </form>
@@ -1439,7 +1799,7 @@ export function AdminSettings() {
                   <input
                     type="checkbox"
                     checked={demoDataEnabled}
-                    disabled={loading.isLoading('demo')}
+                    disabled={isLoading('demo')}
                     onChange={async (e) => {
                       if (e.target.checked) {
                         if (confirm('Load demo data? This adds sample users, horses, and bookings.')) {
@@ -1462,7 +1822,7 @@ export function AdminSettings() {
                   />
                   <span className="toggle-slider"></span>
                 </label>
-                {loading.isLoading('demo') && <span className="toggle-loading">{demoDataEnabled ? 'Removing...' : 'Loading...'}</span>}
+                {isLoading('demo') && <span className="toggle-loading">{demoDataEnabled ? 'Removing...' : 'Loading...'}</span>}
               </>
             ) : (
               <span className="toggle-status-text">Unavailable</span>
@@ -1642,8 +2002,8 @@ export function AdminSettings() {
                   <button type="button" className="ds-btn ds-btn-secondary btn-small" onClick={handlePreviewTasks}>
                     Check
                   </button>
-                  <button type="button" className="ds-btn ds-btn-primary btn-small" onClick={handleGenerateTasks} disabled={loading.isLoading('generating')}>
-                    {loading.isLoading('generating') ? 'Generating...' : 'Generate'}
+                  <button type="button" className="ds-btn ds-btn-primary btn-small" onClick={handleGenerateTasks} disabled={isLoading('generating')}>
+                    {isLoading('generating') ? 'Generating...' : 'Generate'}
                   </button>
                 </div>
                 {previewData && (
@@ -1659,8 +2019,8 @@ export function AdminSettings() {
                 <h4>Task Rollover</h4>
                 <p>Move incomplete past tasks to backlog (normally runs at 00:05).</p>
                 <div className="op-controls">
-                  <button type="button" className="ds-btn ds-btn-primary btn-small" onClick={handleRollover} disabled={loading.isLoading('rollover')}>
-                    {loading.isLoading('rollover') ? 'Running...' : 'Run Rollover'}
+                  <button type="button" className="ds-btn ds-btn-primary btn-small" onClick={handleRollover} disabled={isLoading('rollover')}>
+                    {isLoading('rollover') ? 'Running...' : 'Run Rollover'}
                   </button>
                 </div>
                 {rolloverResult && (
@@ -1813,17 +2173,17 @@ export function AdminSettings() {
                 type="button"
                 className="ds-btn ds-btn-primary"
                 onClick={handleSaveSchedule}
-                disabled={loading.isLoading('schedule')}
+                disabled={isLoading('schedule')}
               >
-                {loading.isLoading('schedule') ? 'Saving...' : 'Save Schedule'}
+                {isLoading('schedule') ? 'Saving...' : 'Save Schedule'}
               </button>
             </div>
           </details>
         </div>
 
         <div className="form-actions">
-          <button type="button" className="ds-btn ds-btn-primary" disabled={loading.isLoading('saving')} onClick={handleSubmit}>
-            {loading.isLoading('saving') ? 'Saving...' : 'Save Settings'}
+          <button type="button" className="ds-btn ds-btn-primary" disabled={isLoading('saving')} onClick={handleSubmit}>
+            {isLoading('saving') ? 'Saving...' : 'Save Settings'}
           </button>
         </div>
       </details>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { liveryPackagesApi } from '../../services/api';
 import { useModalForm, useRequestState } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Textarea } from '../../components/ui';
@@ -37,7 +37,7 @@ export function AdminLiveryPackages() {
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<LiveryPackage | null>(null);
 
-  const loadPackages = async () => {
+  const loadPackages = useCallback(async () => {
     try {
       const data = await liveryPackagesApi.listAll();
       setPackages(data);
@@ -46,11 +46,11 @@ export function AdminLiveryPackages() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
 
   useEffect(() => {
     loadPackages();
-  }, []);
+  }, [loadPackages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

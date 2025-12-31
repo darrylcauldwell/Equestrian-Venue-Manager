@@ -1,6 +1,6 @@
 import enum
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from datetime import datetime, date
+from sqlalchemy import Column, Integer, String, DateTime, Date, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base, EnumColumn
 
@@ -41,7 +41,8 @@ class User(Base):
     # Staff capabilities - allows any user to also function as yard staff
     is_yard_staff = Column(Boolean, default=False, nullable=False)  # Can perform staff duties
     staff_type = EnumColumn(StaffType, nullable=True)  # regular, casual, on_call
-    annual_leave_entitlement = Column(Integer, default=28, nullable=True)  # Days per year (for regular staff)
+    annual_leave_entitlement = Column(Integer, default=23, nullable=True)  # Days per year (for regular staff)
+    leaving_date = Column(Date, nullable=True)  # Date when staff member leaves (for pro-rata calculation)
 
     bookings = relationship("Booking", back_populates="user")
     horses = relationship("Horse", back_populates="owner")
@@ -50,4 +51,10 @@ class User(Base):
         back_populates="user",
         uselist=False,
         foreign_keys="CoachProfile.user_id"
+    )
+    staff_profile = relationship(
+        "StaffProfile",
+        back_populates="user",
+        uselist=False,
+        foreign_keys="StaffProfile.user_id"
     )

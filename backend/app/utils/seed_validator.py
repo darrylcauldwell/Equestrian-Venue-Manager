@@ -613,6 +613,28 @@ class SeedStableBlockSchema(BaseModel):
     stables: List[Dict[str, Any]]
 
 
+class SeedStaffProfileSchema(BaseModel):
+    """Schema for staff profile seed data validation."""
+    username: str  # Reference to user
+    date_of_birth: Optional[str] = None
+    bio: Optional[str] = None
+    start_date: Optional[str] = None
+    job_title: Optional[str] = None
+    personal_email: Optional[str] = None
+    personal_phone: Optional[str] = None
+    address_street: Optional[str] = None
+    address_town: Optional[str] = None
+    address_county: Optional[str] = None
+    address_postcode: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    emergency_contact_relationship: Optional[str] = None
+    qualifications: Optional[str] = None  # Comma-separated string
+    dbs_check_date: Optional[str] = None
+    dbs_certificate_number: Optional[str] = None
+    notes: Optional[str] = None
+
+
 class SeedCoachProfileSchema(BaseModel):
     username: str
     disciplines: List[str]
@@ -783,6 +805,7 @@ SECTION_SCHEMAS = {
     'lesson_requests': SeedLessonRequestSchema,
     'rehab_programs': SeedRehabProgramSchema,
     # Staff & Admin
+    'staff_profiles': SeedStaffProfileSchema,
     'timesheets': SeedTimesheetSchema,
     'unplanned_absences': SeedUnplannedAbsenceSchema,
     'ledger_entries': SeedLedgerEntrySchema,
@@ -853,6 +876,9 @@ def validate_seed_data(data: Dict[str, Any]) -> ValidationResult:
         # Handle list sections - array of items
         elif isinstance(section_data, list):
             for idx, item in enumerate(section_data):
+                # Skip comment entries (used for organizing seed data)
+                if isinstance(item, dict) and '_comment' in item:
+                    continue
                 try:
                     schema.model_validate(item)
                 except Exception as e:
@@ -937,6 +963,9 @@ def validate_seed_data(data: Dict[str, Any]) -> ValidationResult:
                            f"Unknown user: '{creator}'")
 
     for idx, shift in enumerate(data.get('shifts', [])):
+        # Skip comment entries
+        if isinstance(shift, dict) and '_comment' in shift:
+            continue
         staff = shift.get('staff_username')
         if staff and staff not in usernames:
             result.add_error('shifts', idx, 'staff_username',

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { clinicsApi, arenasApi } from '../../services/api';
 import { useRequestState, useModalForm } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Select, Textarea } from '../../components/ui';
@@ -90,11 +90,7 @@ export function AdminEventTriage() {
   // Participant assignment state
   const [assigningParticipant, setAssigningParticipant] = useState<ClinicParticipant | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [enumsData, clinicsData, arenasData] = await Promise.all([
         clinicsApi.getEnums(),
@@ -111,7 +107,11 @@ export function AdminEventTriage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const formatDate = (dateStr: string) => {
     return format(new Date(dateStr), 'dd MMM yyyy');

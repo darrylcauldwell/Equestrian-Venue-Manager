@@ -8,7 +8,10 @@ from app.models.user import User, UserRole
 from app.models.settings import SiteSettings
 from app.models.task import YardTask, HealthTaskType, TaskStatus, AssignmentType
 from app.models.staff_management import Shift, ShiftRole
-from app.schemas.settings import SiteSettingsResponse, SiteSettingsUpdate
+from app.schemas.settings import (
+    SiteSettingsResponse, SiteSettingsUpdate,
+    SSLSettingsResponse, SSLSettingsUpdate, SSLStatusResponse, CertificateInfo
+)
 from app.utils.auth import get_current_user
 from app.services import scheduler as scheduler_service
 from app.services.health_task_generator import HealthTaskGenerator
@@ -773,3 +776,228 @@ def reschedule_scheduler_jobs(
         "message": "Scheduler jobs rescheduled successfully",
         "jobs": jobs
     }
+
+
+# ============== SSL/Domain Configuration ==============
+
+def _get_certificate_info(domain: str) -> CertificateInfo:
+    """Check SSL certificate for a domain."""
+    import ssl
+    import socket
+    from datetime import datetime, timezone
+
+    try:
+        context = ssl.create_default_context()
+        with socket.create_connection((domain, 443), timeout=10) as sock:
+            with context.wrap_socket(sock, server_hostname=domain) as ssock:
+                cert = ssock.getpeercert()
+
+                # Parse certificate dates
+                not_before = datetime.strptime(cert['notBefore'], '%b %d %H:%M:%S %Y %Z')
+                not_after = datetime.strptime(cert['notAfter'], '%b %d %H:%M:%S %Y %Z')
+
+                # Calculate days until expiry
+                now = datetime.now(timezone.utc).replace(tzinfo=None)
+                days_until_expiry = (not_after - now).days
+
+                # Get issuer
+                issuer = dict(x[0] for x in cert.get('issuer', []))
+                issuer_name = issuer.get('organizationName', issuer.get('commonName', 'Unknown'))
+
+                return CertificateInfo(
+                    domain=domain,
+                    issuer=issuer_name,
+                    valid_from=not_before,
+                    valid_until=not_after,
+                    days_until_expiry=days_until_expiry,
+                    is_valid=days_until_expiry > 0
+                )
+    except socket.timeout:
+        return CertificateInfo(domain=domain, error="Connection timed out")
+    except socket.gaierror:
+        return CertificateInfo(domain=domain, error="Domain not found")
+    except ssl.SSLError as e:
+        return CertificateInfo(domain=domain, error=f"SSL error: {str(e)}")
+    except Exception as e:
+        return CertificateInfo(domain=domain, error=str(e))
+
+
+def _generate_traefik_config(settings: SiteSettings) -> str:
+    """Generate Traefik docker-compose configuration snippet."""
+    if not settings.ssl_domain or not settings.ssl_acme_email:
+        return "# SSL not configured - domain and ACME email required"
+
+    # Generate htpasswd hash if dashboard credentials are set
+    dashboard_labels = ""
+    if settings.ssl_traefik_dashboard_enabled and settings.ssl_traefik_dashboard_user:
+        dashboard_labels = f'''
+      # Traefik Dashboard
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.{settings.ssl_domain}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${{TRAEFIK_AUTH}}"'''
+
+    config = f'''# Generated Traefik Configuration for {settings.ssl_domain}
+# Add these environment variables to your .env file:
+# DOMAIN={settings.ssl_domain}
+# ACME_EMAIL={settings.ssl_acme_email}
+{"# TRAEFIK_AUTH=<htpasswd hash>  # Generate with: htpasswd -nb user password" if settings.ssl_traefik_dashboard_enabled else ""}
+
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.email={settings.ssl_acme_email}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - evm-network
+    labels:
+      - "traefik.enable=true"{dashboard_labels}
+
+  backend:
+    # ... your backend service ...
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`{settings.ssl_domain}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+
+  frontend:
+    # ... your frontend service ...
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`{settings.ssl_domain}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+volumes:
+  letsencrypt:
+
+networks:
+  evm-network:
+    driver: bridge
+'''
+    return config
+
+
+@router.get("/ssl", response_model=SSLStatusResponse)
+def get_ssl_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get SSL configuration and certificate status (admin only)."""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can view SSL settings"
+        )
+
+    settings = get_or_create_settings(db)
+
+    # Build settings response
+    ssl_settings = SSLSettingsResponse(
+        ssl_domain=settings.ssl_domain,
+        ssl_acme_email=settings.ssl_acme_email,
+        ssl_enabled=settings.ssl_enabled or False,
+        ssl_traefik_dashboard_enabled=settings.ssl_traefik_dashboard_enabled or False,
+        ssl_traefik_dashboard_user=settings.ssl_traefik_dashboard_user,
+        has_dashboard_password=bool(settings.ssl_traefik_dashboard_password_hash)
+    )
+
+    # Check certificate if domain is configured
+    certificate = None
+    if settings.ssl_domain and settings.ssl_enabled:
+        certificate = _get_certificate_info(settings.ssl_domain)
+
+    # Generate Traefik config
+    traefik_config = _generate_traefik_config(settings)
+
+    return SSLStatusResponse(
+        settings=ssl_settings,
+        certificate=certificate,
+        traefik_config=traefik_config
+    )
+
+
+@router.put("/ssl", response_model=SSLSettingsResponse)
+def update_ssl_settings(
+    ssl_data: SSLSettingsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update SSL configuration (admin only)."""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can update SSL settings"
+        )
+
+    settings = get_or_create_settings(db)
+
+    update_data = ssl_data.model_dump(exclude_unset=True)
+
+    # Handle password hashing
+    if 'ssl_traefik_dashboard_password' in update_data:
+        password = update_data.pop('ssl_traefik_dashboard_password')
+        if password:
+            # Generate htpasswd-compatible hash
+            import hashlib
+            import base64
+            import os
+            salt = os.urandom(8)
+            hash_bytes = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
+            settings.ssl_traefik_dashboard_password_hash = base64.b64encode(salt + hash_bytes).decode()
+
+    for field, value in update_data.items():
+        setattr(settings, field, value)
+
+    db.commit()
+    db.refresh(settings)
+
+    return SSLSettingsResponse(
+        ssl_domain=settings.ssl_domain,
+        ssl_acme_email=settings.ssl_acme_email,
+        ssl_enabled=settings.ssl_enabled or False,
+        ssl_traefik_dashboard_enabled=settings.ssl_traefik_dashboard_enabled or False,
+        ssl_traefik_dashboard_user=settings.ssl_traefik_dashboard_user,
+        has_dashboard_password=bool(settings.ssl_traefik_dashboard_password_hash)
+    )
+
+
+@router.get("/ssl/check-certificate")
+def check_certificate(
+    domain: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Check SSL certificate for any domain (admin only).
+
+    Useful for verifying certificate status before or after configuration.
+    """
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can check certificates"
+        )
+
+    return _get_certificate_info(domain)

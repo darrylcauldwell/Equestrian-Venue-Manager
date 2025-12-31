@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { lessonsApi, arenasApi } from '../../services/api';
 import { useRequestState, useModalForm } from '../../hooks';
 import { Modal, FormGroup, FormRow, Input, Select, Textarea } from '../../components/ui';
@@ -41,11 +41,7 @@ export function AdminLessonTriage() {
   // Cancel modal
   const cancelModal = useModalForm<{ reason: string }>({ reason: '' });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [enumsData, requestsData, arenasData] = await Promise.all([
         lessonsApi.getEnums(),
@@ -60,7 +56,11 @@ export function AdminLessonTriage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const formatDate = (dateStr: string) => {
     return format(new Date(dateStr), 'dd MMM yyyy');

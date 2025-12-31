@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { bookingsApi, arenasApi, BlockSlotData } from '../../services/api';
 import { useRequestState, useModalForm } from '../../hooks';
@@ -44,7 +44,7 @@ export function AdminBookings() {
   // Cancel confirmation
   const [cancelTarget, setCancelTarget] = useState<Booking | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [bookingsData, arenasData] = await Promise.all([
         bookingsApi.list(),
@@ -57,11 +57,11 @@ export function AdminBookings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handleCancel = async () => {
     if (!cancelTarget) return;
@@ -166,28 +166,30 @@ export function AdminBookings() {
 
       <div className="filters">
         <div className="filter-group">
-          <label>Arena:</label>
-          <select
-            value={filterArena || ''}
-            onChange={(e) => setFilterArena(e.target.value ? parseInt(e.target.value) : null)}
-          >
-            <option value="">All Arenas</option>
-            {arenas.map((arena) => (
-              <option key={arena.id} value={arena.id}>
-                {arena.name}
-              </option>
-            ))}
-          </select>
+          <FormGroup label="Arena">
+            <Select
+              value={filterArena || ''}
+              onChange={(e) => setFilterArena(e.target.value ? parseInt(e.target.value) : null)}
+            >
+              <option value="">All Arenas</option>
+              {arenas.map((arena) => (
+                <option key={arena.id} value={arena.id}>
+                  {arena.name}
+                </option>
+              ))}
+            </Select>
+          </FormGroup>
         </div>
         <div className="filter-group">
-          <label>Type:</label>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-            <option value="">All Types</option>
-            <option value="public">Public</option>
-            <option value="livery">Livery</option>
-            <option value="event">Event</option>
-            <option value="maintenance">Maintenance</option>
-          </select>
+          <FormGroup label="Type">
+            <Select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+              <option value="">All Types</option>
+              <option value="public">Public</option>
+              <option value="livery">Livery</option>
+              <option value="event">Event</option>
+              <option value="maintenance">Maintenance</option>
+            </Select>
+          </FormGroup>
         </div>
       </div>
 

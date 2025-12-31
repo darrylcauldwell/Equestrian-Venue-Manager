@@ -143,6 +143,66 @@ export async function dismissPopups(page: Page) {
       // No quote popup
     }
 
+    // Check and dismiss staff milestones popup
+    try {
+      const milestonesPopup = page.locator('.milestones-popup-overlay');
+      if (await milestonesPopup.isVisible({ timeout: 100 })) {
+        foundPopup = true;
+        const dismissBtn = page.locator('.milestones-popup .dismiss-btn');
+        if (await dismissBtn.isVisible({ timeout: 100 })) {
+          await dismissBtn.click();
+        } else {
+          const closeBtn = page.locator('.milestones-popup .close-btn');
+          if (await closeBtn.isVisible({ timeout: 100 })) {
+            await closeBtn.click();
+          }
+        }
+        await page.waitForTimeout(200); // Wait for popup to close
+      }
+    } catch {
+      // No milestones popup
+    }
+
+    // Check and dismiss flood alert popup
+    try {
+      const floodPopup = page.locator('.flood-alert-popup-overlay');
+      if (await floodPopup.isVisible({ timeout: 100 })) {
+        foundPopup = true;
+        const dismissBtn = page.locator('.flood-alert-popup .dismiss-btn');
+        if (await dismissBtn.isVisible({ timeout: 100 })) {
+          await dismissBtn.click();
+        } else {
+          const closeBtn = page.locator('.flood-alert-popup .close-btn');
+          if (await closeBtn.isVisible({ timeout: 100 })) {
+            await closeBtn.click();
+          }
+        }
+        await page.waitForTimeout(200); // Wait for popup to close
+      }
+    } catch {
+      // No flood popup
+    }
+
+    // Check and dismiss thanks notification popup
+    try {
+      const thanksPopup = page.locator('.thanks-notification-overlay');
+      if (await thanksPopup.isVisible({ timeout: 100 })) {
+        foundPopup = true;
+        const laterBtn = page.locator('.thanks-notification-popup button:has-text("Later")');
+        if (await laterBtn.isVisible({ timeout: 100 })) {
+          await laterBtn.click();
+        } else {
+          const closeBtn = page.locator('.thanks-notification-popup .close-btn');
+          if (await closeBtn.isVisible({ timeout: 100 })) {
+            await closeBtn.click();
+          }
+        }
+        await page.waitForTimeout(200); // Wait for popup to close
+      }
+    } catch {
+      // No thanks popup
+    }
+
     if (foundPopup) {
       consecutiveEmptyChecks = 0; // Reset counter when we find a popup
     } else {
@@ -274,6 +334,9 @@ export const test = base.extend<{
   },
   logout: async ({ page }, use) => {
     const logout = async () => {
+      // Dismiss any popups that might be blocking the UI
+      await dismissPopups(page);
+
       // Open hamburger menu first (logout is in slide-out nav)
       const hamburgerBtn = page.locator('.hamburger-btn');
       if (await hamburgerBtn.isVisible({ timeout: 1000 })) {

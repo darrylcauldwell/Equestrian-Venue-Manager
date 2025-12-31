@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { staffApi } from '../services/api';
 import type {
@@ -73,32 +73,13 @@ export default function MyTimesheet() {
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<Partial<CreateTimesheet>>({});
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  useEffect(() => {
-    loadWeekData();
-  }, [weekStart]);
-
-  const loadInitialData = async () => {
-    try {
-      setLoading(true);
-      const enumsData = await staffApi.getEnums();
-      setEnums(enumsData);
-      await loadWeekData();
-    } catch (e) {
-      setError('Failed to load data');
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadWeekData = async () => {
+  const loadWeekData = useCallback(async () => {
     try {
       const startDate = formatDateForApi(weekStart);
-      const endDate = formatDateForApi(weekDays[6]);
+      // Calculate end date from weekStart directly
+      const endOfWeek = new Date(weekStart);
+      endOfWeek.setDate(weekStart.getDate() + 6);
+      const endDate = formatDateForApi(endOfWeek);
 
       // Load shifts and timesheets in parallel
       const [shiftsResponse, timesheetsResponse] = await Promise.all([
@@ -117,7 +98,29 @@ export default function MyTimesheet() {
     } catch (e) {
       console.error('Failed to load week data:', e);
     }
-  };
+  }, [weekStart, user?.id]);
+
+  const loadInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const enumsData = await staffApi.getEnums();
+      setEnums(enumsData);
+      await loadWeekData();
+    } catch (e) {
+      setError('Failed to load data');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [loadWeekData]);
+
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
+
+  useEffect(() => {
+    loadWeekData();
+  }, [loadWeekData]);
 
   const getEnumLabel = (enumType: string, value: string): string => {
     if (!enums) return value;

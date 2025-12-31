@@ -1,7 +1,7 @@
 from typing import Optional, List
 from datetime import date, datetime
 from decimal import Decimal
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.health_record import VaccineType
 
 
@@ -36,8 +36,7 @@ class FarrierRecordResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Dentist Records
@@ -71,8 +70,7 @@ class DentistRecordResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Vaccination Records
@@ -109,8 +107,7 @@ class VaccinationRecordResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Worming Records
@@ -147,8 +144,7 @@ class WormingRecordResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Weight Records
@@ -179,8 +175,7 @@ class WeightRecordResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Body Condition Records
@@ -208,8 +203,7 @@ class BodyConditionRecordResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Saddle Records
@@ -249,8 +243,7 @@ class SaddleResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Saddle Fit Records
@@ -294,8 +287,7 @@ class SaddleFitRecordResponse(BaseModel):
     updated_at: datetime
     saddle: Optional[SaddleResponse] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Physio Records
@@ -338,8 +330,7 @@ class PhysioRecordResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Summary response for all health records
@@ -363,8 +354,7 @@ class HealthRecordsSummary(BaseModel):
     latest_weight: Optional[WeightRecordResponse] = None
     latest_bcs: Optional[BodyConditionRecordResponse] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Bulk Worm Count Entry
@@ -401,8 +391,7 @@ class HorseWormCountStatus(BaseModel):
     last_treatment_date: Optional[date] = None
     last_product: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Worming Reports
@@ -454,5 +443,4 @@ class VaccinationAlert(BaseModel):
     days_until_due: int  # Negative if overdue
     is_overdue: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

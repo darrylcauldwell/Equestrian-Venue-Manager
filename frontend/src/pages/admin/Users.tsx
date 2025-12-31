@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { usersApi, AdminUserCreate } from '../../services/api';
 import { useRequestState } from '../../hooks';
 import { ConfirmModal } from '../../components/ui';
@@ -51,7 +52,7 @@ export function AdminUsers() {
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const data = await usersApi.list();
       setUsers(data);
@@ -60,11 +61,11 @@ export function AdminUsers() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
   const [resetPasswordResult, setResetPasswordResult] = useState<{ userId: number; password: string } | null>(null);
 
@@ -145,8 +146,16 @@ export function AdminUsers() {
       setFormData({ username: '', email: '', name: '', phone: '', role: 'livery' });
       await loadUsers();
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { detail?: string } } };
-      setError(error.response?.data?.detail || 'Failed to create user');
+      const error = err as { response?: { data?: { detail?: string | Array<{ msg: string; loc?: string[] }> } } };
+      const detail = error.response?.data?.detail;
+      let errorMessage = 'Failed to create user';
+      if (typeof detail === 'string') {
+        errorMessage = detail;
+      } else if (Array.isArray(detail) && detail.length > 0) {
+        // Pydantic validation errors come as an array of objects
+        errorMessage = detail.map(e => e.msg).join(', ');
+      }
+      setError(errorMessage);
     }
   };
 
@@ -226,8 +235,16 @@ export function AdminUsers() {
       setEditingUser(null);
       await loadUsers();
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { detail?: string } } };
-      setError(error.response?.data?.detail || 'Failed to update user');
+      const error = err as { response?: { data?: { detail?: string | Array<{ msg: string; loc?: string[] }> } } };
+      const detail = error.response?.data?.detail;
+      let errorMessage = 'Failed to update user';
+      if (typeof detail === 'string') {
+        errorMessage = detail;
+      } else if (Array.isArray(detail) && detail.length > 0) {
+        // Pydantic validation errors come as an array of objects
+        errorMessage = detail.map(e => e.msg).join(', ');
+      }
+      setError(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -240,9 +257,14 @@ export function AdminUsers() {
   return (
     <div className="admin-page">
       <PageActions>
-        <button className="ds-btn ds-btn-primary" onClick={() => setShowForm(true)}>
-          + Add User
-        </button>
+        <div className="action-buttons">
+          <button className="ds-btn ds-btn-primary" onClick={() => setShowForm(true)}>
+            + Add User
+          </button>
+          <Link to="/book/admin/staff-profiles" className="ds-btn ds-btn-secondary">
+            Create Staff Member
+          </Link>
+        </div>
       </PageActions>
 
       {error && <div className="ds-alert ds-alert-error">{error}</div>}
@@ -293,10 +315,12 @@ export function AdminUsers() {
                   required
                 >
                   <option value="livery">Livery (Livery Client)</option>
-                  <option value="staff">Staff (Yard Staff)</option>
                   <option value="coach">Coach (Can propose clinics)</option>
                   <option value="admin">Admin (Full access)</option>
                 </select>
+                <small className="field-hint">
+                  To create staff users, use <Link to="/book/admin/staff-profiles">Staff Profiles</Link>
+                </small>
               </div>
             </div>
 

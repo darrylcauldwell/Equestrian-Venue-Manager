@@ -4,7 +4,7 @@ Pydantic schemas for ad-hoc lessons feature.
 from datetime import date, time, datetime
 from decimal import Decimal
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.models.coach import AvailabilityMode, BookingMode, LessonRequestStatus
 from app.models.clinic import Discipline
@@ -41,8 +41,7 @@ class RecurringScheduleResponse(RecurringScheduleBase):
     id: int
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Availability Slot ==============
@@ -62,8 +61,7 @@ class AvailabilitySlotResponse(AvailabilitySlotBase):
     is_booked: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Coach Profile ==============
@@ -130,8 +128,7 @@ class CoachProfileResponse(BaseModel):
     recurring_schedules: Optional[List[RecurringScheduleResponse]] = None
     availability_slots: Optional[List[AvailabilitySlotResponse]] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CoachProfileListResponse(BaseModel):
@@ -153,8 +150,7 @@ class CoachProfileListResponse(BaseModel):
     livery_total_price: Optional[Decimal] = None
     arena_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Lesson Request ==============
@@ -257,8 +253,7 @@ class LessonRequestResponse(BaseModel):
     horse_name: Optional[str] = None
     arena_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Availability Response ==============

@@ -87,6 +87,24 @@ from app.schemas.feature_flags import (
     FeatureFlagValidationResult,
     EnabledFeaturesResponse,
 )
+from app.schemas.risk_assessment import (
+    RiskAssessmentCategory,
+    ReviewTrigger,
+    RiskAssessmentCreate,
+    RiskAssessmentUpdate,
+    RiskAssessmentContentUpdate,
+    RiskAssessmentResponse,
+    RiskAssessmentSummary,
+    ReviewCreate,
+    ReviewResponse,
+    AcknowledgementCreate,
+    AcknowledgementResponse,
+    AcknowledgementSummary,
+    MyRiskAssessmentResponse,
+    StaffAcknowledgementStatus,
+    ComplianceSummary,
+    AssessmentComplianceReport,
+)
 
 __all__ = [
     "UserCreate",
@@ -170,4 +188,21 @@ __all__ = [
     "BulkFeatureFlagUpdate",
     "FeatureFlagValidationResult",
     "EnabledFeaturesResponse",
+    # Risk Assessment
+    "RiskAssessmentCategory",
+    "ReviewTrigger",
+    "RiskAssessmentCreate",
+    "RiskAssessmentUpdate",
+    "RiskAssessmentContentUpdate",
+    "RiskAssessmentResponse",
+    "RiskAssessmentSummary",
+    "ReviewCreate",
+    "ReviewResponse",
+    "AcknowledgementCreate",
+    "AcknowledgementResponse",
+    "AcknowledgementSummary",
+    "MyRiskAssessmentResponse",
+    "StaffAcknowledgementStatus",
+    "ComplianceSummary",
+    "AssessmentComplianceReport",
 ]

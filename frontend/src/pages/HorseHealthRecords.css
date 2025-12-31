@@ -84,105 +84,105 @@
 @media (prefers-color-scheme: dark) {
   /* Page Title */
   .health-records-page h1 {
-    color: #f0f0f0;
+    color: var(--text-primary);
   }
 
   /* Tab Content */
   .health-records-page .tab-content {
-    background: #2d2d2d;
+    background: var(--bg-secondary);
   }
 
   /* Summary Cards */
   .health-records-page .summary-card {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
   .health-records-page .summary-card h3 {
-    color: #f0f0f0;
+    color: var(--text-primary);
   }
   .health-records-page .summary-card .record-count,
   .health-records-page .summary-card p.record-count {
-    color: #d0d0d0;
+    color: var(--text-secondary);
   }
 
   /* Care Plan Cards */
   .health-records-page .care-plan-card {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
   .health-records-page .program-header h3 {
-    color: #f0f0f0;
+    color: var(--text-primary);
   }
   .health-records-page .program-description,
   .health-records-page .program-meta,
   .health-records-page .meta-item,
   .health-records-page .phases-header,
   .health-records-page .progress-text {
-    color: #d0d0d0;
+    color: var(--text-secondary);
   }
   .health-records-page .meta-item .label {
-    color: #f0f0f0;
+    color: var(--text-primary);
   }
 
   /* Phase Items */
   .health-records-page .phase-item {
-    background: #3a3a3a;
+    background: var(--bg-card);
   }
   .health-records-page .phase-name {
-    color: #e0e0e0;
+    color: var(--text-primary);
   }
 
   /* Task Cards */
   .health-records-page .task-card {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
   .health-records-page .task-description,
   .health-records-page .task-instructions,
   .health-records-page .task-equipment,
   .health-records-page .task-duration {
-    color: #d0d0d0;
+    color: var(--text-secondary);
   }
 
   /* Activity Log */
   .health-records-page .task-log-entry {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
   .health-records-page .log-date,
   .health-records-page .log-task {
-    color: #f0f0f0;
+    color: var(--text-primary);
   }
   .health-records-page .log-duration,
   .health-records-page .log-staff {
-    color: #d0d0d0;
+    color: var(--text-secondary);
   }
 
   /* Phase Timeline */
   .health-records-page .phase-timeline-content {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
   .health-records-page .phase-timeline-content .phase-name {
-    color: #f0f0f0;
+    color: var(--text-primary);
   }
   .health-records-page .phase-timeline-dates,
   .health-records-page .phase-timeline-desc {
-    color: #d0d0d0;
+    color: var(--text-secondary);
   }
 
   /* Program Details */
   .health-records-page .detail-label {
-    color: #b0b0b0;
+    color: var(--text-muted);
   }
   .health-records-page .detail-value {
-    color: #e0e0e0;
+    color: var(--text-primary);
   }
 
   /* Expanded Program Section Headers */
   .health-records-page .program-expanded h4,
   .health-records-page .program-expanded h5 {
-    color: #f0f0f0;
+    color: var(--text-primary);
   }
 }
 
@@ -1760,14 +1760,14 @@
 @media (prefers-color-scheme: dark) {
   .health-records-page .modal,
   .health-records-page .modal-header {
-    background: #2d2d2d;
-    border-color: #555555;
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
   }
 
   .btn-action.edit {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .btn-action.edit:hover {
@@ -1777,123 +1777,123 @@
   }
 
   .todays-tasks-section {
-    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+    background: linear-gradient(135deg, var(--color-success-bg) 0%, var(--color-success) 100%);
     border-color: var(--color-success);
   }
 
   .todays-tasks-section h3 {
-    color: #a5d6a7;
+    color: var(--color-success-text);
   }
 
   .task-due-card {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
 
   .task-context {
-    background: #3a3a3a;
+    background: var(--bg-card);
   }
 
   /* Staff completion in dark mode */
   .task-log-entry.staff-completed {
-    background: linear-gradient(to right, rgba(33, 150, 243, 0.1), transparent);
+    background: linear-gradient(to right, var(--color-primary-bg), transparent);
   }
 
   .staff-badge {
-    background: #2196F3;
+    background: var(--color-primary);
   }
 
   /* Staff Assistance Form - Dark Mode */
   .assistance-form-section {
-    background: linear-gradient(to bottom, #2d2d4a, #1e1e1e);
-    border-color: #4f46e5;
+    background: linear-gradient(to bottom, var(--color-indigo-bg), var(--bg-secondary));
+    border-color: var(--color-indigo);
   }
 
   .assistance-form-section h4 {
-    color: #a5b4fc;
+    color: var(--color-indigo);
   }
 
   .assistance-form .form-group label {
-    color: #e0e0e0;
+    color: var(--text-primary);
   }
 
   .assistance-form .radio-option {
-    color: #e0e0e0;
+    color: var(--text-primary);
   }
 
   .assistance-form select,
   .assistance-form input[type="date"],
   .assistance-form textarea {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .assistance-form select:focus,
   .assistance-form input:focus,
   .assistance-form textarea:focus {
-    border-color: #818cf8;
-    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+    border-color: var(--color-indigo);
+    box-shadow: 0 0 0 3px var(--color-indigo-bg);
   }
 
   .assistance-form .form-hint {
-    color: #9ca3af;
+    color: var(--text-muted);
   }
 
   .assistance-form .day-btn {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .assistance-form .day-btn:hover {
-    border-color: #818cf8;
+    border-color: var(--color-indigo);
   }
 
   .assistance-form .day-btn.selected {
-    background: #6366f1;
-    border-color: #6366f1;
+    background: var(--color-indigo);
+    border-color: var(--color-indigo);
     color: var(--text-inverse);
   }
 
   .assistance-form .time-btn {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .assistance-form .time-btn:hover {
-    border-color: #818cf8;
+    border-color: var(--color-indigo);
   }
 
   .assistance-form .time-btn.selected {
-    background: #6366f1;
-    border-color: #6366f1;
+    background: var(--color-indigo);
+    border-color: var(--color-indigo);
     color: var(--text-inverse);
   }
 
   .assistance-actions .btn-secondary {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .assistance-actions .btn-secondary:hover {
-    background: #4a4a4a;
+    background: var(--bg-card-hover);
   }
 
   .assistance-success p {
-    color: #6ee7b7;
+    color: var(--color-success);
   }
 
   .assistance-success .assistance-hint {
-    color: #9ca3af;
+    color: var(--text-muted);
   }
 
   .assistance-success .btn-secondary {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 }
 
@@ -1958,13 +1958,21 @@
 }
 
 .weight-input-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   width: auto;
   min-width: 70px;
-  padding: 0.5rem;
+  padding: 0.5rem 2rem 0.5rem 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--bg-card);
   color: var(--text-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 10px;
+  cursor: pointer;
 }
 
 /* Trend Indicators */
@@ -2177,24 +2185,40 @@
 
 /* Saddle Fit Status Select Styling */
 .fit-status-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--bg-card);
   color: var(--text-primary);
   font-size: 0.875rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  cursor: pointer;
 }
 
 /* Method Select (for weight records) */
 .method-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--bg-card);
   color: var(--text-primary);
   font-size: 0.875rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  cursor: pointer;
 }
 
 /* Latest Value Display in Summary Cards */
@@ -2234,55 +2258,55 @@
 /* Dark Mode for Weight/BCS/Saddle Fit */
 @media (prefers-color-scheme: dark) {
   .unit-toggle {
-    border-color: #555555;
+    border-color: var(--border-color);
   }
 
   .unit-toggle .toggle-btn {
-    background: #3a3a3a;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    color: var(--text-primary);
   }
 
   .unit-toggle .toggle-btn:first-child {
-    border-color: #555555;
+    border-color: var(--border-color);
   }
 
   .unit-toggle .toggle-btn:hover:not(.active) {
-    background: #4a4a4a;
+    background: var(--bg-card-hover);
   }
 
   .weight-input-group select {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .bcs-legend {
-    background: #3a3a3a;
+    background: var(--bg-card);
   }
 
   .bcs-legend h4 {
-    color: #f0f0f0;
+    color: var(--text-primary);
   }
 
   .bcs-score-item {
-    color: #e0e0e0;
+    color: var(--text-primary);
   }
 
   .bcs-selector .bcs-btn {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .fit-status-select,
   .method-select {
-    background: #3a3a3a;
-    border-color: #555555;
-    color: #e0e0e0;
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
   }
 
   .latest-date {
-    color: #b0b0b0;
+    color: var(--text-muted);
   }
 }
 

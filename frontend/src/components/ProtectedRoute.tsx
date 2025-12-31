@@ -46,8 +46,8 @@ export function ProtectedRoute({
     return <Navigate to="/book" replace />;
   }
 
-  // Staff-only routes - requires is_yard_staff flag or admin
-  if (requireStaff && !user.is_yard_staff && user.role !== 'admin') {
+  // Staff-only routes - requires staff role, is_yard_staff flag, or admin
+  if (requireStaff && user.role !== 'staff' && !user.is_yard_staff && user.role !== 'admin') {
     return <Navigate to="/book" replace />;
   }
 

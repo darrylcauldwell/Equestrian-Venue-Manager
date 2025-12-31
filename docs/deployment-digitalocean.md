@@ -148,18 +148,44 @@ docker compose exec -T backend alembic upgrade head
 
 ## Database Operations
 
+### Backups
+
+The application provides **two backup methods**:
+
+#### 1. Admin UI (Recommended)
+Access via **Admin → Settings → Backups**:
+
+- **Database Backup** (pg_dump): Full PostgreSQL dump for disaster recovery
+  - Click "Create Database Backup"
+  - Download the .sql file to your laptop
+  - Recommended: Weekly
+
+- **Data Export** (JSON): Human-readable export for seeding/portability
+  - Click "Export Data Now"
+  - Useful for setting up new environments
+  - Can be scheduled automatically
+
+#### 2. Command Line (Direct)
 ```bash
 cd /opt/evm
 
-# Backup database
+# Create database backup
 docker compose exec -T db pg_dump -U evm evm_db > backup-$(date +%Y%m%d).sql
 
-# Restore database
+# Restore from backup
 cat backup.sql | docker compose exec -T db psql -U evm evm_db
+```
 
-# Access database shell
+### Database Shell Access
+```bash
 docker compose exec db psql -U evm evm_db
 ```
+
+### Backup Best Practices
+1. **Download Database Backups** to your laptop weekly
+2. Keep at least 4 weeks of backups
+3. Test restore process periodically
+4. Store backups off-server (laptop, S3, etc.)
 
 ## Troubleshooting
 

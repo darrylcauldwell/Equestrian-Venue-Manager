@@ -1,7 +1,7 @@
 from datetime import datetime, date, time
 from decimal import Decimal
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from app.models.clinic import Discipline, LessonFormat, ClinicStatus
 
@@ -85,8 +85,7 @@ class ClinicRequestResponse(ClinicRequestBase):
     reviewed_by_name: Optional[str] = None
     participant_count: Optional[int] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Slot Schemas ==============
@@ -129,8 +128,7 @@ class ClinicSlotResponse(ClinicSlotBase):
     arena_name: Optional[str] = None
     participant_count: int = 0
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Participant Schemas ==============
@@ -185,8 +183,7 @@ class ClinicParticipantResponse(BaseModel):
     slot_group_name: Optional[str] = None
     slot_arena_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Slot with Participants ==============
@@ -201,8 +198,7 @@ class ClinicRequestDetailResponse(ClinicRequestResponse):
     participants: List[ClinicParticipantResponse] = []
     slots: List[ClinicSlotWithParticipants] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== List Schemas ==============

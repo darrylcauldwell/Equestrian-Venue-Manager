@@ -19,6 +19,7 @@ from app.schemas.land_management import (
     FieldFloodRiskUpdate,
     FieldFloodRiskResponse,
     FloodWarningStatus,
+    StationWarningAlert,
 )
 from app.services.flood_api import FloodAPIService
 from app.utils.auth import get_current_user, require_admin
@@ -121,6 +122,28 @@ def add_station(
     db.add(station)
     db.commit()
     db.refresh(station)
+
+    # Fetch initial reading from EA API
+    try:
+        reading = FloodAPIService.get_latest_reading_sync(station.station_id)
+        if reading and reading.get("value") is not None:
+            station.last_reading = reading["value"]
+            if reading.get("date_time"):
+                try:
+                    dt_str = reading["date_time"]
+                    if dt_str.endswith("Z"):
+                        dt_str = dt_str[:-1]
+                    station.last_reading_time = datetime.fromisoformat(dt_str)
+                except (ValueError, TypeError):
+                    pass
+            station.last_fetched = datetime.utcnow()
+            station.updated_at = datetime.utcnow()
+            db.commit()
+            db.refresh(station)
+    except Exception:
+        # Don't fail station creation if initial reading fetch fails
+        pass
+
     return enrich_station(station, db)
 
 
@@ -284,16 +307,54 @@ def get_current_warnings(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Get current flood warning status across all monitored fields."""
-    # Get all field-station links with their current readings
-    risks = db.query(FieldFloodRisk).options(
-        joinedload(FieldFloodRisk.monitoring_station)
-    ).all()
-
-    warnings = []
+    """Get current flood warning status across ALL monitored stations."""
     has_warnings = False
     has_severe = False
     last_updated = None
+    station_alerts = []
+    field_warnings = []
+
+    # Check ALL active stations (not just those linked to fields)
+    stations = db.query(FloodMonitoringStation).filter(
+        FloodMonitoringStation.is_active == True
+    ).all()
+
+    for station in stations:
+        # Track last updated time
+        if station.last_fetched:
+            if last_updated is None or station.last_fetched > last_updated:
+                last_updated = station.last_fetched
+
+        # Determine warning status for this station
+        if station.last_reading is not None:
+            status = FloodAPIService.determine_warning_level(
+                station.last_reading,
+                warning_threshold=station.warning_threshold_meters,
+                severe_threshold=station.severe_threshold_meters
+            )
+
+            if status in ["warning", "severe"]:
+                has_warnings = True
+                if status == "severe":
+                    has_severe = True
+
+                # Add to station alerts
+                station_alerts.append(StationWarningAlert(
+                    station_id=station.id,
+                    ea_station_id=station.station_id,
+                    station_name=station.station_name,
+                    river_name=station.river_name,
+                    current_level=station.last_reading,
+                    warning_threshold=station.warning_threshold_meters,
+                    severe_threshold=station.severe_threshold_meters,
+                    current_status=status,
+                    last_reading_time=station.last_reading_time
+                ))
+
+    # Also get field-linked warnings for backwards compatibility
+    risks = db.query(FieldFloodRisk).options(
+        joinedload(FieldFloodRisk.monitoring_station)
+    ).all()
 
     for risk in risks:
         station = risk.monitoring_station
@@ -302,22 +363,14 @@ def get_current_warnings(
 
         response = enrich_field_risk(risk, db)
 
-        # Track last updated time
-        if station.last_fetched:
-            if last_updated is None or station.last_fetched > last_updated:
-                last_updated = station.last_fetched
-
-        # Check for warnings
         if response.current_status in ["warning", "severe"]:
-            warnings.append(response)
-            has_warnings = True
-            if response.current_status == "severe":
-                has_severe = True
+            field_warnings.append(response)
 
     return FloodWarningStatus(
         has_warnings=has_warnings,
         has_severe_warnings=has_severe,
-        warnings=warnings,
+        warnings=field_warnings,
+        station_alerts=station_alerts,
         last_updated=last_updated
     )
 

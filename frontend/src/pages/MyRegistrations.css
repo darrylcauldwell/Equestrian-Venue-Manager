@@ -325,28 +325,28 @@
   .my-registrations-page .registration-card,
   .my-registrations-page .registrations-list,
   .my-registrations-page .empty-state {
-    background: #3a3a3a;
-    border-color: #555555;
+    background: var(--bg-card);
+    border-color: var(--border-color);
   }
 
   .my-registrations-page .card-body {
-    color: #e0e0e0;
+    color: var(--text-primary);
   }
 
   .my-registrations-page .info-row {
-    border-color: #555555;
+    border-color: var(--border-color);
   }
 
   .my-registrations-page .slot-info {
-    background: rgba(25, 118, 210, 0.15);
+    background: var(--color-primary-bg);
   }
 
   .my-registrations-page .awaiting-slot {
-    background: #3a3a3a;
-    color: #b0b0b0;
+    background: var(--bg-card);
+    color: var(--text-muted);
   }
 
   .my-registrations-page .registration-row {
-    border-color: #555555;
+    border-color: var(--border-color);
   }
 }

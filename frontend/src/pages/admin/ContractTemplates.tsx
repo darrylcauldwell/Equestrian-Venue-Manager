@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { contractsApi, liveryPackagesApi } from '../../services/api';
 import { useModalForm, useRequestState } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Textarea, Select } from '../../components/ui';
@@ -45,11 +45,14 @@ export function AdminContractTemplates() {
   // Modal hooks
   const templateModal = useModalForm<CreateContractTemplate>(emptyTemplateForm);
   const [versionForm, setVersionForm] = useState<CreateContractVersion>(emptyVersionForm);
+  const [editContent, setEditContent] = useState<string>('');
+  const [editChangeSummary, setEditChangeSummary] = useState<string>('');
+  const [originalContent, setOriginalContent] = useState<string>('');
 
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<ContractTemplateSummary | null>(null);
 
-  const loadTemplates = async () => {
+  const loadTemplates = useCallback(async () => {
     try {
       const data = await contractsApi.listTemplates();
       setTemplates(data);
@@ -58,30 +61,30 @@ export function AdminContractTemplates() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
 
-  const loadLiveryPackages = async () => {
+  const loadLiveryPackages = useCallback(async () => {
     try {
       const data = await liveryPackagesApi.listAll();
       setLiveryPackages(data);
     } catch {
       // Non-critical, can proceed without
     }
-  };
+  }, []);
 
-  const loadVersions = async (templateId: number) => {
+  const loadVersions = useCallback(async (templateId: number) => {
     try {
       const data = await contractsApi.listVersions(templateId);
       setVersions(data);
     } catch {
       setError('Failed to load template versions');
     }
-  };
+  }, [setError]);
 
   useEffect(() => {
     loadTemplates();
     loadLiveryPackages();
-  }, []);
+  }, [loadTemplates, loadLiveryPackages]);
 
   useEffect(() => {
     if (selectedTemplate) {
@@ -89,7 +92,7 @@ export function AdminContractTemplates() {
     } else {
       setVersions([]);
     }
-  }, [selectedTemplate]);
+  }, [selectedTemplate, loadVersions]);
 
   const handleSubmitTemplate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,11 +102,34 @@ export function AdminContractTemplates() {
     try {
       if (templateModal.isEditing && templateModal.editingId) {
         await contractsApi.updateTemplate(templateModal.editingId, templateModal.formData);
+
+        // If content changed, create a new version
+        if (editContent !== originalContent && editContent.trim()) {
+          await contractsApi.createVersion(templateModal.editingId, {
+            html_content: editContent,
+            change_summary: editChangeSummary || 'Content updated',
+          });
+        }
       } else {
-        await contractsApi.createTemplate(templateModal.formData);
+        // Backend requires html_content in the create request
+        // Include the content from the editor (or a placeholder if empty)
+        const newTemplate = await contractsApi.createTemplate({
+          ...templateModal.formData,
+          html_content: editContent.trim() || '<p>Contract content to be added</p>',
+        });
+
+        // Note: Backend now creates initial version automatically with the provided html_content
+        // No need to create a separate version
+        void newTemplate; // Template created with content
       }
       templateModal.close();
+      setEditContent('');
+      setOriginalContent('');
+      setEditChangeSummary('');
       await loadTemplates();
+      if (selectedTemplate) {
+        await loadVersions(selectedTemplate.id);
+      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save template';
       setError(errorMessage);
@@ -112,13 +138,26 @@ export function AdminContractTemplates() {
     }
   };
 
-  const handleEditTemplate = (template: ContractTemplateSummary) => {
+  const handleEditTemplate = async (template: ContractTemplateSummary) => {
     templateModal.edit(template.id, {
       name: template.name,
       contract_type: template.contract_type,
       description: template.description || '',
       is_active: template.is_active,
     });
+
+    // Load current version content
+    try {
+      const templateVersions = await contractsApi.listVersions(template.id);
+      const currentVersion = templateVersions.find(v => v.is_current);
+      setEditContent(currentVersion?.html_content || '');
+      setOriginalContent(currentVersion?.html_content || '');
+      setEditChangeSummary('');
+    } catch {
+      setEditContent('');
+      setOriginalContent('');
+      setEditChangeSummary('');
+    }
   };
 
   const handleToggleActive = async (template: ContractTemplateSummary) => {
@@ -286,6 +325,29 @@ export function AdminContractTemplates() {
             </label>
             <small>Active templates can be used to request signatures</small>
           </div>
+
+          <FormGroup label="Contract Content">
+            <RichTextEditor
+              value={editContent}
+              onChange={(value) => setEditContent(value)}
+              placeholder="Enter the full contract text here..."
+              minHeight="300px"
+            />
+            {!templateModal.isEditing && (
+              <small>You can add content now or add it later</small>
+            )}
+          </FormGroup>
+
+          {templateModal.isEditing && editContent !== originalContent && (
+            <FormGroup label="Change Summary">
+              <Input
+                value={editChangeSummary}
+                onChange={(e) => setEditChangeSummary(e.target.value)}
+                placeholder="Brief description of changes made..."
+              />
+              <small>Describe what changed in this version</small>
+            </FormGroup>
+          )}
         </form>
       </Modal>
 
@@ -540,51 +602,60 @@ export function AdminContractTemplates() {
         .admin-split-layout {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 24px;
-          margin-top: 20px;
+          gap: var(--space-6);
+          margin-top: var(--space-5);
         }
         .admin-list-panel,
         .admin-detail-panel {
-          background: #fff;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          padding: 16px;
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-lg);
+          padding: var(--space-4);
         }
         .admin-list-panel h3,
         .admin-detail-panel h3 {
-          margin: 0 0 16px 0;
+          margin: 0 0 var(--space-4) 0;
+          color: var(--text-primary);
         }
         .panel-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 16px;
+          margin-bottom: var(--space-4);
         }
         .panel-header h3 {
           margin: 0;
         }
         .admin-table tr.selected {
-          background-color: #e3f2fd;
+          background-color: var(--color-primary-bg);
         }
         .badge-livery {
-          background: #2196f3;
-          color: white;
+          background: var(--color-info);
+          color: var(--text-inverse);
         }
         .badge-employment {
-          background: #9c27b0;
-          color: white;
+          background: var(--color-purple);
+          color: var(--text-inverse);
         }
         .badge-custom {
-          background: #607d8b;
-          color: white;
+          background: var(--text-secondary);
+          color: var(--text-inverse);
         }
         .contract-preview {
           max-height: 500px;
           overflow-y: auto;
-          padding: 20px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background: #fafafa;
+          padding: var(--space-5);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+        }
+        .btn-small.btn-primary {
+          background: var(--color-primary);
+          color: var(--text-inverse);
+        }
+        .btn-small.btn-primary:hover {
+          background: var(--color-primary-hover);
         }
         @media (max-width: 1024px) {
           .admin-split-layout {

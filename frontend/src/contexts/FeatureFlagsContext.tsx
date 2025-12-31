@@ -110,6 +110,7 @@ export function FeatureFlagsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFeatureFlags() {
   const context = useContext(FeatureFlagsContext);
   if (context === undefined) {
@@ -122,6 +123,7 @@ export function useFeatureFlags() {
  * Hook to check if a specific feature is enabled
  * Returns true during loading to avoid flickering
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFeatureFlag(key: FeatureKey): boolean {
   const { isFeatureEnabled } = useFeatureFlags();
   return isFeatureEnabled(key);

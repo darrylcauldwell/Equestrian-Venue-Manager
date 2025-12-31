@@ -4,7 +4,7 @@ Schemas for Holiday Livery Requests
 
 from datetime import date, datetime
 from typing import Optional, Literal
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
 
 # Status types
@@ -99,8 +99,7 @@ class HolidayLiveryRequestResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HolidayLiveryRequestSummary(BaseModel):
@@ -115,8 +114,7 @@ class HolidayLiveryRequestSummary(BaseModel):
     status: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HolidayLiveryPublicResponse(BaseModel):

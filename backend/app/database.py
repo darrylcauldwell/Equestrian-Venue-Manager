@@ -20,12 +20,15 @@ def EnumColumn(enum_class, **kwargs):
 
     The database stores lowercase values to match migrations.
 
+    Note: create_type=False because Alembic migrations handle enum creation.
+    This prevents duplicate type errors when create_all() runs after migrations.
+
     Usage:
         contact_type = EnumColumn(ContactType, nullable=False)
         status = EnumColumn(StatusEnum, default=StatusEnum.PENDING)
     """
     return Column(
-        Enum(enum_class, values_callable=lambda x: [e.value for e in x]),
+        Enum(enum_class, values_callable=lambda x: [e.value for e in x], create_type=False),
         **kwargs
     )
 

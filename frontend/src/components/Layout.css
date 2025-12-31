@@ -244,7 +244,7 @@
 /* Show dropdown menu when open */
 .nav-content .nav-dropdown.open .nav-dropdown-menu {
   display: block;
-  max-height: 500px;
+  max-height: 2000px; /* Large enough for all menu items */
 }
 
 .nav-content .nav-dropdown-menu a {
@@ -276,6 +276,71 @@
   color: var(--color-primary);
   border-left: 3px solid var(--color-primary);
   padding-left: calc(1.25rem - 3px);
+}
+
+/* Nested sub-dropdown within dropdown menu */
+.nav-content .nav-sub-dropdown {
+  display: block;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.nav-content .nav-sub-dropdown-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.75rem 1.25rem 0.75rem 2rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+
+.nav-content .nav-sub-dropdown-trigger:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.nav-content .nav-sub-dropdown-trigger .dropdown-arrow {
+  font-size: 0.6rem;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+
+/* Sub-dropdown menu - hidden by default */
+.nav-content .nav-sub-dropdown-menu {
+  display: none;
+  background: var(--bg-body);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+/* Show sub-dropdown menu when open */
+.nav-content .nav-sub-dropdown.open .nav-sub-dropdown-menu {
+  display: block;
+  max-height: 500px;
+}
+
+.nav-content .nav-sub-dropdown-menu a {
+  display: block;
+  padding: 0.625rem 1.25rem 0.625rem 3rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.nav-content .nav-sub-dropdown-menu a:last-child {
+  border-bottom: none;
+}
+
+.nav-content .nav-sub-dropdown-menu a:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
 }
 
 /* Nav Divider */
@@ -422,6 +487,17 @@
   .nav-content .nav-dropdown-menu a {
     padding: 0.875rem 1rem 0.875rem 2rem;
     font-size: 0.95rem;
+  }
+
+  /* Sub-dropdown mobile styles */
+  .nav-content .nav-sub-dropdown-trigger {
+    padding: 0.875rem 1rem 0.875rem 2rem;
+    font-size: 0.95rem;
+  }
+
+  .nav-content .nav-sub-dropdown-menu a {
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    font-size: 0.9rem;
   }
 
   .nav-logout-btn {

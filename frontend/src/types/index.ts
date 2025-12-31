@@ -164,6 +164,8 @@ export interface SiteSettings extends AddressFields {
   dev_mode?: boolean;
   // Turnout cutoff
   turnout_cutoff_date?: string;  // ISO date string
+  // Staff Leave Configuration
+  leave_year_start_month?: number;  // 1=Jan, 4=Apr for financial year
   // Scheduler Configuration
   scheduler_health_tasks_hour?: number;
   scheduler_health_tasks_minute?: number;
@@ -176,6 +178,12 @@ export interface SiteSettings extends AddressFields {
   scheduler_backup_minute?: number;
   scheduler_cleanup_hour?: number;
   scheduler_cleanup_minute?: number;
+  // SSL/Domain Configuration
+  ssl_domain?: string;
+  ssl_acme_email?: string;
+  ssl_enabled?: boolean;
+  ssl_traefik_dashboard_enabled?: boolean;
+  ssl_traefik_dashboard_user?: string;
   updated_at?: string;
 }
 
@@ -1523,16 +1531,118 @@ export interface StaffLeaveSummary {
   staff_id: number;
   staff_name: string;
   staff_type?: string;
-  annual_leave_entitlement?: number;  // null for casual/on_call
+  annual_leave_entitlement?: number;  // Full entitlement (null for casual/on_call)
+  prorata_entitlement?: number;       // Pro-rata based on start/leaving date
   annual_leave_taken: number;
-  annual_leave_remaining?: number;    // null for casual/on_call
+  annual_leave_remaining?: number;    // Based on pro-rata entitlement (null for casual/on_call)
   annual_leave_pending: number;
+  annual_leave_upcoming: number;      // approved but not yet taken (future dates)
   unplanned_absences_this_year: number;
 }
 
 export interface AllStaffLeaveSummary {
   year: number;
+  leave_year_start: string;  // ISO date string
+  leave_year_end: string;    // ISO date string
   staff_summaries: StaffLeaveSummary[];
+}
+
+// Payroll Types
+export type PayrollAdjustmentType = 'bonus' | 'adhoc' | 'tip';
+
+export interface PayrollAdjustmentCreate {
+  staff_id: number;
+  adjustment_type: PayrollAdjustmentType;
+  amount: number;
+  description: string;
+  payment_date: string;
+  taxable: boolean;
+  notes?: string;
+}
+
+export interface PayrollAdjustment {
+  id: number;
+  staff_id: number;
+  adjustment_type: PayrollAdjustmentType;
+  amount: number;
+  description: string;
+  payment_date: string;
+  taxable: boolean;
+  notes?: string;
+  created_by_id?: number;
+  created_at: string;
+  updated_at: string;
+  staff_name?: string;
+  created_by_name?: string;
+}
+
+export interface PayrollAdjustmentListResponse {
+  adjustments: PayrollAdjustment[];
+  total: number;
+}
+
+export interface PayrollAdjustmentSummary {
+  bonus_total: number;
+  adhoc_total: number;
+  tips_total: number;
+  taxable_adjustments: number;
+  non_taxable_adjustments: number;
+}
+
+export interface StaffPayrollPeriod {
+  staff_id: number;
+  staff_name: string;
+  staff_type?: string;
+  hourly_rate?: number;
+  approved_hours: number;
+  timesheet_count: number;
+  base_pay: number;
+  adjustments: PayrollAdjustmentSummary;
+  total_pay: number;
+  taxable_pay: number;
+  non_taxable_pay: number;
+}
+
+export interface PayrollSummaryResponse {
+  period_type: string;
+  period_start: string;
+  period_end: string;
+  period_label: string;
+  staff_summaries: StaffPayrollPeriod[];
+  total_approved_hours: number;
+  total_base_pay: number;
+  total_adjustments: number;
+  total_pay: number;
+}
+
+// Staff Thanks (appreciation messages with optional tips)
+export interface StaffThanksCreate {
+  staff_id: number;
+  message: string;
+  tip_amount?: number;
+}
+
+export interface StaffThanks {
+  id: number;
+  staff_id: number;
+  sender_id: number;
+  message: string;
+  tip_amount?: number;
+  tip_paid: boolean;
+  read_at?: string;
+  created_at: string;
+  staff_name?: string;
+  sender_name?: string;
+}
+
+export interface StaffThanksListResponse {
+  thanks: StaffThanks[];
+  total: number;
+  unread_count: number;
+}
+
+export interface StaffThanksUnreadCount {
+  unread_count: number;
 }
 
 // Training Clinics
@@ -2211,6 +2321,19 @@ export interface BackupImportResult {
   entity_counts: Record<string, number>;
   warnings: string[];
   logs: string[];
+}
+
+// Database Backup (pg_dump) types
+export interface DatabaseBackup {
+  filename: string;
+  created_at: string;
+  file_size: number;
+  created_by?: string;
+}
+
+export interface DatabaseBackupListResponse {
+  backups: DatabaseBackup[];
+  total: number;
 }
 
 // ============== Ad-Hoc Lessons ==============
@@ -3299,6 +3422,7 @@ export interface InitiateSigningResponse {
   envelope_id?: string;
   error?: string;
   test_mode: boolean;
+  manual_signing?: boolean;
 }
 
 export interface CompleteSigningRequest {
@@ -3340,6 +3464,42 @@ export interface DocuSignTestResponse {
 export interface ContractEnums {
   contract_types: EnumOption[];
   signature_statuses: EnumOption[];
+}
+
+// ============== SSL/Domain Configuration Types ==============
+
+export interface SSLSettings {
+  ssl_domain?: string;
+  ssl_acme_email?: string;
+  ssl_enabled: boolean;
+  ssl_traefik_dashboard_enabled: boolean;
+  ssl_traefik_dashboard_user?: string;
+  has_dashboard_password: boolean;
+}
+
+export interface SSLSettingsUpdate {
+  ssl_domain?: string;
+  ssl_acme_email?: string;
+  ssl_enabled?: boolean;
+  ssl_traefik_dashboard_enabled?: boolean;
+  ssl_traefik_dashboard_user?: string;
+  ssl_traefik_dashboard_password?: string;
+}
+
+export interface CertificateInfo {
+  domain: string;
+  issuer?: string;
+  valid_from?: string;
+  valid_until?: string;
+  days_until_expiry?: number;
+  is_valid: boolean;
+  error?: string;
+}
+
+export interface SSLStatusResponse {
+  settings: SSLSettings;
+  certificate?: CertificateInfo;
+  traefik_config?: string;
 }
 
 // ============== Land Management Types ==============
@@ -3608,10 +3768,23 @@ export interface FieldFloodRiskCreate {
   evacuation_notes?: string;
 }
 
+export interface StationWarningAlert {
+  station_id: number;
+  ea_station_id: string;
+  station_name: string;
+  river_name?: string;
+  current_level?: number;
+  warning_threshold?: number;
+  severe_threshold?: number;
+  current_status: 'normal' | 'warning' | 'severe';
+  last_reading_time?: string;
+}
+
 export interface FloodWarningStatus {
   has_warnings: boolean;
   has_severe_warnings: boolean;
   warnings: FieldFloodRisk[];
+  station_alerts: StationWarningAlert[];
   last_updated?: string;
 }
 
@@ -3810,4 +3983,390 @@ export interface FeatureFlagValidationResult {
 
 export interface EnabledFeaturesResponse {
   features: FeatureKey[];
+}
+
+// ============== Staff Profile Types ==============
+
+export interface StaffProfile {
+  id: number;
+  user_id: number;
+  // Personal info
+  date_of_birth?: string;
+  bio?: string;
+  // Employment
+  start_date?: string;
+  job_title?: string;
+  // Contact
+  personal_email?: string;
+  personal_phone?: string;
+  // Address
+  address_street?: string;
+  address_town?: string;
+  address_county?: string;
+  address_postcode?: string;
+  // Emergency contact
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  // Qualifications
+  qualifications?: string;  // JSON array as string
+  dbs_check_date?: string;
+  dbs_certificate_number?: string;
+  // Admin-only
+  notes?: string;
+  hourly_rate?: number;  // Admin-only, for payroll
+  // Payroll information (for accountant)
+  national_insurance_number?: string;  // Format: AB123456C
+  bank_account_number?: string;  // 8-digit account number
+  bank_sort_code?: string;  // Format: 12-34-56 or 123456
+  bank_account_name?: string;  // Name on bank account
+  // Tax information
+  tax_code?: string;  // e.g., 1257L, BR, 0T
+  student_loan_plan?: string;  // plan_1, plan_2, plan_4, postgrad, none
+  // P45 from previous employer
+  p45_date_left_previous?: string;
+  p45_tax_paid_previous?: number;
+  p45_pay_to_date_previous?: number;
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+  // User info
+  user_name?: string;
+  user_email?: string;
+  user_role?: string;
+  is_yard_staff?: boolean;
+  staff_type?: string;
+  annual_leave_entitlement?: number;
+  leaving_date?: string;  // ISO date string
+}
+
+export interface StaffProfileCreate {
+  user_id: number;
+  date_of_birth?: string;
+  bio?: string;
+  start_date?: string;
+  job_title?: string;
+  personal_email?: string;
+  personal_phone?: string;
+  address_street?: string;
+  address_town?: string;
+  address_county?: string;
+  address_postcode?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  qualifications?: string;
+  dbs_check_date?: string;
+  dbs_certificate_number?: string;
+}
+
+export interface StaffProfileUpdate {
+  date_of_birth?: string;
+  bio?: string;
+  start_date?: string;
+  job_title?: string;
+  personal_email?: string;
+  personal_phone?: string;
+  address_street?: string;
+  address_town?: string;
+  address_county?: string;
+  address_postcode?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  qualifications?: string;
+  dbs_check_date?: string;
+  dbs_certificate_number?: string;
+  notes?: string;
+  hourly_rate?: number;  // Admin-only, for payroll
+  // Employment type and leave (stored on User model)
+  staff_type?: string;  // regular, casual, on_call
+  annual_leave_entitlement?: number;  // Days per year
+  leaving_date?: string;  // ISO date string
+  // Payroll information
+  national_insurance_number?: string;
+  bank_account_number?: string;
+  bank_sort_code?: string;
+  bank_account_name?: string;
+  // Tax information
+  tax_code?: string;
+  student_loan_plan?: string;
+  // P45 from previous employer
+  p45_date_left_previous?: string;
+  p45_tax_paid_previous?: number;
+  p45_pay_to_date_previous?: number;
+}
+
+export interface StaffProfileSelfUpdate {
+  bio?: string;
+  personal_email?: string;
+  personal_phone?: string;
+  address_street?: string;
+  address_town?: string;
+  address_county?: string;
+  address_postcode?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+}
+
+export interface StaffProfileSummary {
+  id: number;
+  user_id: number;
+  user_name: string;
+  job_title?: string;
+  start_date?: string;
+  user_role?: string;
+  is_yard_staff: boolean;
+  has_dbs_check: boolean;
+  dbs_expiring_soon: boolean;
+  missing_payroll_fields: string[];  // List of missing payroll field names
+}
+
+export interface StaffProfileListResponse {
+  profiles: StaffProfile[];
+  total: number;
+}
+
+export interface StaffMilestone {
+  user_id: number;
+  user_name: string;
+  milestone_type: 'birthday' | 'anniversary';
+  milestone_date: string;
+  years?: number;
+  days_until: number;
+}
+
+export interface StaffMilestonesResponse {
+  birthdays: StaffMilestone[];
+  anniversaries: StaffMilestone[];
+  has_upcoming: boolean;
+}
+
+export interface StaffMemberCreate {
+  // User account fields
+  username: string;
+  email?: string;
+  name: string;
+  phone?: string;
+  // Required profile fields
+  date_of_birth: string;  // Required for staff
+  start_date: string;  // Required for employment records
+  job_title: string;  // Required for role identification
+  emergency_contact_name: string;  // Required for health & safety
+  emergency_contact_phone: string;  // Required for health & safety
+  // Employment type and leave entitlement
+  staff_type?: string;  // regular, casual, on_call (defaults to regular)
+  annual_leave_entitlement?: number;  // Days per year (defaults to 28)
+  // Payroll fields (optional - can be added later)
+  national_insurance_number?: string;
+  bank_account_number?: string;
+  bank_sort_code?: string;
+  bank_account_name?: string;
+  // Optional profile fields
+  bio?: string;
+  personal_email?: string;
+  personal_phone?: string;
+  address_street?: string;
+  address_town?: string;
+  address_county?: string;
+  address_postcode?: string;
+  emergency_contact_relationship?: string;
+  qualifications?: string;
+  dbs_check_date?: string;
+  dbs_certificate_number?: string;
+  notes?: string;
+  // Optional payroll fields
+  hourly_rate?: number;
+  tax_code?: string;
+  student_loan_plan?: string;
+  p45_date_left_previous?: string;
+  p45_tax_paid_previous?: number;
+  p45_pay_to_date_previous?: number;
+}
+
+export interface StaffMemberCreateResponse {
+  profile: StaffProfile;
+  temporary_password: string;
+  message: string;
+}
+
+// ============== Risk Assessment Types ==============
+
+export type RiskAssessmentCategory =
+  | 'general_workplace'
+  | 'horse_handling'
+  | 'yard_environment'
+  | 'fire_emergency'
+  | 'biosecurity'
+  | 'first_aid'
+  | 'ppe_manual_handling'
+  | 'other';
+
+export type ReviewTrigger =
+  | 'scheduled'
+  | 'incident'
+  | 'change'
+  | 'new_hazard'
+  | 'legislation'
+  | 'initial'
+  | 'other';
+
+export interface RiskAssessment {
+  id: number;
+  title: string;
+  category: RiskAssessmentCategory;
+  summary?: string;
+  content: string;
+  version: number;
+  review_period_months: number;
+  required_for_induction: boolean;
+  applies_to_roles?: string[];
+  last_reviewed_at: string;
+  last_reviewed_by_id?: number;
+  next_review_due?: string;
+  needs_review: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by_id: number;
+  // Enriched fields
+  created_by_name?: string;
+  last_reviewed_by_name?: string;
+  acknowledgement_count?: number;
+  staff_needing_acknowledgement?: number;
+}
+
+export interface RiskAssessmentSummary {
+  id: number;
+  title: string;
+  category: RiskAssessmentCategory;
+  summary?: string;
+  version: number;
+  is_active: boolean;
+  needs_review: boolean;
+  next_review_due?: string;
+  last_reviewed_at: string;
+  acknowledgement_count: number;
+  staff_needing_acknowledgement: number;
+  required_for_induction: boolean;
+}
+
+export interface CreateRiskAssessment {
+  title: string;
+  category: RiskAssessmentCategory;
+  summary?: string;
+  content: string;
+  review_period_months?: number;
+  required_for_induction?: boolean;
+  applies_to_roles?: string[];
+}
+
+export interface UpdateRiskAssessment {
+  title?: string;
+  category?: RiskAssessmentCategory;
+  summary?: string;
+  review_period_months?: number;
+  required_for_induction?: boolean;
+  applies_to_roles?: string[];
+  is_active?: boolean;
+  needs_review?: boolean;
+  next_review_due?: string;
+}
+
+export interface UpdateRiskAssessmentContent {
+  content: string;
+  review_trigger: ReviewTrigger;
+  trigger_details?: string;
+  changes_summary: string;
+}
+
+export interface RiskAssessmentReview {
+  id: number;
+  risk_assessment_id: number;
+  reviewed_at: string;
+  reviewed_by_id: number;
+  trigger: ReviewTrigger;
+  trigger_details?: string;
+  version_before: number;
+  version_after: number;
+  changes_made: boolean;
+  changes_summary?: string;
+  notes?: string;
+  reviewed_by_name?: string;
+}
+
+export interface CreateRiskAssessmentReview {
+  trigger: ReviewTrigger;
+  trigger_details?: string;
+  notes?: string;
+}
+
+export interface RiskAssessmentAcknowledgement {
+  id: number;
+  risk_assessment_id: number;
+  assessment_version: number;
+  user_id: number;
+  acknowledged_at: string;
+  notes?: string;
+  user_name?: string;
+  assessment_title?: string;
+}
+
+export interface CreateRiskAssessmentAcknowledgement {
+  risk_assessment_id: number;
+  notes?: string;
+}
+
+export interface AcknowledgementSummary {
+  id: number;
+  user_id: number;
+  user_name: string;
+  acknowledged_at: string;
+  assessment_version: number;
+  is_current_version: boolean;
+}
+
+export interface AssessmentStaffStatus {
+  user_id: number;
+  user_name: string;
+  status: 'acknowledged' | 'outdated' | 'pending';
+  acknowledged_at?: string;
+  acknowledged_version?: number;
+  is_current_version: boolean;
+}
+
+export interface MyRiskAssessment {
+  id: number;
+  title: string;
+  category: RiskAssessmentCategory;
+  summary?: string;
+  content: string;
+  version: number;
+  required_for_induction: boolean;
+  last_acknowledged_at?: string;
+  last_acknowledged_version?: number;
+  needs_acknowledgement: boolean;
+}
+
+export interface StaffAcknowledgementStatus {
+  user_id: number;
+  user_name: string;
+  total_assessments: number;
+  acknowledged_count: number;
+  pending_count: number;
+  is_compliant: boolean;
+}
+
+export interface ComplianceSummary {
+  total_staff: number;
+  fully_compliant_staff: number;
+  non_compliant_staff: number;
+  compliance_percentage: number;
+  assessments_needing_review: number;
+}
+
+export interface RiskAssessmentEnums {
+  categories: EnumOption[];
+  triggers: EnumOption[];
 }

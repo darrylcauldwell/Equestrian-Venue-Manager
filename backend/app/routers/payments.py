@@ -269,14 +269,44 @@ async def stripe_webhook(
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        booking_id = session.get('metadata', {}).get('booking_id')
+        metadata = session.get('metadata', {})
 
-        if booking_id:
-            booking = db.query(Booking).filter(Booking.id == int(booking_id)).first()
-            if booking and session['payment_status'] == 'paid':
-                booking.payment_status = PaymentStatus.PAID
-                booking.payment_ref = session.get('payment_intent', session['id'])
-                db.commit()
+        # Check if this is a tip payment
+        if metadata.get('type') == 'staff_tip':
+            thanks_id = metadata.get('thanks_id')
+            if thanks_id and session['payment_status'] == 'paid':
+                from app.models.staff_management import StaffThanks, PayrollAdjustment, PayrollAdjustmentType
+                from app.models.user import User
+
+                thanks = db.query(StaffThanks).filter(StaffThanks.id == int(thanks_id)).first()
+                if thanks and not thanks.tip_paid:
+                    thanks.tip_paid = True
+                    thanks.tip_payment_intent_id = session.get('payment_intent', session['id'])
+
+                    # Create payroll adjustment
+                    sender = db.query(User).filter(User.id == thanks.sender_id).first()
+                    adjustment = PayrollAdjustment(
+                        staff_id=thanks.staff_id,
+                        adjustment_type=PayrollAdjustmentType.TIP,
+                        amount=thanks.tip_amount,
+                        description=f"Tip from {sender.name if sender else 'Livery Owner'}",
+                        payment_date=datetime.utcnow().date(),
+                        taxable=False,
+                        notes=thanks.message[:200] if thanks.message else None,
+                        created_by_id=thanks.sender_id,
+                        thanks_id=thanks.id
+                    )
+                    db.add(adjustment)
+                    db.commit()
+        else:
+            # Handle booking payment
+            booking_id = metadata.get('booking_id')
+            if booking_id:
+                booking = db.query(Booking).filter(Booking.id == int(booking_id)).first()
+                if booking and session['payment_status'] == 'paid':
+                    booking.payment_status = PaymentStatus.PAID
+                    booking.payment_ref = session.get('payment_intent', session['id'])
+                    db.commit()
 
     # Handle payment_intent.succeeded as backup
     elif event['type'] == 'payment_intent.succeeded':

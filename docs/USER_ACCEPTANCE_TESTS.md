@@ -556,15 +556,27 @@ This document provides test scenarios for each user role to verify all UI functi
 | ADMIN-119 | Deactivate item | Can make item inactive | |
 
 ### 6.18 Backup Management
+
+#### Database Backup (pg_dump) - Disaster Recovery
 | Test ID | Test Case | Expected Result | Pass/Fail |
 |---------|-----------|-----------------|-----------|
-| ADMIN-120 | View backups list | Lists all backup files | |
-| ADMIN-121 | Create backup | Can generate new backup | |
-| ADMIN-122 | Download backup | Can download backup file | |
-| ADMIN-123 | Validate backup | Can validate backup file | |
-| ADMIN-124 | Import backup | Can restore from backup file | |
-| ADMIN-125 | Delete backup | Can remove old backups | |
-| ADMIN-126 | Configure schedule | Can set automatic backup schedule | |
+| ADMIN-120 | View Database Backup section | Shows "Database Backup" heading with description | |
+| ADMIN-121 | Create database backup | Click "Create Database Backup" generates .sql file | |
+| ADMIN-122 | View database backup list | Lists all .sql backup files with date, size | |
+| ADMIN-123 | Download database backup | Can download .sql file to laptop | |
+| ADMIN-124 | Delete database backup | Can remove old .sql backups | |
+
+#### Data Export/Import (JSON) - Portability & Seeding
+| Test ID | Test Case | Expected Result | Pass/Fail |
+|---------|-----------|-----------------|-----------|
+| ADMIN-125 | View Data Export section | Shows "Data Export / Import" heading with description | |
+| ADMIN-126 | Create data export | Click "Export Data Now" generates .json file | |
+| ADMIN-127 | View export history | Lists all JSON exports with entity counts | |
+| ADMIN-128 | Download data export | Can download .json file | |
+| ADMIN-129 | Validate import file | Can validate JSON file before importing | |
+| ADMIN-130 | Import data | Can import data from JSON file | |
+| ADMIN-131 | Delete data export | Can remove old exports | |
+| ADMIN-132 | Configure schedule | Can set automatic export schedule | |
 
 ### 6.19 Holiday Livery Management
 | Test ID | Test Case | Expected Result | Pass/Fail |

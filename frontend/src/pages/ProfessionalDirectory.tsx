@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { professionalsApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { validateEmail, validatePhone } from '../utils/validation';
@@ -37,11 +37,7 @@ export default function ProfessionalDirectory() {
   const [editingProfessional, setEditingProfessional] = useState<Professional | null>(null);
   const [formData, setFormData] = useState<Partial<CreateProfessional>>({});
 
-  useEffect(() => {
-    loadDirectory();
-  }, [selectedCategory, recommendedOnly]);
-
-  const loadDirectory = async () => {
+  const loadDirectory = useCallback(async () => {
     try {
       setLoading(true);
       const response = await professionalsApi.list(selectedCategory || undefined, recommendedOnly);
@@ -53,7 +49,11 @@ export default function ProfessionalDirectory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, recommendedOnly]);
+
+  useEffect(() => {
+    loadDirectory();
+  }, [loadDirectory]);
 
   const handleAddProfessional = async (e: React.FormEvent) => {
     e.preventDefault();

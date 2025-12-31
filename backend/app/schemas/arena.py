@@ -1,6 +1,6 @@
 from decimal import Decimal
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ArenaCreate(BaseModel):
@@ -41,5 +41,4 @@ class ArenaResponse(BaseModel):
     free_for_livery: bool = False
     image_url: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

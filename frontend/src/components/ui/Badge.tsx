@@ -1,26 +1,25 @@
-import React from 'react';
+import type {
+  BadgeVariant,
+  BadgeProps,
+  StatusType,
+  StatusBadgeProps,
+  PriorityType,
+  PriorityBadgeProps,
+  RoleType,
+  RoleBadgeProps,
+} from './badge.types';
 
-export type BadgeVariant =
-  | 'success'
-  | 'warning'
-  | 'error'
-  | 'info'
-  | 'neutral'
-  | 'public'
-  | 'livery'
-  | 'staff'
-  | 'admin'
-  | 'low'
-  | 'medium'
-  | 'high'
-  | 'urgent';
-
-export interface BadgeProps {
-  variant?: BadgeVariant;
-  size?: 'sm' | 'md' | 'lg';
-  children: React.ReactNode;
-  className?: string;
-}
+// Re-export types for consumers
+export type {
+  BadgeVariant,
+  BadgeProps,
+  StatusType,
+  StatusBadgeProps,
+  PriorityType,
+  PriorityBadgeProps,
+  RoleType,
+  RoleBadgeProps,
+};
 
 export function Badge({
   variant = 'neutral',
@@ -39,20 +38,6 @@ export function Badge({
 }
 
 // Status Badge with predefined mappings
-export type StatusType =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'completed'
-  | 'cancelled'
-  | 'active'
-  | 'inactive'
-  | 'open'
-  | 'closed'
-  | 'in_progress'
-  | 'scheduled'
-  | 'confirmed';
-
 const statusVariantMap: Record<StatusType, BadgeVariant> = {
   pending: 'warning',
   approved: 'success',
@@ -83,12 +68,6 @@ const statusLabelMap: Record<StatusType, string> = {
   confirmed: 'Confirmed',
 };
 
-export interface StatusBadgeProps {
-  status: StatusType | string;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
 export function StatusBadge({ status, size = 'md', className = '' }: StatusBadgeProps) {
   const normalizedStatus = status.toLowerCase().replace(/ /g, '_') as StatusType;
   const variant = statusVariantMap[normalizedStatus] || 'neutral';
@@ -102,14 +81,6 @@ export function StatusBadge({ status, size = 'md', className = '' }: StatusBadge
 }
 
 // Priority Badge
-export type PriorityType = 'low' | 'medium' | 'high' | 'urgent';
-
-export interface PriorityBadgeProps {
-  priority: PriorityType | string;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
 export function PriorityBadge({ priority, size = 'md', className = '' }: PriorityBadgeProps) {
   const normalizedPriority = priority.toLowerCase() as PriorityType;
   const variant = ['low', 'medium', 'high', 'urgent'].includes(normalizedPriority)
@@ -125,14 +96,6 @@ export function PriorityBadge({ priority, size = 'md', className = '' }: Priorit
 }
 
 // Role Badge
-export type RoleType = 'public' | 'livery' | 'staff' | 'admin' | 'coach';
-
-export interface RoleBadgeProps {
-  role: RoleType | string;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
 export function RoleBadge({ role, size = 'md', className = '' }: RoleBadgeProps) {
   const normalizedRole = role.toLowerCase() as RoleType;
   const variantMap: Record<string, BadgeVariant> = {

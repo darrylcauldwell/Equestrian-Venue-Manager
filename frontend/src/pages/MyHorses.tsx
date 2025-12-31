@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { horsesApi, feedApi } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import type { Horse, FeedSupplyAlert } from '../types';
 import './MyHorses.css';
 
@@ -10,6 +11,7 @@ interface HorseAlerts {
 
 export function MyHorses() {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [horses, setHorses] = useState<Horse[]>([]);
   const [horseAlerts, setHorseAlerts] = useState<HorseAlerts>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -86,8 +88,8 @@ export function MyHorses() {
 
       {error && <div className="ds-alert ds-alert-error">{error}</div>}
 
-      {/* Low Feed Alerts Banner */}
-      {getAllAlerts().length > 0 && (
+      {/* Low Feed Alerts Banner - only shown to livery owners, not admins */}
+      {!isAdmin && getAllAlerts().length > 0 && (
         <div className="feed-alerts-banner">
           <h2>Low Feed Alerts</h2>
           <p className="alerts-intro">Yard staff have flagged the following items as running low:</p>
@@ -119,11 +121,11 @@ export function MyHorses() {
       ) : (
         <div className="horses-grid">
           {horses.map((horse) => (
-            <div key={horse.id} className={`horse-card ${(horseAlerts[horse.id]?.length ?? 0) > 0 ? 'has-alerts' : ''}`}>
+            <div key={horse.id} className={`horse-card ${!isAdmin && (horseAlerts[horse.id]?.length ?? 0) > 0 ? 'has-alerts' : ''}`}>
               <div className="horse-icon">🐴</div>
               <h3>
                 {horse.name}
-                {(horseAlerts[horse.id]?.length ?? 0) > 0 && (
+                {!isAdmin && (horseAlerts[horse.id]?.length ?? 0) > 0 && (
                   <span className="alert-badge" title="Low feed alert">!</span>
                 )}
               </h3>

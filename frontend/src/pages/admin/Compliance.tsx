@@ -216,13 +216,14 @@ export function AdminCompliance() {
       {/* Filters */}
       <div className="filters">
         <div className="filter-group">
-          <label>Category:</label>
-          <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
-            <option value="">All Categories</option>
-            {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
+          <FormGroup label="Category">
+            <Select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+              <option value="">All Categories</option>
+              {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+          </FormGroup>
         </div>
         <div className="filter-group">
           <label>

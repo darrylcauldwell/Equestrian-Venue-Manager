@@ -443,7 +443,7 @@
 .what3words-icon {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #e11f26;
+  color: var(--color-error);
 }
 
 .what3words-icon span {
@@ -452,7 +452,7 @@
 }
 
 .what3words-link {
-  color: #e11f26 !important;
+  color: var(--color-error) !important;
   font-family: monospace;
   font-size: 1.125rem;
 }

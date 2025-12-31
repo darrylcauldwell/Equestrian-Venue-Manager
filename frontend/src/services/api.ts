@@ -107,6 +107,14 @@ import type {
   ManagerDashboard,
   StaffManagementEnums,
   AllStaffLeaveSummary,
+  PayrollAdjustment,
+  PayrollAdjustmentCreate,
+  PayrollAdjustmentListResponse,
+  PayrollSummaryResponse,
+  StaffThanks,
+  StaffThanksCreate,
+  StaffThanksListResponse,
+  StaffThanksUnreadCount,
   ClinicRequest,
   ClinicRequestDetail,
   CreateClinicRequest,
@@ -167,6 +175,8 @@ import type {
   BackupScheduleUpdate,
   BackupValidationResult,
   BackupImportResult,
+  DatabaseBackup,
+  DatabaseBackupListResponse,
   CoachProfile,
   RecurringSchedule,
   AvailabilitySlot,
@@ -242,6 +252,10 @@ import type {
   DocuSignTestResponse,
   ContractType,
   SignatureStatus,
+  SSLSettings,
+  SSLSettingsUpdate,
+  SSLStatusResponse,
+  CertificateInfo,
 } from '../types';
 
 // Re-export factory utilities for use in other files
@@ -405,6 +419,22 @@ export const settingsApi = {
     message_sid?: string;
   }> => {
     const response = await api.post('/settings/whatsapp/test');
+    return response.data;
+  },
+
+  // SSL/Domain Configuration
+  getSSLStatus: async (): Promise<SSLStatusResponse> => {
+    const response = await api.get('/settings/ssl');
+    return response.data;
+  },
+
+  updateSSLSettings: async (data: SSLSettingsUpdate): Promise<SSLSettings> => {
+    const response = await api.put('/settings/ssl', data);
+    return response.data;
+  },
+
+  checkCertificate: async (domain: string): Promise<CertificateInfo> => {
+    const response = await api.get(`/settings/ssl/check-certificate?domain=${encodeURIComponent(domain)}`);
     return response.data;
   },
 };
@@ -1600,6 +1630,90 @@ export const staffApi = {
     const response = await api.put(`/staff/absences/${recordId}`, data);
     return response.data;
   },
+
+  // ============== Payroll ==============
+  getPayrollSummary: async (
+    periodType: 'week' | 'month' = 'month',
+    year?: number,
+    month?: number,
+    week?: number
+  ): Promise<PayrollSummaryResponse> => {
+    const params: Record<string, string> = { period_type: periodType };
+    if (year) params.year = year.toString();
+    if (month) params.month = month.toString();
+    if (week) params.week = week.toString();
+    const response = await api.get('/staff/payroll-summary', { params });
+    return response.data;
+  },
+
+  createPayrollAdjustment: async (data: PayrollAdjustmentCreate): Promise<PayrollAdjustment> => {
+    const response = await api.post('/staff/payroll-adjustments', data);
+    return response.data;
+  },
+
+  listPayrollAdjustments: async (
+    staffId?: number,
+    startDate?: string,
+    endDate?: string,
+    adjustmentType?: string
+  ): Promise<PayrollAdjustmentListResponse> => {
+    const params: Record<string, string> = {};
+    if (staffId) params.staff_id = staffId.toString();
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    if (adjustmentType) params.adjustment_type = adjustmentType;
+    const response = await api.get('/staff/payroll-adjustments', { params });
+    return response.data;
+  },
+
+  deletePayrollAdjustment: async (adjustmentId: number): Promise<void> => {
+    await api.delete(`/staff/payroll-adjustments/${adjustmentId}`);
+  },
+
+  // ============== Staff Thanks ==============
+  getStaffForThanks: async (): Promise<Array<{ id: number; name: string }>> => {
+    const response = await api.get('/staff/thanks/staff-list');
+    return response.data;
+  },
+
+  sendThanks: async (data: StaffThanksCreate): Promise<StaffThanks> => {
+    const response = await api.post('/staff/thanks', data);
+    return response.data;
+  },
+
+  getMyReceivedThanks: async (): Promise<StaffThanksListResponse> => {
+    const response = await api.get('/staff/thanks/my-received');
+    return response.data;
+  },
+
+  getMySentThanks: async (): Promise<StaffThanksListResponse> => {
+    const response = await api.get('/staff/thanks/my-sent');
+    return response.data;
+  },
+
+  getUnreadThanksCount: async (): Promise<StaffThanksUnreadCount> => {
+    const response = await api.get('/staff/thanks/unread-count');
+    return response.data;
+  },
+
+  markThanksAsRead: async (thanksId: number): Promise<StaffThanks> => {
+    const response = await api.post(`/staff/thanks/${thanksId}/mark-read`);
+    return response.data;
+  },
+
+  markAllThanksAsRead: async (): Promise<void> => {
+    await api.post('/staff/thanks/mark-all-read');
+  },
+
+  createTipCheckout: async (thanksId: number): Promise<{ checkout_url: string; session_id: string }> => {
+    const response = await api.post(`/staff/thanks/${thanksId}/pay-tip`);
+    return response.data;
+  },
+
+  verifyTipPayment: async (thanksId: number): Promise<{ status: string; thanks_id: number }> => {
+    const response = await api.post(`/staff/thanks/${thanksId}/verify-tip`);
+    return response.data;
+  },
 };
 
 export const clinicsApi = {
@@ -2307,6 +2421,43 @@ export const backupApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
+  },
+
+  // =====================================================
+  // Database Backup (pg_dump) - For disaster recovery
+  // =====================================================
+
+  // Create a database backup using pg_dump
+  createDatabaseBackup: async (): Promise<DatabaseBackup> => {
+    const response = await api.post('/backup/database/create');
+    return response.data;
+  },
+
+  // List all database backups
+  listDatabaseBackups: async (): Promise<DatabaseBackupListResponse> => {
+    const response = await api.get('/backup/database/list');
+    return response.data;
+  },
+
+  // Download database backup file
+  downloadDatabaseBackup: async (filename: string): Promise<void> => {
+    const response = await api.get(`/backup/database/download/${filename}`, {
+      responseType: 'blob',
+    });
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
+  // Delete database backup
+  deleteDatabaseBackup: async (filename: string): Promise<void> => {
+    await api.delete(`/backup/database/${filename}`);
   },
 };
 
@@ -3170,6 +3321,12 @@ export const contractsApi = {
     return response.data;
   },
 
+  // Manual signing (when DocuSign is not configured)
+  manualSign: async (signatureId: number): Promise<CompleteSigningResponse> => {
+    const response = await api.post(`/contracts/signatures/${signatureId}/manual-sign`);
+    return response.data;
+  },
+
   // Download my signed PDF
   downloadMySignedPdf: async (signatureId: number): Promise<Blob> => {
     const response = await api.get(`/contracts/my-contracts/${signatureId}/pdf`, {
@@ -3558,6 +3715,85 @@ export const fieldAnalyticsApi = {
   },
 };
 
+// ============== Staff Profiles API ==============
+
+import type {
+  StaffProfile,
+  StaffProfileCreate,
+  StaffProfileUpdate,
+  StaffProfileSelfUpdate,
+  StaffProfileListResponse,
+  StaffProfileSummary,
+  StaffMilestonesResponse,
+  StaffMemberCreate,
+  StaffMemberCreateResponse,
+} from '../types';
+
+export const staffProfilesApi = {
+  // List all staff profiles (admin only)
+  list: async (includeInactive: boolean = false): Promise<StaffProfileListResponse> => {
+    const response = await api.get('/staff-profiles', {
+      params: { include_inactive: includeInactive }
+    });
+    return response.data;
+  },
+
+  // Get staff profile summaries (admin only)
+  getSummaries: async (): Promise<StaffProfileSummary[]> => {
+    const response = await api.get('/staff-profiles/summaries');
+    return response.data;
+  },
+
+  // Get upcoming milestones (admin only)
+  getMilestones: async (days: number = 7): Promise<StaffMilestonesResponse> => {
+    const response = await api.get('/staff-profiles/milestones', {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  // Create staff profile (admin only)
+  create: async (data: StaffProfileCreate): Promise<StaffProfile> => {
+    const response = await api.post('/staff-profiles', data);
+    return response.data;
+  },
+
+  // Create staff member with user account + profile (admin only)
+  createWithUser: async (data: StaffMemberCreate): Promise<StaffMemberCreateResponse> => {
+    const response = await api.post('/staff-profiles/with-user', data);
+    return response.data;
+  },
+
+  // Get staff profile by user ID (admin or own profile)
+  get: async (userId: number): Promise<StaffProfile> => {
+    const response = await api.get(`/staff-profiles/${userId}`);
+    return response.data;
+  },
+
+  // Update staff profile (admin only)
+  update: async (userId: number, data: StaffProfileUpdate): Promise<StaffProfile> => {
+    const response = await api.put(`/staff-profiles/${userId}`, data);
+    return response.data;
+  },
+
+  // Delete staff profile (admin only)
+  delete: async (userId: number): Promise<void> => {
+    await api.delete(`/staff-profiles/${userId}`);
+  },
+
+  // Get my profile (staff/admin)
+  getMyProfile: async (): Promise<StaffProfile> => {
+    const response = await api.get('/staff-profiles/me');
+    return response.data;
+  },
+
+  // Update my profile (staff/admin - limited fields)
+  updateMyProfile: async (data: StaffProfileSelfUpdate): Promise<StaffProfile> => {
+    const response = await api.put('/staff-profiles/me', data);
+    return response.data;
+  },
+};
+
 // ============== Feature Flags API ==============
 
 export const featureFlagsApi = {
@@ -3588,6 +3824,129 @@ export const featureFlagsApi = {
   // Bulk update feature flags (admin only)
   bulkUpdate: async (updates: Record<string, boolean>): Promise<FeatureFlagValidationResult> => {
     const response = await api.put('/feature-flags', { updates });
+    return response.data;
+  },
+};
+
+// ============== Risk Assessments API ==============
+
+import type {
+  RiskAssessment,
+  RiskAssessmentSummary,
+  CreateRiskAssessment,
+  UpdateRiskAssessment,
+  UpdateRiskAssessmentContent,
+  RiskAssessmentReview,
+  CreateRiskAssessmentReview,
+  RiskAssessmentAcknowledgement,
+  CreateRiskAssessmentAcknowledgement,
+  AcknowledgementSummary,
+  AssessmentStaffStatus,
+  MyRiskAssessment,
+  StaffAcknowledgementStatus,
+  ComplianceSummary,
+} from '../types';
+
+export const riskAssessmentsApi = {
+  // List all risk assessments (admin only)
+  list: async (params?: {
+    category?: string;
+    is_active?: boolean;
+    needs_review?: boolean;
+  }): Promise<RiskAssessmentSummary[]> => {
+    const response = await api.get('/risk-assessments', { params });
+    return response.data;
+  },
+
+  // Get compliance summary (admin only)
+  getComplianceSummary: async (): Promise<ComplianceSummary> => {
+    const response = await api.get('/risk-assessments/compliance');
+    return response.data;
+  },
+
+  // Get staff acknowledgement status (admin only)
+  getStaffStatus: async (): Promise<StaffAcknowledgementStatus[]> => {
+    const response = await api.get('/risk-assessments/staff-status');
+    return response.data;
+  },
+
+  // Get a specific risk assessment (admin only)
+  get: async (id: number): Promise<RiskAssessment> => {
+    const response = await api.get(`/risk-assessments/${id}`);
+    return response.data;
+  },
+
+  // Create a new risk assessment (admin only)
+  create: async (data: CreateRiskAssessment): Promise<RiskAssessment> => {
+    const response = await api.post('/risk-assessments', data);
+    return response.data;
+  },
+
+  // Update risk assessment metadata (admin only)
+  update: async (id: number, data: UpdateRiskAssessment): Promise<RiskAssessment> => {
+    const response = await api.put(`/risk-assessments/${id}`, data);
+    return response.data;
+  },
+
+  // Update risk assessment content (admin only, increments version)
+  updateContent: async (id: number, data: UpdateRiskAssessmentContent): Promise<RiskAssessment> => {
+    const response = await api.put(`/risk-assessments/${id}/content`, data);
+    return response.data;
+  },
+
+  // Record a review without content changes (admin only)
+  recordReview: async (id: number, data: CreateRiskAssessmentReview): Promise<RiskAssessmentReview> => {
+    const response = await api.post(`/risk-assessments/${id}/review`, data);
+    return response.data;
+  },
+
+  // Require all staff to re-acknowledge this assessment (admin only)
+  // Use after incidents, near-misses, or when all staff must re-read
+  requireReacknowledgement: async (id: number, data: CreateRiskAssessmentReview): Promise<RiskAssessment> => {
+    const response = await api.post(`/risk-assessments/${id}/require-reacknowledgement`, data);
+    return response.data;
+  },
+
+  // Get review history (admin only)
+  getReviewHistory: async (id: number): Promise<RiskAssessmentReview[]> => {
+    const response = await api.get(`/risk-assessments/${id}/reviews`);
+    return response.data;
+  },
+
+  // Get acknowledgements for an assessment (admin only)
+  getAcknowledgements: async (id: number): Promise<AcknowledgementSummary[]> => {
+    const response = await api.get(`/risk-assessments/${id}/acknowledgements`);
+    return response.data;
+  },
+
+  // Get staff status for a specific assessment (admin only)
+  getAssessmentStaffStatus: async (id: number): Promise<AssessmentStaffStatus[]> => {
+    const response = await api.get(`/risk-assessments/${id}/staff-status`);
+    return response.data;
+  },
+
+  // Delete a risk assessment (admin only)
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/risk-assessments/${id}`);
+  },
+
+  // === Staff endpoints ===
+
+  // Get my risk assessments (all staff)
+  getMyAssessments: async (): Promise<MyRiskAssessment[]> => {
+    const response = await api.get('/risk-assessments/my/assessments');
+    return response.data;
+  },
+
+  // Acknowledge a risk assessment (all staff)
+  acknowledge: async (data: CreateRiskAssessmentAcknowledgement): Promise<RiskAssessmentAcknowledgement> => {
+    const response = await api.post('/risk-assessments/my/acknowledge', data);
+    return response.data;
+  },
+
+  // Get count of pending acknowledgements (all staff)
+  getPendingCount: async (): Promise<{ pending_count: number }> => {
+    const response = await api.get('/risk-assessments/my/pending-count');
     return response.data;
   },
 };

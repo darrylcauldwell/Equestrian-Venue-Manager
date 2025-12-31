@@ -1,6 +1,6 @@
 from datetime import datetime, date, time
 from typing import Optional, List
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from enum import Enum
 
 
@@ -73,8 +73,7 @@ class MedicationAdminLogResponse(BaseModel):
     dosage: Optional[str] = None
     given_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MedicationDueItem(BaseModel):
@@ -142,8 +141,7 @@ class WoundCareLogResponse(BaseModel):
     horse_name: Optional[str] = None
     treated_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ActiveWoundSummary(BaseModel):
@@ -191,8 +189,7 @@ class HealthObservationResponse(BaseModel):
     horse_name: Optional[str] = None
     observed_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Rehab Program ==============
@@ -230,8 +227,7 @@ class RehabTaskResponse(BaseModel):
     sequence: int
     created_at: Optional[datetime]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RehabPhaseCreate(BaseModel):
@@ -264,8 +260,7 @@ class RehabPhaseResponse(BaseModel):
     created_at: Optional[datetime]
     tasks: List[RehabTaskResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RehabProgramCreate(BaseModel):
@@ -337,8 +332,7 @@ class RehabProgramResponse(BaseModel):
     created_by_name: Optional[str] = None
     phases: List[RehabPhaseResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RehabProgramSummary(BaseModel):
@@ -399,8 +393,7 @@ class RehabTaskLogResponse(BaseModel):
     completed_by_role: Optional[str] = None  # 'livery', 'staff', 'admin'
     completed_via: Optional[str] = None  # 'direct', 'yard_tasks', 'service_request'
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DailyRehabTask(BaseModel):

@@ -84,10 +84,43 @@ The venue name and branding are fully configurable by administrators.
 - **Digital timesheets** with clock-in/out and break tracking
 - **Payroll integration** ready with exportable timesheet data
 - **Holiday request workflow** with approval chain
-- **Annual leave tracking** with entitlement, taken, pending, and remaining balances
+- **Annual leave tracking** with entitlement, taken, pending, upcoming, and remaining balances
+- **Leave overview dashboard** with calendar view, pending approvals, and staff balances
 - **Unplanned absence recording** (sickness, emergency, no-show)
 - Per-staff absence history with return tracking
 - Daily task assignment and completion tracking
+- **Payroll information management** with bank details, tax status, NI number, and hourly rates
+
+### Staff Appreciation
+- **Send Thanks** feature for livery owners to thank staff members
+- **Optional tipping** with direct Stripe payments to staff
+- **Thanks notification popup** alerts staff of new appreciation messages
+- **Thanks history** for staff to view all received messages and tips
+- Tips automatically recorded as payroll adjustments
+
+### Staff Profiles
+- **Comprehensive personnel records** with personal details and employment information
+- Date of birth and start date tracking for milestone alerts
+- **Qualification tracking** (BHS stages, first aid, licenses, certifications)
+- DBS check date and certificate number recording
+- Personal contact details and emergency contact information
+- Home address storage for HR records
+- **Staff bio/description** field for yard introductions
+- Admin notes for confidential personnel information
+- **Birthday and work anniversary alerts** for admin dashboard
+- Self-service profile editing for staff members
+
+### Health & Safety Risk Assessments
+- **Risk assessment document management** by category (general workplace, horse handling, yard environment, fire & emergency, biosecurity, first aid, PPE & manual handling)
+- Version-controlled content with automatic re-acknowledgement on updates
+- **Staff acknowledgement tracking** with digital signatures
+- Audit trail of all staff completions
+- **Induction requirement flagging** for new starters
+- **Annual refresh scheduling** with configurable review periods
+- **Review triggers** for incidents, changes, or new hazard identification
+- Role-based assignment (require specific roles to acknowledge)
+- Compliance overview dashboard showing acknowledgement status
+- **BHS inspection readiness** tracking
 
 ### Yard Tasks & Duties
 - **Smart task generation** from medication schedules and wound care
@@ -177,6 +210,7 @@ The venue name and branding are fully configurable by administrators.
 - Event triage dashboard for service requests and lessons
 - System-wide notification management
 - SMS/WhatsApp notification support (configurable)
+- **Arena usage analytics** with booking patterns and utilization reports
 
 ## User Roles
 
@@ -184,10 +218,10 @@ The venue name and branding are fully configurable by administrators.
 |------|-------------|------------------|
 | **Anonymous** | Public visitors | View venue info, book arenas with payment, request holiday livery |
 | **Public** | Registered users | View and register for clinics, join waiting lists |
-| **Livery** | Horse owners | Full horse management, free arena access, service requests, account/billing, health records, contract signing |
+| **Livery** | Horse owners | Full horse management, free arena access, service requests, account/billing, health records, contract signing, **send thanks and tips to staff** |
 | **Coach** | External trainers | Propose clinics, manage participant lists, view assigned horses |
-| **Staff** | Yard employees | Tasks, feed duties, turnout board, timesheets, holiday requests, health observations, employment contract signing |
-| **Admin** | System administrators | Full access including billing, staff management, contract management, compliance, backups |
+| **Staff** | Yard employees | Tasks, feed duties, turnout board, timesheets, **leave management**, health observations, employment contract signing, **view received thanks and tips** |
+| **Admin** | System administrators | Full access including billing, staff management, **leave approvals**, contract management, compliance, backups |
 
 Livery clients with yard staff duties have combined access to both livery and staff features.
 
@@ -232,6 +266,52 @@ Reduce administrative burden:
 - Unplanned absence documentation
 - Task assignment ensuring nothing is missed
 - Feed duty scheduling with completion tracking
+
+## BHS Accreditation Support
+
+Equestrian Venue Manager is designed to support yards seeking or maintaining **British Horse Society (BHS) Approval**. The following table maps BHS administrative requirements to system features:
+
+### Key Documents
+
+| BHS Requirement | EVM Feature | Status |
+|-----------------|-------------|--------|
+| **Written contracts/livery agreements** | Contract Management with templates, DocuSign electronic signatures, version control | ✅ Fully Supported |
+| **Grassland management plans** | Land Management with field rotation tracking, grazing schedules, utilization analytics | ✅ Fully Supported |
+| **Staff qualifications** | Staff Profiles with BHS stages, first aid, licenses, certifications, DBS checks | ✅ Fully Supported |
+| **Training logs & CPD records** | Staff Profiles qualifications array (can record CPD); consider future enhancement for detailed training log | ⚠️ Basic Support |
+| **Staff rotas** | Staff Management with shift scheduling and role assignments | ✅ Fully Supported |
+| **Induction checklists** | Risk Assessments with "Required for Induction" flag - ensures new starters acknowledge all safety documents | ✅ Fully Supported |
+
+### Routine Processes
+
+| BHS Requirement | EVM Feature | Status |
+|-----------------|-------------|--------|
+| **Daily feed charts** | Feed Management with per-horse feed schedules, daily duties board, completion tracking | ✅ Fully Supported |
+| **Vaccination records** | Health Tracking with vaccination history, due date reminders, compliance alerts | ✅ Fully Supported |
+| **Worming records** | Worm Count management with rotation schedules and due dates | ✅ Fully Supported |
+| **Farrier visit records** | Health Tracking with farrier history, next-due dates, compliance calendar | ✅ Fully Supported |
+| **Feed/bedding inventory** | Not currently implemented - yards should maintain separate inventory records | ❌ Gap |
+| **BHS inspection preparation** | Risk Assessments (annual review scheduling), Compliance Calendar, audit trails | ✅ Fully Supported |
+| **Facility management** (stables, arenas, fencing) | Stables, Arenas, Land Management with fence/gate tracking, maintenance schedules | ✅ Fully Supported |
+| **Public liability insurance** | Compliance Calendar for tracking renewals; insurance documents stored externally | ⚠️ Basic Support |
+| **Emergency plans** | Security features with evacuation notes, vet contacts, What3Words location, emergency contacts | ✅ Fully Supported |
+
+### Additional BHS-Aligned Features
+
+- **Weather-based rugging recommendations** using BHS guidelines
+- **Horse companion tracking** for welfare-aware turnout management
+- **Body condition scoring** (BCS 1-9 scale) for welfare monitoring
+- **Wound care documentation** with photo progression
+- **Rehabilitation program tracking** with daily task generation
+- **Flood risk monitoring** via Environment Agency integration
+
+### Potential Enhancements
+
+For yards requiring full BHS compliance, the following features could be considered for future development:
+
+1. **Feed & Bedding Inventory Management** - Stock levels, reorder alerts, supplier tracking
+2. **Detailed CPD/Training Log** - Course attendance, certificates, expiry tracking per staff member
+3. **Insurance Document Storage** - Upload and track policy documents with expiry reminders
 
 ## Tech Stack
 

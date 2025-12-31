@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import Optional, List
 from decimal import Decimal
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.models.land_management import (
     GrantSchemeType,
@@ -72,8 +72,7 @@ class GrantResponse(GrantBase):
     field_count: int = 0
     feature_count: int = 0
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GrantDetailResponse(GrantResponse):
@@ -114,8 +113,7 @@ class GrantPaymentScheduleResponse(GrantPaymentScheduleBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============================================================================
@@ -137,8 +135,7 @@ class GrantFieldLinkResponse(GrantFieldLinkBase):
     field_name: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GrantFeatureLinkBase(BaseModel):
@@ -157,8 +154,7 @@ class GrantFeatureLinkResponse(GrantFeatureLinkBase):
     feature_type: Optional[LandFeatureType] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============================================================================
@@ -243,8 +239,7 @@ class LandFeatureResponse(LandFeatureBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LandFeatureDetailResponse(LandFeatureResponse):
@@ -279,8 +274,7 @@ class FeatureMaintenanceLogResponse(FeatureMaintenanceLogBase):
     performed_by_name: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============================================================================
@@ -376,8 +370,7 @@ class FloodMonitoringStationResponse(FloodMonitoringStationBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FieldFloodRiskBase(BaseModel):
@@ -411,15 +404,28 @@ class FieldFloodRiskResponse(FieldFloodRiskBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StationWarningAlert(BaseModel):
+    """Alert for a station that has exceeded warning thresholds (no field link required)"""
+    station_id: int
+    ea_station_id: str
+    station_name: str
+    river_name: Optional[str] = None
+    current_level: Optional[float] = None
+    warning_threshold: Optional[float] = None
+    severe_threshold: Optional[float] = None
+    current_status: str  # 'normal', 'warning', 'severe'
+    last_reading_time: Optional[datetime] = None
 
 
 class FloodWarningStatus(BaseModel):
-    """Current flood warning status across all monitored fields"""
+    """Current flood warning status across all monitored stations"""
     has_warnings: bool = False
     has_severe_warnings: bool = False
-    warnings: List[FieldFloodRiskResponse] = []
+    warnings: List[FieldFloodRiskResponse] = []  # Legacy: field-linked warnings
+    station_alerts: List[StationWarningAlert] = []  # New: all station alerts
     last_updated: Optional[datetime] = None
 
 
@@ -444,8 +450,7 @@ class FieldUsageAnalyticsResponse(BaseModel):
     rest_days_taken: int
     calculated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class YearlyFieldAnalytics(BaseModel):
@@ -495,8 +500,7 @@ class FieldRotationSuggestionResponse(FieldRotationSuggestionBase):
     acknowledged_at: Optional[datetime] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AcknowledgeSuggestionRequest(BaseModel):

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional, Dict, Any
 
@@ -24,8 +24,7 @@ class BackupResponse(BaseModel):
     created_by_id: Optional[int] = None
     created_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BackupListResponse(BaseModel):
@@ -52,8 +51,7 @@ class BackupScheduleResponse(BackupScheduleBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Validation schemas
@@ -71,3 +69,18 @@ class BackupData(BaseModel):
     exported_at: datetime
     entity_counts: Dict[str, int]
     data: Dict[str, Any]
+
+
+# Database Backup (pg_dump) schemas
+class DatabaseBackupResponse(BaseModel):
+    """Response for a database backup (pg_dump) operation."""
+    filename: str
+    created_at: str
+    file_size: int
+    created_by: Optional[str] = None
+
+
+class DatabaseBackupListResponse(BaseModel):
+    """Response for listing database backups."""
+    backups: list[DatabaseBackupResponse]
+    total: int

@@ -1,6 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.notice import NoticeCategory, NoticePriority
 
 
@@ -37,8 +37,7 @@ class NoticeResponse(BaseModel):
     updated_at: datetime
     created_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class NoticeListResponse(BaseModel):
@@ -46,5 +45,4 @@ class NoticeListResponse(BaseModel):
     notices: List[NoticeResponse]
     total: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -1,6 +1,6 @@
 from typing import Optional, List
 from datetime import date, datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.feed import FeedTime, SupplyStatus, AdditionStatus
 
 
@@ -33,8 +33,7 @@ class FeedRequirementResponse(BaseModel):
     updated_at: datetime
     updated_by_id: Optional[int]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Feed Addition Schemas
@@ -75,8 +74,7 @@ class FeedAdditionResponse(BaseModel):
     updated_at: datetime
     requested_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Feed Supply Alert Schemas
@@ -104,8 +102,7 @@ class FeedSupplyAlertResponse(BaseModel):
     created_by_name: Optional[str] = None
     horse_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Rehab feed medication (for displaying in feed schedule)
@@ -119,8 +116,7 @@ class RehabFeedMedication(BaseModel):
     instructions: Optional[str] = None
     frequency: str  # daily, twice_daily, etc.
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Summary response
@@ -136,5 +132,4 @@ class FeedSummary(BaseModel):
     unresolved_alerts: List[FeedSupplyAlertResponse]
     rehab_medications: List[RehabFeedMedication] = []  # Feed-based medications from active rehab programs
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

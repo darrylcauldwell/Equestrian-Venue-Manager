@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { servicesApi, horsesApi, liveryPackagesApi, rehabApi } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
@@ -134,7 +134,7 @@ export function ServiceRequests() {
   };
 
   // Data loading
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     setError('');
     try {
@@ -170,7 +170,7 @@ export function ServiceRequests() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const loadInsuranceClaims = async () => {
     try {
@@ -182,7 +182,7 @@ export function ServiceRequests() {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   useEffect(() => {
     if (activeTab === 'insurance-claims' && user) {

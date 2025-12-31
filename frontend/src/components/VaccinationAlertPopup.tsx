@@ -26,8 +26,9 @@ export function VaccinationAlertPopup() {
   });
 
   useEffect(() => {
-    // Check for alerts for all authenticated users
-    if (user && !dismissed) {
+    // Check for alerts for livery owners only (not admins)
+    // Admins can see this info in aggregate via admin reports
+    if (user && user.role !== 'admin' && !dismissed) {
       loadAlerts();
     }
   }, [user, dismissed]);

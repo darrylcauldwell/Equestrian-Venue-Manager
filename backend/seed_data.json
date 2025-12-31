@@ -53,7 +53,7 @@
     {
       "username": "admin",
       "email": "admin@example.com",
-      "name": "Ashley Whinny-Driver",
+      "name": "Barnaby Hoofington-Smythe",
       "phone": "07700 900001",
       "password": "password",
       "role": "admin",
@@ -4296,7 +4296,7 @@
       "owner_username": "livery1",
       "days_ago": 180,
       "score": 5,
-      "assessed_by": "Ashley Whinny-Driver",
+      "assessed_by": "Barnaby Hoofington-Smythe",
       "notes": "Ideal condition for work"
     },
     {
@@ -4304,14 +4304,14 @@
       "owner_username": "livery1",
       "days_ago": 90,
       "score": 5,
-      "assessed_by": "Ashley Whinny-Driver"
+      "assessed_by": "Barnaby Hoofington-Smythe"
     },
     {
       "horse_name": "Shadowfax",
       "owner_username": "livery1",
       "days_ago": 14,
       "score": 6,
-      "assessed_by": "Ashley Whinny-Driver",
+      "assessed_by": "Barnaby Hoofington-Smythe",
       "notes": "Slight fat deposits over ribs - reduce hard feed"
     },
     {
@@ -4319,7 +4319,7 @@
       "owner_username": "livery1",
       "days_ago": 180,
       "score": 4,
-      "assessed_by": "Ashley Whinny-Driver",
+      "assessed_by": "Barnaby Hoofington-Smythe",
       "notes": "Could use more condition"
     },
     {
@@ -4327,7 +4327,7 @@
       "owner_username": "livery1",
       "days_ago": 90,
       "score": 5,
-      "assessed_by": "Ashley Whinny-Driver"
+      "assessed_by": "Barnaby Hoofington-Smythe"
     },
     {
       "horse_name": "Black Beauty",
@@ -4454,7 +4454,7 @@
       "owner_username": "holiday1",
       "days_ago": 45,
       "score": 5,
-      "assessed_by": "Ashley Whinny-Driver"
+      "assessed_by": "Barnaby Hoofington-Smythe"
     },
     {
       "horse_name": "Captain Comeback",
@@ -5683,49 +5683,79 @@
     }
   ],
   "shifts": [
-    {
-      "staff_username": "staff1",
-      "days_from_now": 0,
-      "shift_type": "full_day",
-      "role": "yard_duties",
-      "created_by_username": "admin"
-    },
-    {
-      "staff_username": "staff2",
-      "days_from_now": 0,
-      "shift_type": "morning",
-      "role": "yard_duties",
-      "created_by_username": "admin"
-    },
-    {
-      "staff_username": "staff1",
-      "days_from_now": 1,
-      "shift_type": "full_day",
-      "role": "yard_duties",
-      "created_by_username": "admin"
-    },
-    {
-      "staff_username": "staff2",
-      "days_from_now": 1,
-      "shift_type": "afternoon",
-      "role": "yard_duties",
-      "created_by_username": "admin"
-    },
-    {
-      "staff_username": "staff1",
-      "days_from_now": 2,
-      "shift_type": "morning",
-      "role": "yard_duties",
-      "created_by_username": "admin"
-    },
-    {
-      "staff_username": "staff3",
-      "days_from_now": 2,
-      "shift_type": "full_day",
-      "role": "maintenance",
-      "notes": "Field fencing repairs",
-      "created_by_username": "admin"
-    }
+    {"_comment": "=== DAY 0 (Today) - staff4 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 0, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 0, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 0, "shift_type": "afternoon", "role": "office", "notes": "Answering phones and booking enquiries", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 0, "shift_type": "full_day", "role": "maintenance", "notes": "Arena surface maintenance", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 1 - staff3 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 1, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 1, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 1, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 1, "shift_type": "afternoon", "role": "teaching", "notes": "Assisting with afternoon lessons", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 2 - staff2 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 2, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 2, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 2, "shift_type": "full_day", "role": "maintenance", "notes": "Field fencing repairs", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 3 - staff1 OFF ==="},
+    {"staff_username": "staff2", "days_from_now": 3, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 3, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 3, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 4 - All staff working (busy day) ==="},
+    {"staff_username": "staff1", "days_from_now": 4, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 4, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 4, "shift_type": "afternoon", "role": "teaching", "notes": "Clinic setup and assistance", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 4, "shift_type": "full_day", "role": "maintenance", "notes": "Pre-clinic facility checks", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 5 - staff3 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 5, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 5, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 5, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 6 - staff2 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 6, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 6, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 6, "shift_type": "morning", "role": "office", "notes": "Weekend booking enquiries", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 7 - staff1 OFF ==="},
+    {"staff_username": "staff2", "days_from_now": 7, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 7, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 7, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 8 - staff4 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 8, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 8, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 8, "shift_type": "full_day", "role": "maintenance", "notes": "Water trough cleaning", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 9 - staff3 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 9, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 9, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 9, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 10 - staff2 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 10, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 10, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 10, "shift_type": "afternoon", "role": "teaching", "notes": "Children's lesson helper", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 11 - staff1 OFF ==="},
+    {"staff_username": "staff2", "days_from_now": 11, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 11, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 11, "shift_type": "full_day", "role": "maintenance", "notes": "Hedge trimming around paddocks", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 12 - All staff working ==="},
+    {"staff_username": "staff1", "days_from_now": 12, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 12, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 12, "shift_type": "morning", "role": "office", "notes": "Invoicing and admin", "created_by_username": "admin"},
+    {"staff_username": "staff4", "days_from_now": 12, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
+
+    {"_comment": "=== DAY 13 - staff4 OFF ==="},
+    {"staff_username": "staff1", "days_from_now": 13, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff2", "days_from_now": 13, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
+    {"staff_username": "staff3", "days_from_now": 13, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"}
   ],
   "invoices": [
     {
@@ -6615,21 +6645,21 @@
     {
       "name": "Standard Livery Agreement",
       "contract_type": "livery",
-      "description": "Our comprehensive livery agreement covering all terms and conditions for keeping your horse at Nags Rest Manor.",
+      "description": "Our comprehensive livery agreement - now with 73% fewer loopholes than our 2019 version.",
       "is_active": true,
       "created_by_username": "admin",
       "versions": [
         {
           "version_number": 1,
-          "html_content": "<h1>Standard Livery Agreement</h1><h2>Nags Rest Manor Equestrian Centre</h2><p><strong>This Agreement</strong> is entered into between Nags Rest Manor Equestrian Centre (\"the Yard\") and the undersigned horse owner (\"the Client\").</p><h3>1. Services Provided</h3><p>The Yard agrees to provide livery services for the Client's horse(s) as specified in the selected livery package. Services include:</p><ul><li>Stable accommodation with bedding</li><li>Daily feeding according to the agreed schedule</li><li>Turnout as per package specifications</li><li>Access to arena facilities (hours as per package)</li><li>Basic daily health checks</li></ul><h3>2. Client Responsibilities</h3><p>The Client agrees to:</p><ul><li>Pay all fees on the 1st of each month</li><li>Maintain current vaccinations and worming</li><li>Provide emergency contact details</li><li>Notify staff of any health concerns promptly</li><li>Adhere to yard rules and safety guidelines</li></ul><h3>3. Liability</h3><p>While every care is taken, the Yard cannot accept liability for injury to horses unless caused by negligence. All horses must be insured by their owners.</p><h3>4. Termination</h3><p>Either party may terminate this agreement with 30 days written notice.</p><p><em>By signing below, you agree to the terms and conditions set out in this agreement.</em></p>",
-          "change_summary": "Initial version",
+          "html_content": "<h1>Standard Livery Agreement</h1><h2>Nags Rest Manor Equestrian Centre</h2><h3>Where Dreams Come True (Terms and Whose Dreams May Vary)</h3><p><strong>This Agreement</strong> is entered into between Nags Rest Manor Equestrian Centre (hereinafter \"the Yard\", \"Us\", \"We\", or \"Those Lovely People Who Put Up With Your Horse\") and the undersigned horse owner (hereinafter \"the Client\", \"You\", or \"The One Who Pays The Bills\").</p><h3>1. Services Provided</h3><p>We promise to look after your horse as if it were our own (but better, because we actually follow a schedule). Services include:</p><ul><li>A luxury stable with fresh bedding (straw or shavings - we don't judge)</li><li>Daily feeding according to the agreed schedule (no midnight snacks unless pre-approved)</li><li>Turnout with friends who won't teach them bad habits</li><li>Access to arena facilities (subject to not galloping through the just-dragged surface)</li><li>Daily health checks and suspicious-lump investigations</li></ul><h3>2. Client Responsibilities</h3><p>You solemnly swear to:</p><ul><li>Pay all fees on the 1st of each month (we accept tears, but prefer bank transfers)</li><li>Keep vaccinations and worming current (we check, and we judge)</li><li>Answer your phone when we call (yes, even on Sunday morning)</li><li>Not blame us when your horse learns to open stable doors</li></ul><h3>3. The Bit About Liability</h3><p>Horses are unpredictable creatures who occasionally make poor life choices. While we take every precaution short of wrapping them in bubble wrap, we cannot be held responsible for self-inflicted drama. All horses must be insured. We recommend counselling for particularly anxious owners.</p><h3>4. Termination</h3><p>30 days notice required. We will cry. Your horse will pretend not to care but secretly miss the treats.</p><p><em>By signing below, you acknowledge that you've read this (or at least scrolled to the bottom very quickly).</em></p>",
+          "change_summary": "Initial version - the one we thought was finished",
           "is_current": false,
           "created_by_username": "admin"
         },
         {
           "version_number": 2,
-          "html_content": "<h1>Standard Livery Agreement</h1><h2>Nags Rest Manor Equestrian Centre</h2><p><strong>This Agreement</strong> is entered into between Nags Rest Manor Equestrian Centre (\"the Yard\") and the undersigned horse owner (\"the Client\").</p><h3>1. Services Provided</h3><p>The Yard agrees to provide livery services for the Client's horse(s) as specified in the selected livery package. Services include:</p><ul><li>Stable accommodation with bedding</li><li>Daily feeding according to the agreed schedule</li><li>Turnout as per package specifications</li><li>Access to arena facilities (hours as per package)</li><li>Basic daily health checks</li><li><strong>NEW: Access to the rehabilitation facilities when available</strong></li></ul><h3>2. Client Responsibilities</h3><p>The Client agrees to:</p><ul><li>Pay all fees on the 1st of each month</li><li>Maintain current vaccinations and worming</li><li>Provide emergency contact details</li><li>Notify staff of any health concerns promptly</li><li>Adhere to yard rules and safety guidelines</li><li><strong>NEW: Maintain valid third-party liability insurance</strong></li></ul><h3>3. Liability</h3><p>While every care is taken, the Yard cannot accept liability for injury to horses unless caused by negligence. All horses must be insured by their owners.</p><h3>4. Notice Period</h3><p><strong>UPDATED:</strong> Either party may terminate this agreement with <strong>60 days</strong> written notice (previously 30 days).</p><h3>5. Arena Booking</h3><p><strong>NEW:</strong> Arena bookings must be made at least 24 hours in advance. Cancellations with less than 4 hours notice may incur a charge.</p><p><em>By signing below, you agree to the terms and conditions set out in this agreement.</em></p>",
-          "change_summary": "Added rehab facility access, third-party insurance requirement, increased notice period to 60 days, added arena booking policy",
+          "html_content": "<h1>Standard Livery Agreement</h1><h2>Nags Rest Manor Equestrian Centre</h2><h3>Version 2.0 - Now With Added Common Sense</h3><p><strong>This Agreement</strong> is entered into between Nags Rest Manor Equestrian Centre (hereinafter \"the Yard\", \"Us\", or \"The People Your Horse Sees More Than You Do\") and the undersigned horse owner (hereinafter \"the Client\", \"You\", or \"Chief Carrot Purchaser\").</p><h3>1. Services Provided</h3><p>We shall provide the following services with varying degrees of enthusiasm depending on whether your horse bit someone today:</p><ul><li>Stable accommodation with premium bedding (we've upgraded from 'adequate' to 'quite nice')</li><li>Daily feeding - your horse will be fed, watered, and gently judged for eating too fast</li><li>Turnout in fields with actual grass (revolutionary, we know)</li><li>Arena access (please don't canter through puddles immediately after we've dragged it)</li><li>Basic health checks and the occasional concerned text about a small scratch</li><li><strong>NEW: Access to the rehabilitation facilities</strong> (for horses, not owners - you're on your own)</li></ul><h3>2. Client Responsibilities</h3><p>You hereby agree to:</p><ul><li>Pay on time (1st of each month, not 1st-ish)</li><li>Keep vaccinations current (flu and tetanus - we're not running a Victorian hospital)</li><li>Actually answer your phone occasionally</li><li>Not leave Polo mints in your pockets (the horses know, they always know)</li><li><strong>NEW: Maintain valid third-party liability insurance</strong> (because Sir Kicks-A-Lot lives here)</li></ul><h3>3. The Liability Disclaimer</h3><p>Horses are chaos wrapped in a hairy package. Despite our best efforts, they will find creative ways to injure themselves on completely harmless objects. We accept no liability for:</p><ul><li>Self-inflicted injuries sustained while being dramatic</li><li>Weight gain from excessive treat consumption</li><li>Psychological damage from losing at paddock politics</li><li>Any incident involving the yard cat, Lord Whiskers</li></ul><h3>4. Notice Period</h3><p><strong>UPDATED:</strong> 60 days notice now required (we learned our lesson after The Great Midnight Runner Incident of 2022).</p><h3>5. Arena Booking Policy</h3><p><strong>NEW:</strong> Book 24 hours ahead. Cancel with less than 4 hours notice and we'll charge you - we've got bills to pay and a tractor to fuel.</p><p><em>By signing, you confirm that you've read this entire document and not just skipped to find the price increases.</em></p>",
+          "change_summary": "Added rehab access, insurance requirement, extended notice to 60 days, arena booking policy, and significantly more personality",
           "is_current": true,
           "created_by_username": "admin",
           "signatures": [
@@ -6646,6 +6676,13 @@
               "requested_days_ago": 5,
               "requested_by_username": "admin",
               "notes": "Contract updated - re-signing required for new terms"
+            },
+            {
+              "user_username": "livery3",
+              "status": "voided",
+              "requested_days_ago": 20,
+              "requested_by_username": "admin",
+              "notes": "Voided - client relocated to Scotland"
             }
           ]
         }
@@ -6654,14 +6691,21 @@
     {
       "name": "Staff Employment Contract",
       "contract_type": "employment",
-      "description": "Employment agreement for yard staff covering duties, pay, and working conditions.",
+      "description": "Employment agreement for yard staff - guaranteed to smell of horses within 24 hours.",
       "is_active": true,
       "created_by_username": "admin",
       "versions": [
         {
           "version_number": 1,
-          "html_content": "<h1>Employment Contract</h1><h2>Nags Rest Manor Equestrian Centre</h2><p>This contract of employment is between Nags Rest Manor Equestrian Centre (\"the Employer\") and the undersigned (\"the Employee\").</p><h3>1. Position and Duties</h3><p>The Employee is employed as a Yard Groom. Primary duties include:</p><ul><li>Mucking out stables</li><li>Feeding horses according to schedules</li><li>Turning out and bringing in horses</li><li>General yard maintenance</li><li>Assisting with veterinary and farrier visits</li><li>Any other reasonable duties as required</li></ul><h3>2. Working Hours</h3><p>Standard working hours are 40 hours per week, typically 8am-4pm with a 30-minute unpaid lunch break. Weekend work is required on rotation.</p><h3>3. Remuneration</h3><p>The Employee will receive the agreed hourly rate, paid monthly on the last working day of each month. Overtime is paid at time and a half.</p><h3>4. Annual Leave</h3><p>The Employee is entitled to 28 days paid annual leave per year (including bank holidays). Leave requests must be submitted via the yard management system.</p><h3>5. Notice Period</h3><p>Either party may terminate this employment with 4 weeks written notice.</p><h3>6. Health and Safety</h3><p>The Employee agrees to follow all health and safety procedures, wear appropriate PPE, and report any accidents or near-misses immediately.</p><p><em>By signing below, you confirm your acceptance of these terms of employment.</em></p>",
-          "change_summary": "Initial employment contract",
+          "html_content": "<h1>Employment Contract</h1><h2>Nags Rest Manor Equestrian Centre</h2><h3>Welcome to the Team (and the Mud)</h3><p>This contract is between Nags Rest Manor Equestrian Centre (\"the Employer\", \"Us\", or \"The Ones With The Kettle\") and the undersigned (\"the Employee\", \"You\", or \"The New Person The Horses Haven't Tested Yet\").</p><h3>1. Position and Duties</h3><p>You are employed as a Yard Groom. This is a fancy title for someone who will become intimately familiar with the following:</p><ul><li>Mucking out (it's 90% of the job, sorry)</li><li>Feeding horses who act like they've never been fed before</li><li>Turning out horses who don't want to go out, then bringing in horses who don't want to come in</li><li>Sweeping the yard (it's never actually clean, but we try)</li><li>Pretending to be calm when the vet arrives</li><li>Any other tasks including but not limited to: chasing escaped chickens, explaining to visitors that no, they can't pet the grumpy one, and making tea</li></ul><h3>2. Working Hours</h3><p>40 hours per week, typically 8am-4pm. Horses don't understand weekends, so neither will you (on rotation). 30-minute lunch break, during which at least two horses will require emergency attention.</p><h3>3. Pay</h3><p>Hourly rate as discussed, paid monthly. Overtime at time-and-a-half. Tips from grateful owners not required but appreciated.</p><h3>4. Holiday</h3><p>28 days including bank holidays. Book early for Christmas - everyone suddenly remembers they have families in December.</p><h3>5. Notice Period</h3><p>4 weeks. Enough time for the horses to start a betting pool on your replacement.</p><h3>6. Health and Safety</h3><p>Wear your steel toe caps. Yes, every day. Yes, even when it's hot. The horse doesn't care about your fashion choices.</p><p><em>Sign here to confirm you know what you're getting into (you don't, but that's okay).</em></p>",
+          "change_summary": "Initial employment contract - honest edition",
+          "is_current": false,
+          "created_by_username": "admin"
+        },
+        {
+          "version_number": 2,
+          "html_content": "<h1>Employment Contract</h1><h2>Nags Rest Manor Equestrian Centre</h2><h3>Version 2.0 - Now With Better Benefits</h3><p>This contract is between Nags Rest Manor Equestrian Centre (\"the Employer\") and the undersigned (\"the Employee\", \"You\", or \"Valued Team Member Who We Hope Doesn't Leave\").</p><h3>1. Position and Duties</h3><p>You are employed as a Yard Groom, Champion of the Wheelbarrow. Duties include:</p><ul><li>Mucking out to competition standard (we have opinions about bed banks)</li><li>Feeding according to the board - no freelance treat distribution</li><li>Turnout and bring-in duties, including negotiation with stubborn ponies</li><li>Yard maintenance: if it's broken, tell us; if it's dirty, clean it</li><li>Vet and farrier support, remaining calm when they're not</li><li><strong>NEW: Mentoring work experience students</strong> (teach them the ways of the fork)</li><li>Any reasonable request (and some unreasonable ones during competitions)</li></ul><h3>2. Working Hours</h3><p>40 hours per week. Core hours 8am-4pm with flexibility for shows and emergencies. Weekend rota applies - we try to be fair, but someone has to do Sunday morning.</p><h3>3. Remuneration</h3><p>Hourly rate as agreed, reviewed annually (usually upwards). Overtime at 1.5x. <strong>NEW: Christmas bonus</strong> for those who survive December.</p><h3>4. Annual Leave</h3><p>28 days including bank holidays. <strong>NEW: Your birthday off</strong> (if it's not already a bank holiday, lucky January people).</p><h3>5. Notice Period</h3><p>4 weeks either way. We'll be sad. The horses will pretend not to notice but will knock things over passive-aggressively.</p><h3>6. Health and Safety</h3><p>This is important, so we're not joking here: follow all safety procedures, wear PPE, report incidents. Seriously. Horses are big and occasionally stupid. Stay safe.</p><h3>7. NEW: Staff Benefits</h3><ul><li>Free tea and coffee (essential)</li><li>Staff discount on arena hire</li><li>First dibs on riding school ponies if you fancy a sit</li><li>Waterproof jacket provided (you'll need it)</li></ul><p><em>By signing, you join a team of dedicated professionals who really, really love horses (and also need to pay rent).</em></p>",
+          "change_summary": "Added mentoring duties, birthday leave, Christmas bonus, staff benefits section, improved tone",
           "is_current": true,
           "created_by_username": "admin",
           "signatures": [
@@ -6686,18 +6730,751 @@
     {
       "name": "Holiday Livery Terms",
       "contract_type": "custom",
-      "description": "Short-term agreement for temporary/holiday livery arrangements.",
+      "description": "For when you need a holiday but your horse needs supervision (and probably therapy).",
       "is_active": true,
       "created_by_username": "admin",
       "versions": [
         {
           "version_number": 1,
-          "html_content": "<h1>Holiday Livery Agreement</h1><h2>Nags Rest Manor Equestrian Centre</h2><p>This agreement covers the temporary care of your horse during the agreed holiday period.</p><h3>1. Period of Stay</h3><p>This agreement covers the specific dates confirmed in your booking. Extensions require prior approval and may be subject to availability.</p><h3>2. Services Included</h3><ul><li>Full livery care including feeding, turnout, and stable management</li><li>Daily health checks</li><li>Administration of routine medications if supplied</li><li>Emergency veterinary contact if required</li></ul><h3>3. Requirements</h3><p>Owners must provide:</p><ul><li>Up-to-date vaccination and worming records</li><li>Feed and medication requirements in writing</li><li>Emergency contact details</li><li>Proof of third-party liability insurance</li></ul><h3>4. Payment</h3><p>Full payment is required before or on arrival. Weekly rate of \u00a3250 applies (pro-rata for part weeks).</p><h3>5. Liability</h3><p>Standard liability terms apply as per our main livery agreement. All horses must be insured.</p><p><em>By signing, you agree to these holiday livery terms and conditions.</em></p>",
-          "change_summary": "Initial holiday livery terms",
+          "html_content": "<h1>Holiday Livery Agreement</h1><h2>Nags Rest Manor Equestrian Centre</h2><h3>We'll Look After Them So You Can Relax (Probably)</h3><p>This agreement covers the temporary care of your horse while you do something that doesn't involve mucking out.</p><h3>1. Period of Stay</h3><p>Your horse will grace us with their presence from [DATE] to [DATE]. Extensions possible if we like them (and you ask nicely in advance). No surprise extensions - we need to plan stable space, not run a drop-in centre.</p><h3>2. What's Included</h3><p>Full livery care, which means:</p><ul><li>Twice-daily feeding and watering (we don't do hunger strikes)</li><li>Daily turnout with carefully selected companions (no drama queens together)</li><li>Stable management to five-star standards (okay, four-star, we're honest)</li><li>Daily health checks and neurotic photograph updates if requested</li><li>Medication administration (pills in apples, paste on tongue, the usual battle)</li><li>Emergency vet calls (we hope not, you'll hope not, your wallet hopes not)</li></ul><h3>3. What You Need to Bring</h3><p>Please provide:</p><ul><li>Vaccination certificates (no jab, no stay - we don't make the rules, actually we do)</li><li>Worming records (we're not hosting a worm party)</li><li>Written feeding and medication instructions (\"he knows what he likes\" is not a feed chart)</li><li>Emergency contact that actually answers</li><li>Insurance documents (third-party liability minimum)</li><li>Any special equipment (their own bucket if they're precious about it)</li></ul><h3>4. Payment Terms</h3><p>£250 per week, pro-rata for part weeks. Full payment required before arrival - we've been burned before, and not by the hay.</p><h3>5. Liability</h3><p>Standard terms apply. Your horse will be cared for as if they were ours, but horses gonna horse. Insurance is mandatory, optimism is optional.</p><h3>6. Communication</h3><p>We'll send daily updates unless you tell us not to. Photos available on request. Panic calls charged at therapist rates (joke, mostly).</p><p><em>Sign below and go enjoy your holiday. We've got this. Probably. Definitely. Yes.</em></p>",
+          "change_summary": "Initial holiday livery terms - reassuringly detailed",
           "is_current": true,
-          "created_by_username": "admin"
+          "created_by_username": "admin",
+          "signatures": [
+            {
+              "user_username": "holiday1",
+              "status": "signed",
+              "requested_days_ago": 14,
+              "signed_days_ago": 12,
+              "requested_by_username": "admin",
+              "notes": "Summer holiday booking - 2 weeks"
+            },
+            {
+              "user_username": "clinic1",
+              "status": "sent",
+              "requested_days_ago": 3,
+              "requested_by_username": "admin",
+              "notes": "Christmas period booking"
+            },
+            {
+              "user_username": "livery1",
+              "status": "declined",
+              "requested_days_ago": 45,
+              "requested_by_username": "admin",
+              "notes": "Client decided to use alternative yard"
+            }
+          ]
         }
       ]
+    }
+  ],
+  "flood_monitoring_stations": [
+    {
+      "station_id": "4011",
+      "station_name": "Matlock",
+      "river_name": "River Derwent",
+      "latitude": 53.1404,
+      "longitude": -1.5566,
+      "warning_threshold_meters": 1.5,
+      "severe_threshold_meters": 2.0,
+      "is_active": true,
+      "notes": "Environment Agency station monitoring River Derwent at Matlock. Typical range 0.3-0.8m."
+    }
+  ],
+  "land_features": [
+    {
+      "feature_type": "water_trough",
+      "name": "Top Paddock Main Trough",
+      "description": "Large 100-gallon galvanised trough near the shelter. Mains-fed with ball-cock float valve.",
+      "field_name": "Top Paddock",
+      "location_description": "North corner, beside the field shelter",
+      "current_condition": "good",
+      "water_source_type": "mains_feed",
+      "maintenance_frequency_days": 7,
+      "notes": "Check ball-cock weekly - occasionally sticks in cold weather."
+    },
+    {
+      "feature_type": "water_trough",
+      "name": "Bottom Field Trough",
+      "description": "Old concrete trough. Manual fill via hosepipe from yard tap.",
+      "field_name": "Bottom Field",
+      "location_description": "Near the gate by the track",
+      "current_condition": "fair",
+      "water_source_type": "manual_fill",
+      "fill_frequency_days": 2,
+      "notes": "Needs filling every other day in summer. Consider mains connection upgrade."
+    },
+    {
+      "feature_type": "water_trough",
+      "name": "Mare's Meadow Spring Trough",
+      "description": "Traditional stone trough fed by natural spring. Crystal clear water year-round.",
+      "field_name": "Mare's Meadow",
+      "location_description": "Southeast corner where the spring emerges",
+      "current_condition": "excellent",
+      "water_source_type": "natural_spring",
+      "maintenance_frequency_days": 30,
+      "notes": "Clean out algae monthly. Spring has never dried up in 50 years."
+    },
+    {
+      "feature_type": "water_trough",
+      "name": "Recovery Paddock Trough",
+      "description": "Small plastic trough. Mains-fed, perfect for single horse.",
+      "field_name": "Recovery Paddock",
+      "location_description": "Adjacent to the stable block wall",
+      "current_condition": "good",
+      "water_source_type": "mains_feed",
+      "maintenance_frequency_days": 14,
+      "notes": "Easy to scrub out. Good visibility from yard."
+    },
+    {
+      "feature_type": "hedgerow",
+      "name": "Manor Lane Boundary Hedge",
+      "description": "Mixed native hedgerow along the road boundary. Important wildlife habitat.",
+      "location_description": "Entire western boundary along Manor Lane",
+      "length_meters": 450,
+      "current_condition": "good",
+      "hedgerow_species_mix": "Hawthorn, Blackthorn, Hazel, Elder, Dog Rose",
+      "maintenance_frequency_days": 365,
+      "notes": "Annual trim in February. Check for gaps after storms. Contains several bird nesting sites."
+    },
+    {
+      "feature_type": "hedgerow",
+      "name": "Top/Bottom Field Divider",
+      "description": "Traditional laid hedge dividing the two main fields.",
+      "location_description": "Between Top Paddock and Bottom Field",
+      "length_meters": 180,
+      "current_condition": "fair",
+      "hedgerow_species_mix": "Hawthorn, Blackthorn, Ash",
+      "maintenance_frequency_days": 730,
+      "notes": "Due for re-laying next winter. Some gaps need stock fencing reinforcement."
+    },
+    {
+      "feature_type": "tree",
+      "name": "The Big Oak",
+      "description": "Ancient oak tree, approximately 300 years old. Provides excellent shade.",
+      "field_name": "Top Paddock",
+      "location_description": "Central-west area of Top Paddock",
+      "current_condition": "good",
+      "tree_species": "English Oak (Quercus robur)",
+      "tpo_protected": true,
+      "tpo_reference": "TPO/NRM/2018/001",
+      "notes": "Tree surgeon inspects annually. Some minor deadwood to be removed each autumn."
+    },
+    {
+      "feature_type": "tree_group",
+      "name": "Shelter Belt Plantation",
+      "description": "Mixed woodland planting from 2015 providing wind shelter.",
+      "location_description": "Northern boundary, behind Mare's Meadow",
+      "area_sqm": 2000,
+      "current_condition": "good",
+      "tree_species": "Mixed - Oak, Beech, Rowan, Silver Birch, Hazel",
+      "notes": "Planted under Environmental Stewardship scheme. Needs to be maintained until 2030."
+    },
+    {
+      "feature_type": "pond",
+      "name": "Wildlife Pond",
+      "description": "Natural pond supporting frogs, newts, and dragonflies. Fenced off from horses.",
+      "field_name": "Mare's Meadow",
+      "location_description": "Eastern corner, fenced separately",
+      "area_sqm": 150,
+      "current_condition": "excellent",
+      "maintenance_frequency_days": 180,
+      "notes": "Clear excess duckweed twice yearly. Great crested newts confirmed - protected site."
+    },
+    {
+      "feature_type": "boundary_fence",
+      "name": "Road Boundary Post & Rail",
+      "description": "Treated timber post and rail with stock wire backing.",
+      "location_description": "Front boundary along Manor Lane (inside hedge)",
+      "length_meters": 450,
+      "current_condition": "good",
+      "fence_type": "Post and Rail with Stock Wire",
+      "fence_height_cm": 120,
+      "maintenance_frequency_days": 180,
+      "notes": "Inspect posts for rot. Some creosoted posts need replacing with pressure-treated."
+    },
+    {
+      "feature_type": "electric_fence",
+      "name": "Strip Paddock Tape Fence",
+      "description": "Electric tape fencing for strip grazing management.",
+      "field_name": "The Strip",
+      "location_description": "Moveable tape dividers within The Strip",
+      "current_condition": "good",
+      "fence_type": "Electric Tape 40mm",
+      "fence_height_cm": 100,
+      "electric_fence_working": true,
+      "electric_fence_voltage": 5200.0,
+      "maintenance_frequency_days": 7,
+      "notes": "Check voltage weekly. Move tape every few days for managed grazing."
+    },
+    {
+      "feature_type": "post_and_rail",
+      "name": "Yard to Fields Track Fencing",
+      "description": "Three-rail timber fencing along the track to the fields.",
+      "location_description": "Both sides of main track from yard to paddocks",
+      "length_meters": 300,
+      "current_condition": "good",
+      "fence_type": "Three-rail Post and Rail",
+      "fence_height_cm": 130,
+      "maintenance_frequency_days": 365,
+      "notes": "Replace broken rails promptly - horses love to scratch!"
+    },
+    {
+      "feature_type": "gate",
+      "name": "Main Field Gate",
+      "description": "5-bar metal gate, main entrance to Top Paddock.",
+      "field_name": "Top Paddock",
+      "location_description": "Entrance from main track",
+      "current_condition": "good",
+      "notes": "Gate catch needs regular oiling. Padlock combination: staff only."
+    },
+    {
+      "feature_type": "gate",
+      "name": "Bottom Field Gate",
+      "description": "Wooden 5-bar gate, showing age but still secure.",
+      "field_name": "Bottom Field",
+      "location_description": "Entrance from main track",
+      "current_condition": "fair",
+      "notes": "Hinge post leaning slightly. Plan to replace spring 2025."
+    },
+    {
+      "feature_type": "watercourse",
+      "name": "Boundary Brook",
+      "description": "Small stream forming eastern boundary. Fenced off from horse access.",
+      "location_description": "Eastern boundary of Mare's Meadow and Bottom Field",
+      "length_meters": 280,
+      "current_condition": "good",
+      "maintenance_frequency_days": 90,
+      "notes": "Check culvert under track quarterly. Clear debris after storms."
+    }
+  ],
+  "grants": [
+    {
+      "name": "SFI Hedgerow Management",
+      "scheme_type": "sfi",
+      "status": "active",
+      "reference_number": "SFI-2024-NRM-001",
+      "application_date": "2024-01-15",
+      "decision_date": "2024-03-01",
+      "agreement_start_date": "2024-04-01",
+      "agreement_end_date": "2027-03-31",
+      "total_value": 4500.00,
+      "annual_payment": 1500.00,
+      "scheme_provider": "Rural Payments Agency",
+      "next_inspection_date": "2025-06-15",
+      "notes": "SFI payment for hedgerow management. Must maintain minimum 2m width, one side cut annually on rotation."
+    },
+    {
+      "name": "Countryside Stewardship - Shelter Belt",
+      "scheme_type": "countryside_stewardship_mid",
+      "status": "active",
+      "reference_number": "CS-2015-D456-TREE",
+      "application_date": "2015-06-01",
+      "decision_date": "2015-09-15",
+      "agreement_start_date": "2015-11-01",
+      "agreement_end_date": "2030-10-31",
+      "total_value": 12000.00,
+      "annual_payment": 800.00,
+      "scheme_provider": "Rural Payments Agency",
+      "next_inspection_date": "2025-09-01",
+      "inspection_notes": "15-year woodland creation agreement. Annual inspection checks survival rate and maintenance.",
+      "notes": "Shelter belt plantation. Must maintain tree protection, replace failures, control weeds until established."
+    },
+    {
+      "name": "SFI Wildlife Pond Enhancement",
+      "scheme_type": "sfi",
+      "status": "active",
+      "reference_number": "SFI-2024-NRM-002",
+      "application_date": "2024-02-20",
+      "decision_date": "2024-04-10",
+      "agreement_start_date": "2024-05-01",
+      "agreement_end_date": "2027-04-30",
+      "total_value": 2400.00,
+      "annual_payment": 800.00,
+      "scheme_provider": "Rural Payments Agency",
+      "notes": "Payment for maintaining wildlife pond and 10m buffer zone. Great crested newt habitat."
+    },
+    {
+      "name": "Environmental Stewardship Legacy - Buffer Strips",
+      "scheme_type": "environmental_land_management",
+      "status": "completed",
+      "reference_number": "ES-2014-BUFF-123",
+      "application_date": "2014-03-01",
+      "decision_date": "2014-05-15",
+      "agreement_start_date": "2014-06-01",
+      "agreement_end_date": "2024-05-31",
+      "total_value": 7500.00,
+      "annual_payment": 750.00,
+      "scheme_provider": "Natural England",
+      "notes": "Completed 10-year agreement for grass buffer strips along watercourse. Successor scheme applied for."
+    },
+    {
+      "name": "Tree Health Scheme - Ash Dieback Management",
+      "scheme_type": "tree_health",
+      "status": "approved",
+      "reference_number": "TH-2024-ASH-789",
+      "application_date": "2024-09-01",
+      "decision_date": "2024-11-15",
+      "agreement_start_date": "2025-01-01",
+      "agreement_end_date": "2025-12-31",
+      "total_value": 3200.00,
+      "scheme_provider": "Forestry Commission",
+      "notes": "Grant for removing 8 ash trees affected by dieback and replanting with diverse native species."
+    }
+  ],
+  "staff_profiles": [
+    {
+      "username": "admin",
+      "job_title": "Yard Owner & Chief Hay Inspector",
+      "date_of_birth": "1978-03-15",
+      "start_date": "1987-06-01",
+      "bio": "Barnaby founded Nags Rest Manor after winning a bet involving a donkey, three carrots, and the Duke of Horsfordshire. Since 1987, he has built this establishment from a muddy field with one shed into the award-adjacent facility you see today. Barnaby's management philosophy can be summarised as 'horses first, humans second, and the peacocks can sort themselves out.' His greatest achievement was teaching Lord Whiskers the cat to open the feed room door, though he now considers this a grave error. When not running the yard, Barnaby can be found pretending to do paperwork while actually watching horse videos on YouTube.",
+      "personal_email": "barnaby.hoofington@personal.example.com",
+      "personal_phone": "07700 100001",
+      "address_street": "The Farmhouse, Nags Rest Manor",
+      "address_town": "Little Trotting",
+      "address_county": "Horsfordshire",
+      "address_postcode": "HR5 3EQ",
+      "emergency_contact_name": "Penelope Hoofington-Smythe",
+      "emergency_contact_phone": "07700 200001",
+      "emergency_contact_relationship": "Long-suffering wife",
+      "qualifications": "[\"BHS Instructor Level 4\", \"British Eventing Accredited Trainer\", \"First Aid at Work\", \"Hay Quality Sommelier (self-certified)\"]",
+      "dbs_check_date": "2023-08-15",
+      "dbs_certificate_number": "DBS-001234567890",
+      "notes": "Knows where all the bodies are buried (mostly hay bales). Allergic to excuses but not to wine."
+    },
+    {
+      "username": "admin2",
+      "job_title": "Yard Manager & Official Horse Whisperer",
+      "date_of_birth": "1982-07-22",
+      "start_date": "2015-04-01",
+      "bio": "The Baroness (a title she gave herself after correctly predicting Thunderbolt's colic that one time) joined us from a previous life as a city accountant who traded spreadsheets for muck heaps and has never looked back. She runs the yard with military precision and only occasionally threatens to sell everything and move to the Bahamas. Her superpower is knowing exactly which horse has escaped before anyone tells her. The Baroness holds the yard record for most cups of tea consumed in a single shift (17) and is the only person who can convince Sir Kicks-A-Lot to stand still for the farrier.",
+      "personal_email": "baroness.canter@personal.example.com",
+      "personal_phone": "07700 100002",
+      "address_street": "Horseshoe Cottage, 12 Stable Lane",
+      "address_town": "Little Trotting",
+      "address_county": "Horsfordshire",
+      "address_postcode": "HR5 3AB",
+      "emergency_contact_name": "Lord Canter-Downhill",
+      "emergency_contact_phone": "07700 200002",
+      "emergency_contact_relationship": "Husband (allegedly)",
+      "qualifications": "[\"BHS Instructor Level 3\", \"Equine First Aid\", \"AAT Accounting Qualification\", \"Certificate in Not Strangling Difficult Livery Clients\"]",
+      "dbs_check_date": "2024-01-10",
+      "dbs_certificate_number": "DBS-001234567891",
+      "notes": "Emergency key holder. Excellent at crisis management. Terrible at taking days off."
+    },
+    {
+      "username": "staff1",
+      "job_title": "Chief Wheelbarrow Pilot",
+      "date_of_birth": "1995-01-15",
+      "start_date": "2021-03-15",
+      "bio": "Barry has been pushing wheelbarrows uphill since before it was fashionable. He holds the yard record for most stables mucked in a single hour (please don't ask about the quality) and claims to speak fluent Horse, passable Pony, and is currently learning Shetland. His dream is to one day own a self-propelled wheelbarrow. Barry joined us after a brief career as a professional footballer, which ended when he discovered he was better at kicking muck heaps than footballs. His signature move is the 'one-handed shavings throw' and he has never once let a full barrow tip over (this is a lie).",
+      "personal_email": "barry.muck@personal.example.com",
+      "personal_phone": "07700 100003",
+      "address_street": "14 Dung Beetle Close",
+      "address_town": "Upper Mucking",
+      "address_county": "Horsfordshire",
+      "address_postcode": "HR6 2MK",
+      "emergency_contact_name": "Sandra Muckspreader",
+      "emergency_contact_phone": "07700 200003",
+      "emergency_contact_relationship": "Mum (she still does his washing)",
+      "qualifications": "[\"BHS Stage 2\", \"First Aid at Work\", \"Forklift License\", \"Advanced Wheelbarrow Navigation\"]",
+      "dbs_check_date": "2023-11-20",
+      "dbs_certificate_number": "DBS-001234567892",
+      "notes": "Excellent worker but leaves treats in his pockets. The horses follow him like he's the Pied Piper."
+    },
+    {
+      "username": "staff2",
+      "job_title": "Head Groom & Horse Spa Manager",
+      "date_of_birth": "1992-12-25",
+      "start_date": "2019-09-01",
+      "bio": "Daisy takes grooming so seriously that horses have been known to purr. Born on Christmas Day and named after a flower, she considers herself a gift to equine wellness. Her mane plaits have won three county shows and caused two competitors to cry. Daisy maintains that there's no such thing as too much conditioner and she will die on that hill. She has a concerning collection of grooming products that would make a Kardashian jealous. Local legend has it she can detect a dirty horse from 500 metres, and she has never met a winter coat she couldn't conquer.",
+      "personal_email": "daisy.hay@personal.example.com",
+      "personal_phone": "07700 100004",
+      "address_street": "Rose Cottage, The Green",
+      "address_town": "Little Trotting",
+      "address_county": "Horsfordshire",
+      "address_postcode": "HR5 3GR",
+      "emergency_contact_name": "Peter Haystack",
+      "emergency_contact_phone": "07700 200004",
+      "emergency_contact_relationship": "Partner",
+      "qualifications": "[\"BHS Stage 3\", \"Equine Massage Therapy\", \"Show Preparation Specialist\", \"Certified Mane Whisperer\"]",
+      "dbs_check_date": "2024-03-15",
+      "dbs_certificate_number": "DBS-001234567893",
+      "notes": "Never let her near glitter without supervision. Last Halloween was a disaster."
+    },
+    {
+      "username": "staff3",
+      "job_title": "Feed Room Guardian",
+      "date_of_birth": "1998-06-30",
+      "start_date": "2022-06-15",
+      "bio": "Bessie guards the feed room with the intensity of a dragon protecting its hoard. She has memorised every horse's dietary requirements, allergies, preferences, and opinions (yes, they have opinions). The fact that she named her clipboard 'Frederick' and talks to it should not alarm you. Bessie joined us straight from agricultural college, where she graduated top of her class in Feed Science and bottom of her class in Social Interaction With Humans. Her spirit animal is a spreadsheet. She has nightmares about horses getting the wrong supplements and wakes up in cold sweats muttering about vitamin ratios.",
+      "personal_email": "bessie.bucket@personal.example.com",
+      "personal_phone": "07700 100005",
+      "address_street": "3 Oat Lane",
+      "address_town": "Barleybridge",
+      "address_county": "Horsfordshire",
+      "address_postcode": "HR7 1OT",
+      "emergency_contact_name": "Doris Bucketworth",
+      "emergency_contact_phone": "07700 200005",
+      "emergency_contact_relationship": "Gran",
+      "qualifications": "[\"Agriculture Diploma (Distinction)\", \"Feed Advisor Certificate\", \"Spreadsheet Master Class\"]",
+      "dbs_check_date": "2024-05-01",
+      "dbs_certificate_number": "DBS-001234567894",
+      "notes": "Will correct you on feed measurements to the nearest gram. Has Frederick the clipboard."
+    },
+    {
+      "username": "staff4",
+      "job_title": "Maintenance & Fire Prevention Specialist",
+      "date_of_birth": "1990-11-05",
+      "start_date": "2020-01-10",
+      "bio": "Timothy is responsible for fixing everything that breaks, which at this yard is everything, constantly. His namesake incident with the hose during the Great Barn Fire Scare of 2022 is no longer spoken of directly but is alluded to in all safety briefings. Despite this, Timothy remains our go-to person for any mechanical failure, plumbing disaster, or fence that needs not so much fixing as complete reconstruction. He once rebuilt an entire stable block using nothing but baler twine, determination, and some words that made the horses blush. Timothy's personal motto is 'If it can't be fixed with duct tape, it can't be fixed.'",
+      "personal_email": "tim.pitch@personal.example.com",
+      "personal_phone": "07700 100006",
+      "address_street": "The Workshop, Hammer Lane",
+      "address_town": "Nails End",
+      "address_county": "Horsfordshire",
+      "address_postcode": "HR8 4HM",
+      "emergency_contact_name": "Nancy Pitchfork",
+      "emergency_contact_phone": "07700 200006",
+      "emergency_contact_relationship": "Wife",
+      "qualifications": "[\"City & Guilds Construction\", \"Electrician (Part P)\", \"Plumbing NVQ2\", \"Advanced Baler Twine Techniques (self-taught)\"]",
+      "dbs_check_date": "2023-06-01",
+      "dbs_certificate_number": "DBS-001234567895",
+      "notes": "Keep away from hoses during any fire-related drill. Otherwise indispensable."
+    }
+  ],
+  "risk_assessments": [
+    {
+      "title": "General Workplace Hazards - A Survival Guide",
+      "category": "general_workplace",
+      "summary": "How not to injure yourself doing perfectly normal things",
+      "content": "GENERAL WORKPLACE RISK ASSESSMENT\nNags Rest Manor Equestrian Centre\n\nPURPOSE\nThis assessment exists because apparently some of you need reminding that gravity is constant and buckets exist at knee height.\n\nHAZARD 1: SLIPPERY SURFACES\nRisk: The yard is occasionally wet. This is Horsfordshire. If you weren't expecting rain, we have concerns.\n- Mitigation: Wear appropriate footwear. 'Appropriate' does not include wellies with holes, trainers, or those flip-flops Janet wore that one time.\n- In wet conditions: Walk like a penguin. Dignified waddling is preferable to spectacular sliding.\n\nHAZARD 2: TRIP HAZARDS\nRisk: Buckets, brooms, wheelbarrows, and that rope Thunderbolt keeps untying will conspire against you.\n- Mitigation: Keep walkways clear. If you put something down, remember where.\n- Special note: The yard cat, Lord Whiskers, counts as a mobile trip hazard. He appears underfoot with malicious intent.\n\nHAZARD 3: MANUAL HANDLING\nRisk: Hay bales and feed sacks are heavier than they look. Your back is not a forklift.\n- Mitigation: Bend your knees, not your enthusiasm. Ask for help with heavy items.\n- Exception: The wheelbarrow full of shavings that Barry insists on overloading every single time despite being told NOT TO.\n\nHAZARD 4: WORKING AT HEIGHT\nRisk: Ladders exist. So does gravity. They have a complicated relationship.\n- Mitigation: Three points of contact. Always. The hay loft does not count as 'ground level just higher up.'\n\nEMERGENCY PROCEDURES\nIn case of injury: First aid kit is in the tack room (green box, not the red one - that's Thunderbolt's special supplements).\nEmergency contact: Call the Baroness. She'll sigh heavily but she'll come.\n\nSigned: Barnaby Hoofington-Smythe\nDate: See next review date\nReview: Annual, or after any incident involving Timothy and a ladder",
+      "version": 1,
+      "is_active": true,
+      "required_for_induction": true,
+      "applies_to_roles": ["staff", "livery", "admin"],
+      "review_period_months": 12,
+      "last_review_days_ago": 30,
+      "next_review_days_from_now": 335
+    },
+    {
+      "title": "Horse Handling - For Those Who Think They Know Better",
+      "category": "horse_handling",
+      "summary": "A frank discussion about why horses are unpredictable and you are not invincible",
+      "content": "HORSE HANDLING RISK ASSESSMENT\nNags Rest Manor Equestrian Centre\n\nFUNDAMENTAL TRUTH\nHorses weigh approximately 500kg. You weigh considerably less. Physics will not negotiate.\n\nHAZARD 1: THE BACK END\nRisk: Horses kick. This is not a personality flaw; it's a survival instinct you're about to discover firsthand.\n- Mitigation: Never approach from directly behind. Talk as you approach. Even Sir Kicks-A-Lot appreciates a heads-up.\n- Special warning: If a horse pins its ears, you have approximately 0.3 seconds to reconsider your life choices.\n\nHAZARD 2: THE FRONT END\nRisk: Teeth. They have them. They use them. Sometimes on you.\n- Mitigation: Keep fingers away from searching lips. The 'are there mints in there?' investigation is thorough.\n- Note: Thunderbolt has form for this. His innocent expression lies.\n\nHAZARD 3: LEADING HORSES\nRisk: A spooked horse doesn't stop to check if you're keeping up.\n- Mitigation: Stay at the shoulder. Never wrap lead rope around your hand. Your fingers have sentimental value.\n- Weather advisory: Wind + plastic bag + horse = unpredictable physics experiment\n\nHAZARD 4: HANDLING ON THE GROUND\nRisk: Feet. Theirs are iron-shod. Yours are not.\n- Mitigation: Steel-toe boots. No exceptions. Not even for 'just popping to check on Princess.'\n- Reality check: 'He never treads on me' is what everyone says until he does.\n\nSPECIFIC HORSE WARNINGS\n- Sir Kicks-A-Lot: The name is a warning label, not a quirky nickname.\n- Princess Floofypants: Will lean. All 600kg of her. Without warning.\n- Thunderbolt: Unpredictable. Assume he's planning something.\n- Mr Snuffles: Harmless until food is involved, then savage.\n\nREMEMBER\nNo task is so urgent that it can't be done safely. The horses will still be here tomorrow. Make sure you are too.\n\nSigned: The Baroness (who has the scars to prove she learned the hard way)",
+      "version": 1,
+      "is_active": true,
+      "required_for_induction": true,
+      "applies_to_roles": ["staff", "livery", "admin"],
+      "review_period_months": 12,
+      "last_review_days_ago": 30,
+      "next_review_days_from_now": 335
+    },
+    {
+      "title": "Fire & Emergency Procedures - Keep Calm and Don't Be Timothy",
+      "category": "fire_emergency",
+      "summary": "What to do when everything is on fire (and what not to do)",
+      "content": "FIRE & EMERGENCY RISK ASSESSMENT\nNags Rest Manor Equestrian Centre\n\nPREAMBLE\nThis document exists because of the Great Barn Fire Scare of 2022 and Timothy's subsequent 'creative interpretation' of fire safety. We do not speak of the hose incident. But we do learn from it.\n\nFIRE PREVENTION\n1. No smoking anywhere on the yard. Not in the car park. Not 'just outside the gate.' Nowhere.\n2. No naked flames in barns. This includes birthday candles for horses. Yes, that happened. No, we're not discussing it.\n3. Electrical equipment: Turn off. Unplug. Check twice. The hay barn is not a drying room for socks.\n4. Report any suspicious smells immediately. Unless it's just the muck heap. We know about the muck heap.\n\nFIRE DISCOVERY PROCEDURE\n1. Raise the alarm. Shout 'FIRE!' clearly and loudly.\n   - DO NOT shout 'Free carrots!' We tried this as an evacuation drill once. Chaos ensued.\n2. Call 999 immediately. Address: Nags Rest Manor, 42 Muck Heap Lane, Little Trotting, HR5 3EQ.\n3. Do NOT attempt to fight the fire yourself.\n   - Especially DO NOT attempt creative use of the yard hose (Timothy, this means you).\n   - The extinguishers are for small fires only. If in doubt, get out.\n\nHORSE EVACUATION\n1. Release horses from stables if safe to do so.\n2. Lead to Far Paddock (NOT the one with the aggressive geese - that's Middle Paddock).\n3. If horses won't lead, consider opening stable doors and stepping back.\n4. DO NOT prioritise possessions over safety. Yes, the Spanish saddle is valuable. You are more valuable.\n\nASSEMBLY POINT\nBy the mounting block near the main gate. Account for all persons present.\n\nSPECIAL CONSIDERATIONS\n- Lord Whiskers (yard cat): He can look after himself. Has nine lives and uses them recklessly.\n- The peacocks: Accept that they will go wherever they want. This is fine.\n- Thunderbolt: Will either be the first out or the most dramatic. Prepare for both.\n\nFIRE EXTINGUISHER LOCATIONS\n- Tack room (red box, not the green one)\n- Feed room entrance\n- Main barn near the hay store (irony noted)\n- Office\n\nREMEMBER: Your safety first. Always. No exceptions.\n\nSigned: Barnaby Hoofington-Smythe, after extensive consultation with the fire service (who were very patient)",
+      "version": 1,
+      "is_active": true,
+      "required_for_induction": true,
+      "applies_to_roles": ["staff", "livery", "admin"],
+      "review_period_months": 12,
+      "last_review_days_ago": 30,
+      "next_review_days_from_now": 335
+    },
+    {
+      "title": "Yard Environment Safety - Nature Is Trying To Kill You",
+      "category": "yard_environment",
+      "summary": "A comprehensive guide to surviving the great outdoors (and the not-so-great indoors)",
+      "content": "YARD ENVIRONMENT RISK ASSESSMENT\nNags Rest Manor Equestrian Centre\n\nGENERAL PRINCIPLE\nThe yard is an outdoor environment. It is subject to weather, wildlife, and the occasional escape attempt by Thunderbolt. Be prepared.\n\nWEATHER HAZARDS\n\nHeat:\n- Hydrate. Yes, you too, not just the horses.\n- Sun cream exists for a reason. Leather face is not a professional requirement.\n- Know the signs of heat stroke. In yourself and others.\n\nCold:\n- Layer up. Standing in the yard at 6am in January requires commitment and thermal underwear.\n- Frozen water troughs: Check and defrost. The horses cannot drink ice.\n- Black ice: It's invisible. Walk accordingly.\n\nWind:\n- Secure everything that can fly. Loose arena letters are missiles.\n- Horses + wind = spooking season. Handle with extra caution.\n- The plastic bag warning from the Horse Handling assessment applies double.\n\nRain:\n- Everything becomes a slip hazard. Refer to General Workplace assessment, Penguin Protocol.\n- Electrical storms: Do not shelter under trees. Do not hold metal implements.\n\nWILDLIFE CONCERNS\n\nThe Peacocks:\n- They live here. They scream at dawn. There is no solution.\n- Do not approach during breeding season. Maurice becomes... territorial.\n\nLord Whiskers (Yard Cat):\n- Appears underfoot with malicious timing.\n- Has claimed the best sunny spots. Do not disturb.\n\nThe Aggressive Geese (Middle Paddock):\n- There is no safe approach. Plan your route to avoid.\n- If pursued: Do not run (they take this as a challenge). Walk backwards maintaining eye contact.\n- The geese have won every confrontation to date. Accept this.\n\nWasps/Bees:\n- Inform management of any allergies. Epi-pens location: First aid kit, tack room.\n- Sugar attracts them. Mind your tea.\n\nRats:\n- Feed room procedures exist for a reason. Do not leave feed accessible.\n- If you see one, tell the Baroness. She has a plan. (The plan is called Kevin the Terrier.)\n\nSTRUCTURAL HAZARDS\n- Report any damage immediately. Broken rails, loose roof panels, holes appearing in places they shouldn't.\n- The hay loft steps are steep. Not a slide. Not a shortcut.\n\nSigned: The Yard Safety Committee (membership: everyone who learned something the hard way)",
+      "version": 1,
+      "is_active": true,
+      "required_for_induction": true,
+      "applies_to_roles": ["staff", "livery", "admin"],
+      "review_period_months": 12,
+      "last_review_days_ago": 60,
+      "next_review_days_from_now": 305
+    },
+    {
+      "title": "Biosecurity Procedures - Keeping The Lurgy Out",
+      "category": "biosecurity",
+      "summary": "Disease prevention and why quarantine isn't just for pandemics",
+      "content": "BIOSECURITY RISK ASSESSMENT\nNags Rest Manor Equestrian Centre\n\nWHY THIS MATTERS\nOne sick horse can become many sick horses very quickly. Strangles, flu, herpes - equine diseases spread faster than gossip at a livery yard. Prevention is considerably cheaper than treatment.\n\nARRIVAL PROTOCOLS\n\nNew Horses:\n1. Isolation period: Minimum 21 days. No exceptions. No, not even for Princess Floofypants' new field companion.\n2. Health check on arrival by vet.\n3. Up-to-date vaccinations required before arrival.\n4. Negative strangles test recommended (required if yard is on alert).\n\nReturning Horses:\n- Shows/competitions: Monitor for 7 days. Report any symptoms.\n- Hospital discharge: Follow vet isolation instructions to the letter.\n\nVISITOR PROTOCOLS\n\nProfessionals (vets, farriers, physios):\n- Must report if they've been to a yard with known disease outbreak.\n- Disinfection of equipment between horses where practical.\n- Boot dips available at entrance. Use them.\n\nOther Visitors:\n- No visiting horses from other yards (the 'just popping over' rule is suspended indefinitely after the 2019 incident).\n- Hand washing after handling horses.\n\nDISEASE RECOGNITION\n\nCall the vet immediately if you notice:\n- Nasal discharge (not just the usual 'Thunderbolt sneezed' situation)\n- Coughing through the yard\n- Swollen glands\n- Fever (know how to take temperature - training available)\n- Loss of appetite (unusual in this group of professional hoovers)\n- Lethargy (actual lethargy, not just Mr Snuffles' general attitude)\n\nOUTBREAK PROCEDURES\n\nIf disease is suspected:\n1. Isolate affected horse immediately.\n2. Stop all horse movement in and out of yard.\n3. Contact all owners.\n4. Vet to confirm diagnosis.\n5. Follow vet isolation and treatment protocols.\n6. Deep clean and disinfect all equipment.\n\nDO NOT:\n- Panic (it helps nothing)\n- Share on Facebook before telling the Baroness (she will find out, and she will be cross)\n- Continue normal routines 'because it's probably nothing'\n\nROUTINE MEASURES\n- Fly control in summer (disease vectors)\n- Regular muck heap removal\n- Clean water troughs weekly\n- Separate equipment for isolation horses where possible\n\nSigned: Barnaby Hoofington-Smythe, with input from Valley Vets",
+      "version": 1,
+      "is_active": true,
+      "required_for_induction": true,
+      "applies_to_roles": ["staff", "livery", "admin"],
+      "review_period_months": 12,
+      "last_review_days_ago": 90,
+      "next_review_days_from_now": 275
+    },
+    {
+      "title": "First Aid Fundamentals - You Can't Vet-Wrap Everything",
+      "category": "first_aid",
+      "summary": "What to do when things go wrong (for humans and horses)",
+      "content": "FIRST AID RISK ASSESSMENT\nNags Rest Manor Equestrian Centre\n\nFIRST AID KIT LOCATIONS\n\nHuman First Aid:\n- Main kit: Tack room (GREEN box - not red, red is horse stuff)\n- Secondary kit: Office\n- Eye wash station: Feed room\n\nEquine First Aid:\n- Main kit: Tack room (RED box - labelled 'HORSE')\n- Wound care supplies: Separate cabinet, tack room\n\nIMPORTANT: Do not mix them up. Horse wound powder on human wounds is inadvisable.\n\nTRAINED FIRST AIDERS\n- The Baroness (certified, experienced, unflappable)\n- Daisy Haystack (trained 2024)\n- Barry Muckspreader (trained, though we're still not sure how)\n\nHUMAN FIRST AID BASICS\n\nMinor Cuts/Scrapes:\n- Clean with water\n- Apply dressing\n- Write in accident book (yes, even the small ones)\n\nBites/Kicks:\n- Ice pack for swelling\n- Medical attention if skin broken (risk of infection)\n- Accident book (and possibly an incident report form)\n\nSerious Injury:\n- Do not move the person unless immediate danger\n- Call 999\n- Clear airway, control bleeding, keep warm\n- Stay calm. Others will follow your lead.\n\nEQUINE FIRST AID BASICS\n\nMinor Wounds:\n- Clean with saline\n- Apply wound powder if appropriate\n- Monitor for infection\n- When in doubt, call the vet\n\nBleeding:\n- Apply pressure with clean cloth\n- Call vet for anything more than superficial\n- Tourniquet? No. Just no. Call the vet.\n\nColic:\n- DO NOT give painkillers (affects vet diagnosis)\n- Remove food\n- Keep horse walking if they want to, standing if not\n- CALL VET IMMEDIATELY\n- Note times, symptoms, gut sounds\n\nLameness:\n- Assess severity. Non-weight bearing = vet now.\n- Check foot for obvious causes (stone, abscess)\n- Cold hose if swelling\n- DO NOT ride. Not even 'just to see.'\n\nCHOKE:\n- Horse stretching neck, drooling, distressed\n- CALL VET IMMEDIATELY\n- Keep calm. Keep horse calm.\n- DO NOT try to 'clear it' yourself\n\nEMERGENCY CONTACTS\n- Valley Vets (day): 07700 800001\n- Valley Vets (night): 07700 800002\n- Farrier Dave: 07700 800999 (for hoof emergencies)\n- NHS 111 (for human advice)\n- 999 (for emergencies)\n\nSigned: Dr Sarah Hoofington, Valley Vets & Barnaby Hoofington-Smythe",
+      "version": 1,
+      "is_active": true,
+      "required_for_induction": true,
+      "applies_to_roles": ["staff", "livery", "admin"],
+      "review_period_months": 12,
+      "last_review_days_ago": 45,
+      "next_review_days_from_now": 320
+    },
+    {
+      "title": "PPE & Manual Handling - Your Body Is Not A Crane",
+      "category": "ppe_manual_handling",
+      "summary": "Protective equipment requirements and how to not destroy your back",
+      "content": "PPE & MANUAL HANDLING RISK ASSESSMENT\nNags Rest Manor Equestrian Centre\n\nPERSONAL PROTECTIVE EQUIPMENT\n\nRequired at all times:\n- Steel-toe boots or safety wellies\n  * NOT trainers. NOT flip-flops. NOT 'these old boots' with the toe worn through.\n  * We check. Seriously.\n\nRequired for specific tasks:\n\nRiding/lunging:\n- Approved riding hat (properly fitted, not from 1987)\n- Body protector recommended\n- Gloves for lunging (rope burns are not fun)\n\nMucking out:\n- Gloves recommended (blisters and manure are not friends)\n- Mask available if dust sensitive\n\nClipping:\n- Non-slip footwear (extra important with electric equipment)\n- Extension leads properly maintained\n\nHandling feed/supplements:\n- Gloves for chemicals\n- Mask for dusty supplements (especially Thunderbolt's special mix that creates mushroom clouds)\n\nMANUAL HANDLING\n\nThe Golden Rules:\n1. Your back is not a crane. It's not even a forklift. Stop treating it like one.\n2. If it's too heavy, get help. Asking is not weakness; it's intelligence.\n3. Bend your knees, not your spine.\n\nHay Bales:\n- Weight: Variable but assume heavy.\n- Technique: Hug close to body, lift with legs.\n- Do not: Throw from height, carry more than you can see over, compete with Barry (he will win, but his back will lose eventually).\n\nFeed Sacks:\n- Standard 20-25kg. That's heavy.\n- Use the sack truck. That's literally what it's for.\n- If lifting: Bend knees, straight back, hug bag, stand using legs.\n\nWater Buckets:\n- Full bucket = 10kg approximately.\n- Carry two half-full rather than one full.\n- Use the hosepipe where possible. Save your shoulders.\n\nWheelbarrows:\n- The Barry Technique: Overloading is not efficient. It's heavy, unstable, and impressive to no one.\n- Balanced loads are faster and safer.\n- Push, don't pull.\n\nShavings Bales:\n- Awkward shape, moderate weight.\n- Fork/hook them open, don't try to deadlift.\n- They're wrapped in plastic. Slippery. Plan accordingly.\n\nWARNING SIGNS SOMETHING IS TOO HEAVY:\n- You're holding your breath\n- Your face is changing colour\n- You're making 'effort noises'\n- You genuinely cannot see where you're going\n\nInjuries happen when we're rushing. Nothing is so urgent it can't wait for proper technique.\n\nSigned: The Baroness (who has seen every manual handling mistake possible and is tired)",
+      "version": 1,
+      "is_active": true,
+      "required_for_induction": true,
+      "applies_to_roles": ["staff", "livery", "admin"],
+      "review_period_months": 12,
+      "last_review_days_ago": 30,
+      "next_review_days_from_now": 335
+    },
+    {
+      "title": "New Starter Induction Checklist - Welcome To The Madness",
+      "category": "other",
+      "summary": "Everything new staff and livery clients need to know before being let loose",
+      "content": "NEW STARTER INDUCTION CHECKLIST\nNags Rest Manor Equestrian Centre\n\nWELCOME!\nCongratulations on joining Nags Rest Manor. You're about to discover that working with horses is 10% glamour, 30% mucking out, and 60% wondering why you didn't become an accountant. Here's what you need to know.\n\nBEFORE YOUR FIRST SHIFT/VISIT\n\n□ Read and acknowledge all risk assessments (that's why you're reading this one last)\n□ Confirm next of kin and emergency contact details\n□ Provide proof of qualifications (if applicable)\n□ Submit DBS check (staff only)\n□ Sign contract/livery agreement\n\nDAY ONE ESSENTIALS\n\n□ Tour of facilities:\n  - Where everything is (you'll still get lost for the first month)\n  - Fire exits and assembly point (by the mounting block)\n  - First aid locations (GREEN box humans, RED box horses)\n  - Loo facilities (the key is on the hook. Always return the key.)\n\n□ Meet the residents:\n  - The horses (full briefing on individual quirks provided)\n  - Lord Whiskers (yard cat, answers to nothing, underfoot constantly)\n  - The peacocks (cannot be controlled, just accepted)\n  - The geese (AVOID - see Yard Environment assessment)\n\n□ Security briefing:\n  - Gate code (changes quarterly, announced on noticeboard)\n  - Key safe location and code (for emergencies only)\n  - Last person leaving procedures (see Security Info)\n\nKEY CONTACTS\n\n□ The Baroness (Yard Manager): 07700 900100\n  - First point of contact for everything\n  - Available unless she's finally escaped to the Bahamas\n\n□ Valley Vets (Emergency): 07700 800001\n  - For any equine emergency\n  - Available 24/7\n\n□ Farrier Dave: 07700 800999\n  - For hoof emergencies only\n  - His nickname is 'Definitely Not Dodgy Dave.' Don't ask.\n\nYARD RULES (NON-NEGOTIABLE)\n\n1. Gates: Close them. Every time. Even if you're 'just popping back.'\n2. Horses: All horses in before dusk. No exceptions. The foxes get cocky.\n3. Feed: Follow the chart. Exactly. Bessie has eyes everywhere.\n4. Injuries: Report everything. Accident book. No heroics.\n5. Parking: In designated areas. The Baroness will find you if you block the hay delivery.\n\nWARNINGS FROM EXPERIENCE\n\n- Thunderbolt unties himself. Always double-check.\n- Sir Kicks-A-Lot: The name is literal.\n- The hay loft stairs are steep. Not a slide.\n- Never approach Middle Paddock without the stick.\n- Timothy is not allowed near hoses during fire drills.\n\n□ I have read and understood all of the above.\n□ I have completed all associated risk assessments.\n□ I accept that working here means accepting the occasional chaos.\n\nSigned: _________________\nDate: ___________________\nWitnessed by: ___________________\n\nWELCOME TO THE TEAM. MAY YOUR BOOTS STAY DRY AND YOUR HAY BALES LIGHT.",
+      "version": 1,
+      "is_active": true,
+      "required_for_induction": true,
+      "applies_to_roles": ["staff", "livery", "admin"],
+      "review_period_months": 12,
+      "last_review_days_ago": 15,
+      "next_review_days_from_now": 350
+    }
+  ],
+  "risk_assessment_reviews": [
+    {
+      "assessment_title": "General Workplace Hazards - A Survival Guide",
+      "reviewed_by_username": "admin",
+      "reviewed_days_ago": 30,
+      "trigger": "scheduled",
+      "trigger_details": null,
+      "version_before": 1,
+      "version_after": 1,
+      "changes_made": false,
+      "changes_summary": null,
+      "notes": "Annual review completed. No changes required. Penguin Protocol remains effective."
+    },
+    {
+      "assessment_title": "Fire & Emergency Procedures - Keep Calm and Don't Be Timothy",
+      "reviewed_by_username": "admin",
+      "reviewed_days_ago": 30,
+      "trigger": "incident",
+      "trigger_details": "Timothy attempted 'creative fire drill interpretation' again - see incident report #2024-003",
+      "version_before": 1,
+      "version_after": 1,
+      "changes_made": false,
+      "changes_summary": null,
+      "notes": "Reviewed following minor incident. Content already covers the situation. Timothy has been reminded. Again."
+    },
+    {
+      "assessment_title": "Horse Handling - For Those Who Think They Know Better",
+      "reviewed_by_username": "admin",
+      "reviewed_days_ago": 60,
+      "trigger": "change",
+      "trigger_details": "New horse (Sir Kicks-A-Lot II) arrived with 'spirited' temperament",
+      "version_before": 1,
+      "version_after": 1,
+      "changes_made": false,
+      "changes_summary": null,
+      "notes": "Specific warnings about new horse will be communicated verbally. Assessment covers general principles adequately."
+    },
+    {
+      "assessment_title": "Biosecurity Procedures - Keeping The Lurgy Out",
+      "reviewed_by_username": "admin",
+      "reviewed_days_ago": 90,
+      "trigger": "new_hazard",
+      "trigger_details": "Neighbouring yard had strangles outbreak - increased vigilance required",
+      "version_before": 1,
+      "version_after": 1,
+      "changes_made": false,
+      "changes_summary": null,
+      "notes": "Assessment already comprehensive. Temporary heightened protocols communicated separately."
+    }
+  ],
+  "risk_assessment_acknowledgements": [
+    {
+      "assessment_title": "General Workplace Hazards - A Survival Guide",
+      "username": "staff1",
+      "acknowledged_days_ago": 45,
+      "assessment_version": 1,
+      "notes": "Read and understood. Will try to remember the Penguin Protocol."
+    },
+    {
+      "assessment_title": "General Workplace Hazards - A Survival Guide",
+      "username": "staff2",
+      "acknowledged_days_ago": 50,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "General Workplace Hazards - A Survival Guide",
+      "username": "staff3",
+      "acknowledged_days_ago": 40,
+      "assessment_version": 1,
+      "notes": "Frederick (the clipboard) has been informed."
+    },
+    {
+      "assessment_title": "General Workplace Hazards - A Survival Guide",
+      "username": "livery1",
+      "acknowledged_days_ago": 60,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "General Workplace Hazards - A Survival Guide",
+      "username": "livery2",
+      "acknowledged_days_ago": 55,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "Horse Handling - For Those Who Think They Know Better",
+      "username": "staff1",
+      "acknowledged_days_ago": 45,
+      "assessment_version": 1,
+      "notes": "Noted the bit about Sir Kicks-A-Lot. Learning from experience."
+    },
+    {
+      "assessment_title": "Horse Handling - For Those Who Think They Know Better",
+      "username": "staff2",
+      "acknowledged_days_ago": 50,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "Horse Handling - For Those Who Think They Know Better",
+      "username": "staff3",
+      "acknowledged_days_ago": 40,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "Horse Handling - For Those Who Think They Know Better",
+      "username": "livery1",
+      "acknowledged_days_ago": 60,
+      "assessment_version": 1,
+      "notes": "Appreciate the candour about Thunderbolt."
+    },
+    {
+      "assessment_title": "Fire & Emergency Procedures - Keep Calm and Don't Be Timothy",
+      "username": "staff1",
+      "acknowledged_days_ago": 30,
+      "assessment_version": 1,
+      "notes": "Understood. Will not attempt creative interpretations."
+    },
+    {
+      "assessment_title": "Fire & Emergency Procedures - Keep Calm and Don't Be Timothy",
+      "username": "staff2",
+      "acknowledged_days_ago": 35,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "Fire & Emergency Procedures - Keep Calm and Don't Be Timothy",
+      "username": "livery1",
+      "acknowledged_days_ago": 40,
+      "assessment_version": 1,
+      "notes": "Far Paddock NOT Middle Paddock - got it."
+    },
+    {
+      "assessment_title": "Yard Environment Safety - Nature Is Trying To Kill You",
+      "username": "staff1",
+      "acknowledged_days_ago": 60,
+      "assessment_version": 1,
+      "notes": "The geese section is concerning but accurate."
+    },
+    {
+      "assessment_title": "Yard Environment Safety - Nature Is Trying To Kill You",
+      "username": "staff2",
+      "acknowledged_days_ago": 65,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "Yard Environment Safety - Nature Is Trying To Kill You",
+      "username": "livery1",
+      "acknowledged_days_ago": 70,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "Biosecurity Procedures - Keeping The Lurgy Out",
+      "username": "staff1",
+      "acknowledged_days_ago": 90,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "Biosecurity Procedures - Keeping The Lurgy Out",
+      "username": "staff2",
+      "acknowledged_days_ago": 95,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "First Aid Fundamentals - You Can't Vet-Wrap Everything",
+      "username": "staff1",
+      "acknowledged_days_ago": 45,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "First Aid Fundamentals - You Can't Vet-Wrap Everything",
+      "username": "staff2",
+      "acknowledged_days_ago": 50,
+      "assessment_version": 1,
+      "notes": "GREEN box humans, RED box horses - memorised."
+    },
+    {
+      "assessment_title": "PPE & Manual Handling - Your Body Is Not A Crane",
+      "username": "staff1",
+      "acknowledged_days_ago": 30,
+      "assessment_version": 1,
+      "notes": "I dispute the wheelbarrow claims. But will try to improve."
+    },
+    {
+      "assessment_title": "PPE & Manual Handling - Your Body Is Not A Crane",
+      "username": "staff2",
+      "acknowledged_days_ago": 35,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "PPE & Manual Handling - Your Body Is Not A Crane",
+      "username": "staff3",
+      "acknowledged_days_ago": 40,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "New Starter Induction Checklist - Welcome To The Madness",
+      "username": "staff1",
+      "acknowledged_days_ago": 365,
+      "assessment_version": 1,
+      "notes": "Read at induction. Still finding my way around occasionally."
+    },
+    {
+      "assessment_title": "New Starter Induction Checklist - Welcome To The Madness",
+      "username": "staff2",
+      "acknowledged_days_ago": 500,
+      "assessment_version": 1,
+      "notes": null
+    },
+    {
+      "assessment_title": "New Starter Induction Checklist - Welcome To The Madness",
+      "username": "staff3",
+      "acknowledged_days_ago": 200,
+      "assessment_version": 1,
+      "notes": "Frederick approved this document."
     }
   ]
 }

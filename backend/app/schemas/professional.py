@@ -1,6 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from app.models.professional import ProfessionalCategory
 from app.utils.validators import validate_uk_phone
 
@@ -76,8 +76,7 @@ class ProfessionalResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProfessionalPublicResponse(BaseModel):
@@ -99,8 +98,7 @@ class ProfessionalPublicResponse(BaseModel):
     booking_notes: Optional[str]
     yard_recommended: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProfessionalCategoryInfo(BaseModel):

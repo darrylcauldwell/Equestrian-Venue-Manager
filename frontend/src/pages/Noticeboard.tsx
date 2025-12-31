@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { noticesApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -34,7 +34,7 @@ export function Noticeboard() {
     expires_at: '',
   });
 
-  const loadNotices = async () => {
+  const loadNotices = useCallback(async () => {
     setIsLoading(true);
     try {
       const category = categoryFilter === 'all' ? undefined : categoryFilter;
@@ -45,11 +45,11 @@ export function Noticeboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [categoryFilter]);
 
   useEffect(() => {
     loadNotices();
-  }, [categoryFilter]);
+  }, [loadNotices]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

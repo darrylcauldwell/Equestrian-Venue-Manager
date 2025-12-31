@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { servicesApi, usersApi } from '../../services/api';
 import { useRequestState, useModalForm } from '../../hooks';
 import { Modal, FormGroup, Input, Select, Textarea } from '../../components/ui';
@@ -37,11 +37,7 @@ export function AdminServiceRequests() {
     notes: '',
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [requestsData, usersData] = await Promise.all([
         servicesApi.getStaffRequests(),
@@ -54,7 +50,11 @@ export function AdminServiceRequests() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const openQuoteModal = (request: ServiceRequest) => {
     setSelectedRequest(request);

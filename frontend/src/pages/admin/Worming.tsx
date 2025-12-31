@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { healthRecordsApi } from '../../services/api';
 import { useRequestState } from '../../hooks';
 import type {
@@ -30,11 +30,7 @@ export function AdminWorming() {
   const [countDate, setCountDate] = useState(new Date().toISOString().split('T')[0]);
   const [entries, setEntries] = useState<Record<number, { epg: string; cost: string; notes: string }>>({});
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [horsesData, reportData] = await Promise.all([
         healthRecordsApi.getWormingHorses(),
@@ -54,7 +50,11 @@ export function AdminWorming() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleEntryChange = (horseId: number, field: 'epg' | 'cost' | 'notes', value: string) => {
     setEntries(prev => ({

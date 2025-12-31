@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { servicesApi } from '../../services/api';
 import { useModalForm, useRequestState } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Select, Textarea } from '../../components/ui';
@@ -39,7 +39,7 @@ export function AdminServices() {
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<Service | null>(null);
 
-  const loadServices = async () => {
+  const loadServices = useCallback(async () => {
     try {
       const data = await servicesApi.listAll();
       setServices(data);
@@ -48,11 +48,11 @@ export function AdminServices() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
 
   useEffect(() => {
     loadServices();
-  }, []);
+  }, [loadServices]);
 
   // Track editing service ID separately since Services use string IDs
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);

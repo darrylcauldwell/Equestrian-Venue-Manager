@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import Optional, List
 from decimal import Decimal
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.models.account import TransactionType, PaymentMethod
 
@@ -61,8 +61,7 @@ class LedgerEntryResponse(LedgerEntryBase):
     service_description: Optional[str] = None
     package_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AccountBalance(BaseModel):

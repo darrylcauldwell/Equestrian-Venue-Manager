@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { lessonsApi } from '../../services/api';
 import { useRequestState, useModalForm } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, Input } from '../../components/ui';
@@ -26,11 +26,7 @@ export function AdminCoaches() {
   // Toggle confirmation
   const [toggleTarget, setToggleTarget] = useState<CoachProfile | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [enumsData, profilesData, requestsData] = await Promise.all([
         lessonsApi.getEnums(),
@@ -45,7 +41,11 @@ export function AdminCoaches() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleApprove = async () => {
     if (!selectedProfile) return;

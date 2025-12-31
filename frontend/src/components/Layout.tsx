@@ -7,6 +7,9 @@ import { uploadsApi } from '../services/api';
 import { FeedAlertPopup } from './FeedAlertPopup';
 import { QuoteAlertPopup } from './QuoteAlertPopup';
 import { VaccinationAlertPopup } from './VaccinationAlertPopup';
+import { FloodAlertPopup } from './FloodAlertPopup';
+import { StaffMilestonesPopup } from './StaffMilestonesPopup';
+import { ThanksNotificationPopup } from './ThanksNotificationPopup';
 import type { FeatureKey } from '../types';
 import './Layout.css';
 
@@ -42,6 +45,35 @@ function NavDropdown({ title, children, isOpen, onToggle }: NavDropdownProps) {
         <span className="dropdown-arrow">{isOpen ? '▲' : '▼'}</span>
       </button>
       <div className="nav-dropdown-menu">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Nested sub-dropdown for grouping within a dropdown
+interface NavSubDropdownProps {
+  title: string;
+  children: ReactNode;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+function NavSubDropdown({ title, children, isOpen, onToggle }: NavSubDropdownProps) {
+  return (
+    <div className={`nav-sub-dropdown ${isOpen ? 'open' : ''}`}>
+      <button
+        className="nav-sub-dropdown-trigger"
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }}
+        aria-expanded={isOpen}
+      >
+        <span>{title}</span>
+        <span className="dropdown-arrow">{isOpen ? '▲' : '▼'}</span>
+      </button>
+      <div className="nav-sub-dropdown-menu">
         {children}
       </div>
     </div>
@@ -151,14 +183,24 @@ export function Layout() {
             isOpen={openDropdowns.has('staffAdmin')}
             onToggle={() => toggleDropdown('staffAdmin')}
           >
+            <Link to="/book/my-profile">My Profile</Link>
             <FeatureLink feature="staff_management">
               <Link to="/book/my-rota">My Rota</Link>
             </FeatureLink>
             <FeatureLink feature="timesheets">
               <Link to="/book/my-timesheet">My Timesheet</Link>
             </FeatureLink>
+            <FeatureLink feature="staff_management">
+              <Link to="/book/my-leave">My Leave</Link>
+            </FeatureLink>
+            <FeatureLink feature="staff_management">
+              <Link to="/book/my-thanks">My Thanks</Link>
+            </FeatureLink>
             <FeatureLink feature="contract_management">
               <Link to="/book/my-contracts">My Contracts</Link>
+            </FeatureLink>
+            <FeatureLink feature="risk_assessment">
+              <Link to="/book/risk-assessments">My Risk Assessments</Link>
             </FeatureLink>
             <FeatureLink feature="noticeboard">
               <Link to="/book/noticeboard">Noticeboard</Link>
@@ -224,6 +266,9 @@ export function Layout() {
             <FeatureLink feature="security_management">
               <Link to="/book/security">Yard Security</Link>
             </FeatureLink>
+            <FeatureLink feature="staff_management">
+              <Link to="/book/send-thanks">Thank Staff</Link>
+            </FeatureLink>
           </NavDropdown>
           <FeatureLink feature="noticeboard">
             <Link to="/book/noticeboard">Yard Noticeboard</Link>
@@ -236,40 +281,94 @@ export function Layout() {
     if (isAdmin) {
       return (
         <>
-          {/* My Venue Dropdown */}
+          {/* My Venue Dropdown with nested categories */}
           <NavDropdown
             title="My Venue"
             isOpen={openDropdowns.has('venue')}
             onToggle={() => toggleDropdown('venue')}
           >
-            <Link to="/book/admin/requests" className="dropdown-highlight">All Requests</Link>
-            <div className="dropdown-divider"></div>
-            <Link to="/book/admin/bookings">Bookings</Link>
-            <Link to="/book/admin/tasks">Yard Tasks</Link>
-            <Link to="/book/admin/staff">Staff Rota</Link>
-            <div className="dropdown-divider"></div>
-            <Link to="/book/admin/arenas">Arenas</Link>
-            <Link to="/book/admin/stables">Stables</Link>
-            <Link to="/book/admin/fields">Fields</Link>
-            <Link to="/book/admin/land-management">Land Management</Link>
-            <Link to="/book/admin/care-plans">Care Plans</Link>
-            <div className="dropdown-divider"></div>
-            <Link to="/book/admin/livery-packages">Livery Packages</Link>
-            <Link to="/book/admin/feed-schedule">Feed Schedule</Link>
-            <Link to="/book/admin/worming">Worm Counts</Link>
-            <Link to="/book/admin/services">Service Catalog</Link>
-            <Link to="/book/admin/coaches">Coach Profiles</Link>
-            <div className="dropdown-divider"></div>
-            <Link to="/book/admin/billing">Billing</Link>
-            <Link to="/book/admin/invoices">Invoices</Link>
-            <Link to="/book/admin/reports">Financial Reports</Link>
-            <Link to="/book/admin/contracts">Contracts</Link>
-            <Link to="/book/admin/contract-signatures">Signatures</Link>
-            <Link to="/book/admin/arena-usage">Arena Usage</Link>
-            <Link to="/book/admin/noticeboard">Noticeboard</Link>
-            <div className="dropdown-divider"></div>
-            <Link to="/book/admin/compliance">Compliance</Link>
-            <Link to="/book/admin/security">Security</Link>
+            {/* Operations */}
+            <NavSubDropdown
+              title="Operations"
+              isOpen={openDropdowns.has('venue-operations')}
+              onToggle={() => toggleDropdown('venue-operations')}
+            >
+              <Link to="/book/admin/requests">All Requests</Link>
+              <Link to="/book/admin/bookings">Bookings</Link>
+              <Link to="/book/admin/tasks">Yard Tasks</Link>
+              <Link to="/book/turnout">Turnout Requests</Link>
+              <Link to="/book/services">Service Requests</Link>
+            </NavSubDropdown>
+
+            {/* My Staff */}
+            <NavSubDropdown
+              title="My Staff"
+              isOpen={openDropdowns.has('venue-staff')}
+              onToggle={() => toggleDropdown('venue-staff')}
+            >
+              <Link to="/book/admin/staff-profiles">Staff Profiles</Link>
+              <Link to="/book/admin/staff">Staff Management</Link>
+            </NavSubDropdown>
+
+            {/* Facilities */}
+            <NavSubDropdown
+              title="Facilities"
+              isOpen={openDropdowns.has('venue-facilities')}
+              onToggle={() => toggleDropdown('venue-facilities')}
+            >
+              <Link to="/book/admin/arenas">Arenas</Link>
+              <Link to="/book/admin/stables">Stables</Link>
+              <Link to="/book/admin/land-management">Land Management</Link>
+              <Link to="/book/admin/coaches">Coach Profiles</Link>
+              <Link to="/book/admin/noticeboard">Noticeboard</Link>
+            </NavSubDropdown>
+
+            {/* Horse Care */}
+            <NavSubDropdown
+              title="Horse Care"
+              isOpen={openDropdowns.has('venue-horsecare')}
+              onToggle={() => toggleDropdown('venue-horsecare')}
+            >
+              <Link to="/book/admin/care-plans">Care Plans</Link>
+              <Link to="/book/admin/livery-packages">Livery Packages</Link>
+              <Link to="/book/admin/feed-schedule">Feed Schedule</Link>
+              <Link to="/book/admin/worming">Worm Counts</Link>
+              <Link to="/book/admin/services">Service Catalog</Link>
+              <Link to="/book/my-horses">My Horses</Link>
+            </NavSubDropdown>
+
+            {/* Finance */}
+            <NavSubDropdown
+              title="Finance"
+              isOpen={openDropdowns.has('venue-finance')}
+              onToggle={() => toggleDropdown('venue-finance')}
+            >
+              <Link to="/book/admin/billing">Billing</Link>
+              <Link to="/book/admin/invoices">Invoices</Link>
+            </NavSubDropdown>
+
+            {/* Document Management */}
+            <NavSubDropdown
+              title="Document Management"
+              isOpen={openDropdowns.has('venue-documents')}
+              onToggle={() => toggleDropdown('venue-documents')}
+            >
+              <Link to="/book/admin/risk-assessments">Risk Assessments</Link>
+              <Link to="/book/admin/contracts">Contract Templates</Link>
+              <Link to="/book/admin/contract-signatures">Signature Requests</Link>
+            </NavSubDropdown>
+
+            {/* Reports */}
+            <NavSubDropdown
+              title="Reports"
+              isOpen={openDropdowns.has('venue-reports')}
+              onToggle={() => toggleDropdown('venue-reports')}
+            >
+              <Link to="/book/admin/reports">Financial Reports</Link>
+              <Link to="/book/admin/compliance">Compliance</Link>
+              <Link to="/book/admin/security">Security</Link>
+            </NavSubDropdown>
+
           </NavDropdown>
 
           {/* My System Dropdown */}
@@ -281,17 +380,6 @@ export function Layout() {
             <Link to="/book/admin/backups">Backups</Link>
             <Link to="/book/admin/settings">Site Settings</Link>
             <Link to="/book/admin/users">User Accounts</Link>
-          </NavDropdown>
-
-          {/* My Horses Dropdown - for admin's own horses */}
-          <NavDropdown
-            title="My Horses"
-            isOpen={openDropdowns.has('horses')}
-            onToggle={() => toggleDropdown('horses')}
-          >
-            <Link to="/book/my-horses">Horses</Link>
-            <Link to="/book/turnout">Turnout Requests</Link>
-            <Link to="/book/services">Service Requests</Link>
           </NavDropdown>
         </>
       );
@@ -379,6 +467,15 @@ export function Layout() {
 
       {/* Vaccination reminder popup */}
       <VaccinationAlertPopup />
+
+      {/* Flood warning popup for admins */}
+      <FloodAlertPopup />
+
+      {/* Staff milestones popup for admins */}
+      <StaffMilestonesPopup />
+
+      {/* Thanks notification popup for staff */}
+      <ThanksNotificationPopup />
     </div>
   );
 }

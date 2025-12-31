@@ -54,6 +54,7 @@ export function FeatureGate({ feature, children, fallback = null }: FeatureGateP
  * const TimesheetPage = withFeatureGate('timesheets', TimesheetPageComponent);
  * ```
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function withFeatureGate<P extends object>(
   feature: FeatureKey,
   Component: React.ComponentType<P>,

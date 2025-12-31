@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { grantsApi, landFeaturesApi, floodWarningsApi, fieldAnalyticsApi, fieldsApi } from '../../services/api';
 import type {
   Grant,
@@ -48,6 +48,7 @@ import {
   Button,
 } from '../../components/ui';
 import '../../styles/LandManagement.css';
+import Fields from './Fields';
 
 // Label maps for displaying enum values
 const schemeTypeLabels: Record<GrantSchemeType, string> = {
@@ -115,11 +116,17 @@ const maintenanceTypeLabels: Record<MaintenanceType, string> = {
   other: 'Other',
 };
 
-const waterSourceLabels: Record<WaterSourceType, string> = {
+const waterSourceLabels: Record<string, string> = {
   mains_feed: 'Mains Feed',
   natural_spring: 'Natural Spring',
   manual_fill: 'Manual Fill',
   rainwater: 'Rainwater',
+};
+
+// Safe accessor for water source labels
+const getWaterSourceLabel = (type: string | undefined | null): string => {
+  if (!type) return 'Unknown';
+  return waterSourceLabels[type] || type;
 };
 
 // Default form states
@@ -199,6 +206,7 @@ export function AdminLandManagement() {
   // Tabs configuration
   const tabs = [
     { id: 'dashboard', label: 'Dashboard' },
+    { id: 'fields', label: 'Fields', count: fields.length },
     { id: 'grants', label: 'Grants', count: grants.length },
     { id: 'features', label: 'Features', count: features.length },
     { id: 'water', label: 'Water Mgmt' },
@@ -207,11 +215,7 @@ export function AdminLandManagement() {
   ];
 
   // Load initial data
-  useEffect(() => {
-    loadAllData();
-  }, []);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     setLoading(true);
     try {
       await Promise.all([
@@ -229,7 +233,11 @@ export function AdminLandManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
 
   const loadGrants = async () => {
     const data = await grantsApi.list();
@@ -518,15 +526,18 @@ export function AdminLandManagement() {
               {floodStatus?.has_severe_warnings && <Badge variant="error">SEVERE</Badge>}
             </CardHeader>
             <CardBody>
-              {!floodStatus ? (
+              {!floodStatus || !floodStatus.station_alerts ? (
                 <p className="text-muted">No stations configured</p>
-              ) : floodStatus.has_warnings ? (
+              ) : floodStatus.has_warnings && floodStatus.station_alerts.length > 0 ? (
                 <>
-                  <p className="warning-count">{floodStatus.warnings.length} field(s) at risk</p>
+                  <p className="warning-count">{floodStatus.station_alerts.length} station(s) at risk</p>
                   <ul className="warning-list">
-                    {floodStatus.warnings.map((w) => (
-                      <li key={w.id}>
-                        {w.field_name} - {w.current_status}
+                    {floodStatus.station_alerts.map((a) => (
+                      <li key={a.station_id}>
+                        <span>{a.station_name}</span>
+                        <Badge variant={a.current_status === 'severe' ? 'error' : 'warning'}>
+                          {a.current_level?.toFixed(2)}m
+                        </Badge>
                       </li>
                     ))}
                   </ul>
@@ -645,6 +656,11 @@ export function AdminLandManagement() {
         </div>
       </TabPanel>
 
+      {/* Fields Tab */}
+      <TabPanel id="fields" activeTab={activeTab}>
+        <Fields />
+      </TabPanel>
+
       {/* Grants Tab */}
       <TabPanel id="grants" activeTab={activeTab}>
         <div className="tab-header">
@@ -755,7 +771,7 @@ export function AdminLandManagement() {
                     {feature.water_source_type && (
                       <div className="detail-row">
                         <span className="label">Water Source:</span>
-                        <span>{waterSourceLabels[feature.water_source_type]}</span>
+                        <span>{getWaterSourceLabel(feature.water_source_type)}</span>
                       </div>
                     )}
                     {feature.electric_fence_working !== undefined && feature.feature_type === 'electric_fence' && (
@@ -873,7 +889,7 @@ export function AdminLandManagement() {
                       <div className="trough-status">
                         <div className="status-row">
                           <span>Source:</span>
-                          <span>{waterSourceLabels[trough.water_source_type!]}</span>
+                          <span>{getWaterSourceLabel(trough.water_source_type)}</span>
                         </div>
                         {trough.current_condition && (
                           <div className="status-row">
@@ -931,7 +947,7 @@ export function AdminLandManagement() {
                         <span>Station ID:</span>
                         <span>{station.station_id}</span>
                       </div>
-                      {station.last_reading !== undefined && (
+                      {typeof station.last_reading === 'number' && (
                         <div className="info-row">
                           <span>Current Level:</span>
                           <span>{station.last_reading.toFixed(2)}m</span>

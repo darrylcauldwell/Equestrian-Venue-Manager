@@ -527,8 +527,8 @@
 }
 
 .field-condition.good {
-  background: #d1fae5;
-  color: #059669;
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .field-condition.fair {
@@ -642,7 +642,7 @@
 }
 
 .companion-badge.preferred {
-  color: #e91e63;
+  color: var(--color-pink);
 }
 
 .horse-status {
@@ -775,7 +775,7 @@
 }
 
 .companion-hint.preferred {
-  color: #e91e63;
+  color: var(--color-pink);
 }
 
 .companion-hint.incompatible {
@@ -878,7 +878,7 @@
 }
 
 .companion-item.preferred {
-  border-left-color: #e91e63;
+  border-left-color: var(--color-pink);
 }
 
 .companion-item.compatible {
@@ -894,7 +894,7 @@
 }
 
 .companion-item.preferred .companion-icon {
-  color: #e91e63;
+  color: var(--color-pink);
 }
 
 .companion-item.compatible .companion-icon {

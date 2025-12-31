@@ -205,12 +205,56 @@ test.describe('Admin Management Features', () => {
       await expect(complianceContent.first()).toBeVisible();
     });
 
-    test('admin can access backups', async ({ page }) => {
+    test('admin can access backups page with both sections', async ({ page }) => {
       await page.goto('/book/admin/backups');
       await waitForPageReady(page);
 
-      // Should see backups page
-      await expect(page.locator('h1, h2').filter({ hasText: /backup|export|import/i }).first()).toBeVisible();
+      // Should see Database Backup section
+      await expect(page.locator('h2').filter({ hasText: /database backup/i })).toBeVisible();
+      await expect(page.locator('button').filter({ hasText: /create database backup/i })).toBeVisible();
+
+      // Should see Data Export/Import section
+      await expect(page.locator('h2').filter({ hasText: /data export/i })).toBeVisible();
+      await expect(page.locator('button').filter({ hasText: /export data now/i })).toBeVisible();
+
+      // Should see Import and Validate buttons
+      await expect(page.locator('label, button').filter({ hasText: /validate file/i }).first()).toBeVisible();
+      await expect(page.locator('label, button').filter({ hasText: /import from file/i }).first()).toBeVisible();
+    });
+
+    test('admin can create database backup', async ({ page }) => {
+      await page.goto('/book/admin/backups');
+      await waitForPageReady(page);
+
+      // Click create database backup button
+      const createBtn = page.locator('button').filter({ hasText: /create database backup/i });
+      await expect(createBtn).toBeVisible();
+      await createBtn.click();
+
+      // Wait for backup to complete (button should show "Creating..." then reset)
+      // Or success message should appear
+      await page.waitForTimeout(2000);
+
+      // Should see success message or the backup in the list
+      const successOrTable = page.locator('.success-message, table.ds-table tbody tr').first();
+      await expect(successOrTable).toBeVisible({ timeout: 10000 });
+    });
+
+    test('admin can create data export', async ({ page }) => {
+      await page.goto('/book/admin/backups');
+      await waitForPageReady(page);
+
+      // Click export data button
+      const exportBtn = page.locator('button').filter({ hasText: /export data now/i });
+      await expect(exportBtn).toBeVisible();
+      await exportBtn.click();
+
+      // Wait for export to complete
+      await page.waitForTimeout(2000);
+
+      // Should see success message or the export in the history
+      const successOrTable = page.locator('.success-message, table tbody tr').first();
+      await expect(successOrTable).toBeVisible({ timeout: 10000 });
     });
 
     test('admin can access security settings', async ({ page }) => {

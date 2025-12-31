@@ -1,7 +1,7 @@
 from datetime import datetime, date, time
 from decimal import Decimal
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.models.staff_management import ShiftType, ShiftRole, WorkType, TimesheetStatus, LeaveType, LeaveStatus
 
@@ -35,8 +35,7 @@ class ShiftResponse(ShiftBase):
     staff_name: Optional[str] = None
     created_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Timesheet Schemas ==============
@@ -87,8 +86,7 @@ class TimesheetResponse(TimesheetBase):
     approved_by_name: Optional[str] = None
     total_hours: Optional[float] = None  # Computed field
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Holiday Request Schemas ==============
@@ -125,8 +123,7 @@ class HolidayRequestResponse(HolidayRequestBase):
     staff_name: Optional[str] = None
     approved_by_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Unplanned Absence Schemas ==============
@@ -166,8 +163,7 @@ class UnplannedAbsenceResponse(UnplannedAbsenceBase):
     staff_name: Optional[str] = None
     reported_to_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== List Schemas ==============
@@ -220,17 +216,98 @@ class StaffLeaveSummary(BaseModel):
     staff_id: int
     staff_name: str
     staff_type: Optional[str] = None  # regular, casual, on_call
-    annual_leave_entitlement: Optional[int] = None  # None for casual/on_call
+    annual_leave_entitlement: Optional[int] = None  # Full entitlement (None for casual/on_call)
+    prorata_entitlement: Optional[float] = None  # Pro-rata based on start/leaving date
     annual_leave_taken: float  # Days taken this year
-    annual_leave_remaining: Optional[float] = None  # None for casual/on_call
+    annual_leave_remaining: Optional[float] = None  # Based on pro-rata entitlement (None for casual/on_call)
     annual_leave_pending: float  # Days in pending requests
+    annual_leave_upcoming: float  # Days approved but not yet taken (future dates)
     unplanned_absences_this_year: int
 
 
 class AllStaffLeaveSummary(BaseModel):
     """Leave summary for all staff - viewable by staff and admin."""
     year: int
+    leave_year_start: str  # ISO date string for leave year start
+    leave_year_end: str  # ISO date string for leave year end
     staff_summaries: List[StaffLeaveSummary]
+
+
+# ============== Payroll Adjustment Schemas ==============
+
+class PayrollAdjustmentCreate(BaseModel):
+    """Create a payroll adjustment (bonus, ad-hoc, or tip)."""
+    staff_id: int
+    adjustment_type: str  # bonus, adhoc, tip
+    amount: float
+    description: str
+    payment_date: date
+    taxable: bool = True  # Tips are tax-free (False)
+    notes: Optional[str] = None
+
+
+class PayrollAdjustmentResponse(BaseModel):
+    """Payroll adjustment response."""
+    id: int
+    staff_id: int
+    adjustment_type: str
+    amount: float
+    description: str
+    payment_date: date
+    taxable: bool
+    notes: Optional[str] = None
+    created_by_id: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
+    staff_name: Optional[str] = None
+    created_by_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PayrollAdjustmentListResponse(BaseModel):
+    """List of payroll adjustments."""
+    adjustments: List[PayrollAdjustmentResponse]
+    total: int
+
+
+# ============== Payroll Summary Schemas ==============
+
+class PayrollAdjustmentSummary(BaseModel):
+    """Summary of adjustments for payroll period."""
+    bonus_total: float
+    adhoc_total: float
+    tips_total: float
+    taxable_adjustments: float
+    non_taxable_adjustments: float
+
+
+class StaffPayrollPeriod(BaseModel):
+    """Payroll for a single staff member in a period."""
+    staff_id: int
+    staff_name: str
+    staff_type: Optional[str] = None  # regular, casual, on_call
+    hourly_rate: Optional[float] = None
+    approved_hours: float
+    timesheet_count: int
+    base_pay: float  # approved_hours * hourly_rate
+    adjustments: PayrollAdjustmentSummary
+    total_pay: float  # base_pay + all adjustments
+    taxable_pay: float  # base_pay + taxable adjustments
+    non_taxable_pay: float  # tips
+
+
+class PayrollSummaryResponse(BaseModel):
+    """Payroll summary for all staff in a period - admin only."""
+    period_type: str  # "week" or "month"
+    period_start: date
+    period_end: date
+    period_label: str  # e.g., "Week 1, Jan 2025" or "January 2025"
+    staff_summaries: List[StaffPayrollPeriod]
+    total_approved_hours: float
+    total_base_pay: float
+    total_adjustments: float
+    total_pay: float
 
 
 # ============== Enum Info ==============
@@ -248,3 +325,47 @@ class StaffManagementEnums(BaseModel):
     leave_types: List[EnumInfo]
     leave_statuses: List[EnumInfo]
     staff_types: List[EnumInfo]
+
+
+# ============== Staff Thanks Schemas ==============
+
+class StaffThanksCreate(BaseModel):
+    """Create a thank you message to staff, optionally with a tip."""
+    staff_id: int
+    message: str
+    tip_amount: Optional[float] = None  # Optional tip in GBP
+
+
+class StaffThanksResponse(BaseModel):
+    """Staff thanks response."""
+    id: int
+    staff_id: int
+    sender_id: int
+    message: str
+    tip_amount: Optional[float] = None
+    tip_paid: bool
+    read_at: Optional[datetime] = None
+    created_at: datetime
+    staff_name: Optional[str] = None
+    sender_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StaffThanksListResponse(BaseModel):
+    """List of thanks messages."""
+    thanks: List[StaffThanksResponse]
+    total: int
+    unread_count: int
+
+
+class StaffThanksUnreadCount(BaseModel):
+    """Count of unread thanks messages for notifications."""
+    unread_count: int
+
+
+class TipPaymentIntentResponse(BaseModel):
+    """Response with Stripe PaymentIntent for processing tip."""
+    thanks_id: int
+    client_secret: str
+    amount: float

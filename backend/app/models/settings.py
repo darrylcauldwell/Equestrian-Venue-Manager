@@ -106,6 +106,17 @@ class SiteSettings(Base):
     # Turnout cutoff - date when staff triggered cutoff (prevents livery from cancelling)
     turnout_cutoff_date = Column(Date, nullable=True)
 
+    # Staff Leave Configuration
+    leave_year_start_month = Column(Integer, nullable=True, default=1)  # Month when leave year starts (1=Jan, 4=Apr for financial year)
+
+    # SSL/Domain Configuration (for Traefik/Let's Encrypt)
+    ssl_domain = Column(String(255), nullable=True)  # Primary domain (e.g., yard.example.com)
+    ssl_acme_email = Column(String(255), nullable=True)  # Email for Let's Encrypt notifications
+    ssl_enabled = Column(Boolean, default=False)  # Whether SSL is configured
+    ssl_traefik_dashboard_enabled = Column(Boolean, default=False)  # Enable Traefik dashboard
+    ssl_traefik_dashboard_user = Column(String(100), nullable=True)  # Dashboard basic auth username
+    ssl_traefik_dashboard_password_hash = Column(String(255), nullable=True)  # htpasswd hash for dashboard
+
     # Scheduler Configuration - times for automated background tasks
     # Health task generation (medications, wound care, health checks, rehab)
     scheduler_health_tasks_hour = Column(Integer, nullable=True, default=0)

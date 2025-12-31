@@ -36,6 +36,7 @@ from app.models.staff_management import Shift, Timesheet, HolidayRequest, Unplan
 from app.models.task import YardTask, TaskComment
 from app.models.turnout import TurnoutRequest
 from app.models.contract import ContractTemplate, ContractVersion, ContractSignature
+from app.models.staff_profile import StaffProfile
 from app.utils.auth import get_password_hash, create_access_token
 
 # Use DATABASE_URL from environment (for CI with PostgreSQL) or fall back to SQLite for local testing

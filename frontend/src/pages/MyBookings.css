@@ -119,7 +119,7 @@
 }
 
 .cancel-btn:hover {
-  background: #d32f2f;
+  background: var(--color-danger-hover);
 }
 
 /* Mobile Responsive */

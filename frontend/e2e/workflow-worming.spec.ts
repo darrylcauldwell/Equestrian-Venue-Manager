@@ -14,16 +14,35 @@ test.describe('Admin Worming Management', () => {
 
       // Open the nav menu
       const hamburgerBtn = page.locator('.hamburger-btn');
+      await expect(hamburgerBtn).toBeVisible({ timeout: 5000 });
       await hamburgerBtn.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(500);
 
-      // Open My Venue dropdown
+      // Dismiss any popups that might have appeared after menu opened
+      await dismissPopups(page);
+
+      // Open My Venue dropdown - this MUST be done to see the Worm Counts link
       const venueDropdown = page.locator('.nav-dropdown-trigger').filter({ hasText: 'My Venue' });
+      await expect(venueDropdown).toBeVisible({ timeout: 5000 });
       await venueDropdown.click();
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(500);
 
-      // Click Worm Counts link
-      const wormCountsLink = page.locator('a').filter({ hasText: 'Worm Counts' });
+      // Verify dropdown expanded by checking aria-expanded or that child link is now visible
+      // If the click didn't work (popup blocked it), retry
+      const wormCountsLink = page.locator('a[href*="worming"]').filter({ hasText: 'Worm Counts' });
+
+      // If link still not visible after 2s, try clicking dropdown again (may have been blocked)
+      if (!await wormCountsLink.isVisible({ timeout: 2000 })) {
+        await dismissPopups(page);
+        await venueDropdown.click({ force: true });
+        await page.waitForTimeout(500);
+      }
+
+      // Dismiss any popups that might have appeared after dropdown clicked
+      await dismissPopups(page);
+
+      // Now the link should be visible
+      await expect(wormCountsLink).toBeVisible({ timeout: 5000 });
       await wormCountsLink.click();
 
       await expect(page).toHaveURL('/book/admin/worming');

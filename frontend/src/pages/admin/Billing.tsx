@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { accountApi, liveryPackagesApi, billingApi } from '../../services/api';
 import { useRequestState, useModalForm } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Select, Textarea } from '../../components/ui';
@@ -172,23 +172,16 @@ export default function Billing() {
   const [runningBilling, setRunningBilling] = useState(false);
   const [showBillingConfirm, setShowBillingConfirm] = useState(false);
 
-  useEffect(() => {
-    loadAccounts();
-    loadReferenceData();
-    loadBillingMonths();
-    loadEnums();
-  }, []);
-
-  const loadEnums = async () => {
+  const loadEnums = useCallback(async () => {
     try {
       const data = await accountApi.getEnums();
       setEnums(data);
     } catch (err) {
       console.error('Failed to load enums:', err);
     }
-  };
+  }, []);
 
-  const loadAccounts = async () => {
+  const loadAccounts = useCallback(async () => {
     try {
       const data = await accountApi.listUserAccounts();
       setAccounts(data);
@@ -197,18 +190,18 @@ export default function Billing() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
 
-  const loadReferenceData = async () => {
+  const loadReferenceData = useCallback(async () => {
     try {
       const pkgs = await liveryPackagesApi.list();
       setPackages(pkgs);
     } catch (err) {
       console.error('Failed to load reference data:', err);
     }
-  };
+  }, []);
 
-  const loadBillingMonths = async () => {
+  const loadBillingMonths = useCallback(async () => {
     try {
       const months = await billingApi.getMonths();
       setBillingMonths(months);
@@ -220,7 +213,14 @@ export default function Billing() {
     } catch (err) {
       console.error('Failed to load billing months:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadAccounts();
+    loadReferenceData();
+    loadBillingMonths();
+    loadEnums();
+  }, [loadAccounts, loadReferenceData, loadBillingMonths, loadEnums]);
 
   const handlePreviewBilling = async () => {
     if (!selectedMonth) return;

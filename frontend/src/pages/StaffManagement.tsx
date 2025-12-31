@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { staffApi, usersApi } from '../services/api';
 import type {
@@ -21,12 +22,14 @@ import type {
   LeaveType,
   AbsenceReason,
   AllStaffLeaveSummary,
+  PayrollSummaryResponse,
+  PayrollAdjustmentCreate,
 } from '../types';
 import { useModalForm } from '../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Select, Textarea } from '../components/ui';
 import './StaffManagement.css';
 
-type TabType = 'shifts' | 'timesheets' | 'holidays' | 'sick' | 'leave';
+type TabType = 'shifts' | 'timesheets' | 'holidays' | 'sick' | 'leave' | 'payroll';
 type ShiftsViewType = 'list' | 'calendar';
 
 // Helper to get start of week (Monday)
@@ -64,8 +67,33 @@ const formatDayHeader = (date: Date): string => {
 export default function StaffManagement() {
   const { user, isAdmin } = useAuth();
   const isManager = user?.role === 'admin';
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<TabType>('shifts');
+  // Read initial tab from URL or default to 'shifts'
+  const getInitialTab = (): TabType => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['shifts', 'timesheets', 'holidays', 'sick', 'leave', 'payroll'].includes(tabParam)) {
+      return tabParam as TabType;
+    }
+    return 'shifts';
+  };
+
+  const [activeTab, setActiveTab] = useState<TabType>(getInitialTab);
+
+  // Update URL when tab changes
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
+
+  // React to URL changes (e.g., navigation from menu links)
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['shifts', 'timesheets', 'holidays', 'sick', 'leave', 'payroll'].includes(tabParam)) {
+      setActiveTab(tabParam as TabType);
+    }
+  }, [searchParams]);
+
   const [enums, setEnums] = useState<StaffManagementEnums | null>(null);
   const [staffList, setStaffList] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,6 +124,13 @@ export default function StaffManagement() {
   // Leave summary state
   const [leaveSummary, setLeaveSummary] = useState<AllStaffLeaveSummary | null>(null);
   const [leaveYear, setLeaveYear] = useState<number>(new Date().getFullYear());
+
+  // Payroll state
+  const [payrollSummary, setPayrollSummary] = useState<PayrollSummaryResponse | null>(null);
+  const [payrollPeriodType, setPayrollPeriodType] = useState<'week' | 'month'>('month');
+  const [payrollYear, setPayrollYear] = useState<number>(new Date().getFullYear());
+  const [payrollMonth, setPayrollMonth] = useState<number>(new Date().getMonth() + 1);
+  const [payrollWeek, setPayrollWeek] = useState<number | undefined>(undefined);
 
   // Delete confirmations
   const [deleteShiftId, setDeleteShiftId] = useState<number | null>(null);
@@ -183,13 +218,23 @@ export default function StaffManagement() {
           setLeaveSummary(leaveData);
           break;
         }
+        case 'payroll': {
+          const payrollData = await staffApi.getPayrollSummary(
+            payrollPeriodType,
+            payrollYear,
+            payrollMonth,
+            payrollWeek
+          );
+          setPayrollSummary(payrollData);
+          break;
+        }
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  }, [activeTab, leaveYear]);
+  }, [activeTab, leaveYear, payrollPeriodType, payrollYear, payrollMonth, payrollWeek]);
 
   useEffect(() => {
     loadInitialData();
@@ -527,34 +572,42 @@ export default function StaffManagement() {
       <div className="staff-tabs">
         <button
           className={`ds-tab ${activeTab === 'shifts' ? 'active' : ''}`}
-          onClick={() => setActiveTab('shifts')}
+          onClick={() => handleTabChange('shifts')}
         >
           Shifts
         </button>
         <button
           className={`ds-tab ${activeTab === 'timesheets' ? 'active' : ''}`}
-          onClick={() => setActiveTab('timesheets')}
+          onClick={() => handleTabChange('timesheets')}
         >
           Timesheets
         </button>
         <button
           className={`ds-tab ${activeTab === 'holidays' ? 'active' : ''}`}
-          onClick={() => setActiveTab('holidays')}
+          onClick={() => handleTabChange('holidays')}
         >
           Holidays
         </button>
         <button
           className={`ds-tab ${activeTab === 'sick' ? 'active' : ''}`}
-          onClick={() => setActiveTab('sick')}
+          onClick={() => handleTabChange('sick')}
         >
           Unplanned Absences
         </button>
         {isManager && (
           <button
             className={`ds-tab ${activeTab === 'leave' ? 'active' : ''}`}
-            onClick={() => setActiveTab('leave')}
+            onClick={() => handleTabChange('leave')}
           >
             Leave Summary
+          </button>
+        )}
+        {isManager && (
+          <button
+            className={`ds-tab ${activeTab === 'payroll' ? 'active' : ''}`}
+            onClick={() => handleTabChange('payroll')}
+          >
+            Payroll
           </button>
         )}
       </div>
@@ -641,6 +694,24 @@ export default function StaffManagement() {
           leaveSummary={leaveSummary}
           leaveYear={leaveYear}
           setLeaveYear={setLeaveYear}
+        />
+      )}
+
+      {/* Payroll Tab (Admin only) */}
+      {activeTab === 'payroll' && isManager && (
+        <PayrollTab
+          payrollSummary={payrollSummary}
+          periodType={payrollPeriodType}
+          setPeriodType={setPayrollPeriodType}
+          year={payrollYear}
+          setYear={setPayrollYear}
+          month={payrollMonth}
+          setMonth={setPayrollMonth}
+          week={payrollWeek}
+          setWeek={setPayrollWeek}
+          loading={loading}
+          staffList={staffList}
+          loadTabData={loadTabData}
         />
       )}
 
@@ -1638,6 +1709,349 @@ function LeaveSummaryTab({
           <span className="legend-box absence-high"></span> High absences (&gt; 3)
         </span>
       </div>
+    </div>
+  );
+}
+
+interface PayrollTabProps {
+  payrollSummary: PayrollSummaryResponse | null;
+  periodType: 'week' | 'month';
+  setPeriodType: (type: 'week' | 'month') => void;
+  year: number;
+  setYear: (year: number) => void;
+  month: number;
+  setMonth: (month: number) => void;
+  week: number | undefined;
+  setWeek: (week: number | undefined) => void;
+  loading: boolean;
+  staffList: User[];
+  loadTabData: () => void;
+}
+
+function PayrollTab({
+  payrollSummary,
+  periodType,
+  setPeriodType,
+  year,
+  setYear,
+  month,
+  setMonth,
+  week,
+  setWeek,
+  loading,
+  staffList,
+  loadTabData,
+}: PayrollTabProps) {
+  const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
+  const [adjustmentForm, setAdjustmentForm] = useState<PayrollAdjustmentCreate>({
+    staff_id: 0,
+    adjustment_type: 'bonus',
+    amount: 0,
+    description: '',
+    payment_date: new Date().toISOString().split('T')[0],
+    taxable: true,
+  });
+  const [adjustmentError, setAdjustmentError] = useState('');
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const handleCreateAdjustment = async () => {
+    try {
+      setAdjustmentError('');
+      if (!adjustmentForm.staff_id) {
+        setAdjustmentError('Please select a staff member');
+        return;
+      }
+      if (!adjustmentForm.amount || adjustmentForm.amount <= 0) {
+        setAdjustmentError('Please enter a valid amount');
+        return;
+      }
+      if (!adjustmentForm.description.trim()) {
+        setAdjustmentError('Please enter a description');
+        return;
+      }
+      await staffApi.createPayrollAdjustment(adjustmentForm);
+      setShowAdjustmentModal(false);
+      setAdjustmentForm({
+        staff_id: 0,
+        adjustment_type: 'bonus',
+        amount: 0,
+        description: '',
+        payment_date: new Date().toISOString().split('T')[0],
+        taxable: true,
+      });
+      loadTabData();
+    } catch {
+      setAdjustmentError('Failed to create adjustment');
+    }
+  };
+
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+    }).format(amount);
+  };
+
+  // Generate week options for the year (ISO weeks 1-52/53)
+  const getWeekOptions = () => {
+    const weeks: { value: number; label: string }[] = [];
+    // Calculate number of weeks in year from last day
+    const lastDay = new Date(year, 11, 31);
+    const lastWeek = getISOWeek(lastDay);
+    const maxWeeks = lastWeek === 1 ? 52 : lastWeek;
+
+    for (let i = 1; i <= maxWeeks; i++) {
+      weeks.push({ value: i, label: `Week ${i}` });
+    }
+    return weeks;
+  };
+
+  // Get ISO week number
+  const getISOWeek = (date: Date): number => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  };
+
+  return (
+    <div className="payroll-view">
+      <div className="payroll-toolbar">
+        <div className="period-selector">
+          <select
+            value={periodType}
+            onChange={(e) => setPeriodType(e.target.value as 'week' | 'month')}
+            className="period-type-select"
+          >
+            <option value="month">Monthly</option>
+            <option value="week">Weekly</option>
+          </select>
+
+          <select
+            value={year}
+            onChange={(e) => setYear(parseInt(e.target.value))}
+            className="year-select"
+          >
+            {[year - 1, year, year + 1].map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+
+          {periodType === 'month' ? (
+            <select
+              value={month}
+              onChange={(e) => setMonth(parseInt(e.target.value))}
+              className="month-select"
+            >
+              {monthNames.map((name, idx) => (
+                <option key={idx + 1} value={idx + 1}>{name}</option>
+              ))}
+            </select>
+          ) : (
+            <select
+              value={week || getISOWeek(new Date())}
+              onChange={(e) => setWeek(parseInt(e.target.value))}
+              className="week-select"
+            >
+              {getWeekOptions().map(w => (
+                <option key={w.value} value={w.value}>{w.label}</option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        <button
+          className="ds-btn ds-btn-primary"
+          onClick={() => setShowAdjustmentModal(true)}
+        >
+          Add Adjustment
+        </button>
+      </div>
+
+      {loading && <div className="ds-loading">Loading payroll data...</div>}
+
+      {!loading && payrollSummary && (
+        <>
+          <div className="payroll-header">
+            <h3>{payrollSummary.period_label}</h3>
+            <span className="period-dates">
+              {new Date(payrollSummary.period_start).toLocaleDateString()} - {new Date(payrollSummary.period_end).toLocaleDateString()}
+            </span>
+          </div>
+
+          <div className="payroll-summary-cards">
+            <div className="summary-card">
+              <div className="summary-value">{payrollSummary.total_approved_hours.toFixed(1)}</div>
+              <div className="summary-label">Total Hours</div>
+            </div>
+            <div className="summary-card">
+              <div className="summary-value">{formatCurrency(payrollSummary.total_base_pay)}</div>
+              <div className="summary-label">Base Pay</div>
+            </div>
+            <div className="summary-card">
+              <div className="summary-value">{formatCurrency(payrollSummary.total_adjustments)}</div>
+              <div className="summary-label">Adjustments</div>
+            </div>
+            <div className="summary-card highlight">
+              <div className="summary-value">{formatCurrency(payrollSummary.total_pay)}</div>
+              <div className="summary-label">Total Pay</div>
+            </div>
+          </div>
+
+          <div className="data-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff</th>
+                  <th>Type</th>
+                  <th>Rate</th>
+                  <th>Hours</th>
+                  <th>Base Pay</th>
+                  <th>Bonus</th>
+                  <th>Ad-hoc</th>
+                  <th>Tips</th>
+                  <th>Taxable</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payrollSummary.staff_summaries.map((s) => (
+                  <tr key={s.staff_id}>
+                    <td><strong>{s.staff_name}</strong></td>
+                    <td>{s.staff_type || '-'}</td>
+                    <td>{s.hourly_rate ? formatCurrency(s.hourly_rate) : '-'}</td>
+                    <td>{s.approved_hours.toFixed(1)}</td>
+                    <td>{formatCurrency(s.base_pay)}</td>
+                    <td>{s.adjustments.bonus_total > 0 ? formatCurrency(s.adjustments.bonus_total) : '-'}</td>
+                    <td>{s.adjustments.adhoc_total > 0 ? formatCurrency(s.adjustments.adhoc_total) : '-'}</td>
+                    <td className={s.adjustments.tips_total > 0 ? 'tips-highlight' : ''}>
+                      {s.adjustments.tips_total > 0 ? formatCurrency(s.adjustments.tips_total) : '-'}
+                    </td>
+                    <td>{formatCurrency(s.taxable_pay)}</td>
+                    <td><strong>{formatCurrency(s.total_pay)}</strong></td>
+                  </tr>
+                ))}
+                {payrollSummary.staff_summaries.length === 0 && (
+                  <tr><td colSpan={10} className="empty">No payroll data for this period</td></tr>
+                )}
+              </tbody>
+              {payrollSummary.staff_summaries.length > 0 && (
+                <tfoot>
+                  <tr>
+                    <td colSpan={3}><strong>Totals</strong></td>
+                    <td><strong>{payrollSummary.total_approved_hours.toFixed(1)}</strong></td>
+                    <td><strong>{formatCurrency(payrollSummary.total_base_pay)}</strong></td>
+                    <td colSpan={3}><strong>{formatCurrency(payrollSummary.total_adjustments)}</strong></td>
+                    <td>-</td>
+                    <td><strong>{formatCurrency(payrollSummary.total_pay)}</strong></td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+
+          <div className="payroll-notes">
+            <p><strong>Note:</strong> Tips are shown separately as they are tax-free. Taxable pay includes base pay plus taxable adjustments (bonuses, ad-hoc payments).</p>
+          </div>
+        </>
+      )}
+
+      {/* Add Adjustment Modal */}
+      <Modal
+        isOpen={showAdjustmentModal}
+        onClose={() => setShowAdjustmentModal(false)}
+        title="Add Payroll Adjustment"
+        footer={
+          <>
+            <button className="ds-btn ds-btn-secondary" onClick={() => setShowAdjustmentModal(false)}>Cancel</button>
+            <button className="ds-btn ds-btn-primary" onClick={handleCreateAdjustment}>Add Adjustment</button>
+          </>
+        }
+      >
+        {adjustmentError && <div className="ds-alert ds-alert-error">{adjustmentError}</div>}
+
+        <FormGroup label="Staff Member" required>
+          <Select
+            value={adjustmentForm.staff_id}
+            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, staff_id: parseInt(e.target.value) })}
+            required
+          >
+            <option value={0}>Select staff...</option>
+            {staffList.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </Select>
+        </FormGroup>
+
+        <FormRow>
+          <FormGroup label="Type" required>
+            <Select
+              value={adjustmentForm.adjustment_type}
+              onChange={(e) => {
+                const type = e.target.value as 'bonus' | 'adhoc' | 'tip';
+                setAdjustmentForm({
+                  ...adjustmentForm,
+                  adjustment_type: type,
+                  taxable: type !== 'tip', // Tips are tax-free
+                });
+              }}
+              required
+            >
+              <option value="bonus">Bonus</option>
+              <option value="adhoc">Ad-hoc Payment</option>
+              <option value="tip">Tip (Tax-free)</option>
+            </Select>
+          </FormGroup>
+          <FormGroup label="Amount (£)" required>
+            <Input
+              type="number"
+              min={0}
+              step={0.01}
+              value={adjustmentForm.amount || ''}
+              onChange={(e) => setAdjustmentForm({ ...adjustmentForm, amount: parseFloat(e.target.value) || 0 })}
+              required
+            />
+          </FormGroup>
+        </FormRow>
+
+        <FormGroup label="Payment Date" required>
+          <Input
+            type="date"
+            value={adjustmentForm.payment_date}
+            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, payment_date: e.target.value })}
+            required
+          />
+        </FormGroup>
+
+        <FormGroup label="Description" required>
+          <Input
+            type="text"
+            value={adjustmentForm.description}
+            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, description: e.target.value })}
+            placeholder="e.g., Christmas bonus, Event overtime, Tip from John Smith"
+            required
+          />
+        </FormGroup>
+
+        <FormGroup label="Notes">
+          <Textarea
+            value={adjustmentForm.notes || ''}
+            onChange={(e) => setAdjustmentForm({ ...adjustmentForm, notes: e.target.value })}
+            rows={2}
+          />
+        </FormGroup>
+
+        {adjustmentForm.adjustment_type === 'tip' && (
+          <div className="ds-alert ds-alert-info">
+            Tips are recorded as tax-free income and will appear separately on staff payslips.
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

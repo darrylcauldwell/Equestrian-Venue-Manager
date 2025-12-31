@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { holidayLiveryApi, stablesApi } from '../../services/api';
 import { useRequestState, useModalForm } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, Input, Select, Textarea } from '../../components/ui';
@@ -54,11 +54,7 @@ export function AdminHolidayLiveryRequests() {
   // Cancel confirmation
   const [cancelTarget, setCancelTarget] = useState<HolidayLiveryRequestSummary | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [requestsData, stablesData, statsData] = await Promise.all([
         holidayLiveryApi.list(),
@@ -73,7 +69,11 @@ export function AdminHolidayLiveryRequests() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const formatDate = (dateStr: string) => {
     return format(new Date(dateStr), 'dd MMM yyyy');

@@ -1,0 +1,181 @@
+.thanks-notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.thanks-notification-popup {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.thanks-notification-popup .popup-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.thanks-notification-popup .popup-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.thanks-notification-popup .popup-icon.thank-you {
+  background: linear-gradient(135deg, var(--color-pink), var(--color-error));
+}
+
+.thanks-notification-popup .popup-header h2 {
+  flex: 1;
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.thanks-notification-popup .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-2);
+  line-height: 1;
+}
+
+.thanks-notification-popup .close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Thanks Preview */
+.thanks-preview {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.sender-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.sender-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: var(--text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+}
+
+.sender-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.sender-details strong {
+  color: var(--text-primary);
+}
+
+.thanks-date {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.thanks-message {
+  margin: 0;
+  font-style: italic;
+  color: var(--text-primary);
+  line-height: var(--line-height-relaxed);
+}
+
+.tip-included {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
+}
+
+.tip-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.tip-amount {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+/* More Thanks */
+.more-thanks {
+  text-align: center;
+  margin: 0 0 var(--space-4) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* Actions */
+.popup-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .thanks-notification-popup {
+    padding: var(--space-4);
+  }
+
+  .popup-actions {
+    flex-direction: column;
+  }
+
+  .popup-actions .ds-btn {
+    width: 100%;
+  }
+}

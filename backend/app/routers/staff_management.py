@@ -2,17 +2,21 @@ import logging
 from typing import Optional
 from datetime import datetime, date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 
 logger = logging.getLogger(__name__)
 
+from calendar import monthrange
 from app.database import get_db
 from app.models.staff_management import (
-    Shift, Timesheet, HolidayRequest, UnplannedAbsence,
-    ShiftType, ShiftRole, WorkType, TimesheetStatus, LeaveType, LeaveStatus
+    Shift, Timesheet, HolidayRequest, UnplannedAbsence, PayrollAdjustment, StaffThanks,
+    ShiftType, ShiftRole, WorkType, TimesheetStatus, LeaveType, LeaveStatus, PayrollAdjustmentType
 )
+from app.models.staff_profile import StaffProfile
 from app.models.user import User, UserRole, StaffType
+from app.models.settings import SiteSettings
 from app.utils.auth import has_staff_access
 from app.schemas.staff_management import (
     ShiftCreate, ShiftUpdate, ShiftResponse, ShiftsListResponse,
@@ -21,7 +25,10 @@ from app.schemas.staff_management import (
     HolidayRequestCreate, HolidayRequestUpdate, HolidayRequestResponse, HolidayRequestsListResponse,
     UnplannedAbsenceCreate, UnplannedAbsenceUpdate, UnplannedAbsenceResponse, UnplannedAbsenceListResponse,
     StaffSummary, ManagerDashboard, StaffManagementEnums, EnumInfo,
-    StaffLeaveSummary, AllStaffLeaveSummary
+    StaffLeaveSummary, AllStaffLeaveSummary,
+    PayrollAdjustmentCreate, PayrollAdjustmentResponse, PayrollAdjustmentListResponse,
+    PayrollAdjustmentSummary, StaffPayrollPeriod, PayrollSummaryResponse,
+    StaffThanksCreate, StaffThanksResponse, StaffThanksListResponse, StaffThanksUnreadCount
 )
 from app.utils.auth import get_current_user
 
@@ -857,6 +864,69 @@ def update_unplanned_absence(
 
 # ============== Staff Leave Summary (viewable by all staff) ==============
 
+def get_leave_year_dates(year: int, start_month: int) -> tuple:
+    """Get leave year start and end dates based on start month.
+
+    Args:
+        year: The year to calculate for (represents the year the leave year starts in)
+        start_month: Month when leave year starts (1=January, 4=April, etc.)
+
+    Returns:
+        Tuple of (start_date, end_date)
+    """
+    if start_month == 1:
+        # Calendar year: Jan 1 - Dec 31 of the same year
+        return date(year, 1, 1), date(year, 12, 31)
+    else:
+        # e.g., April start: Apr 1 year -> Mar 31 year+1
+        start_date = date(year, start_month, 1)
+        # End date is day before start_month in the next year
+        end_date = date(year + 1, start_month, 1) - timedelta(days=1)
+        return start_date, end_date
+
+
+def calculate_prorata_entitlement(
+    full_entitlement: int,
+    leave_year_start: date,
+    leave_year_end: date,
+    staff_start_date: Optional[date],
+    staff_leaving_date: Optional[date]
+) -> float:
+    """Calculate pro-rata entitlement based on service within leave year.
+
+    Args:
+        full_entitlement: Full annual leave entitlement (days)
+        leave_year_start: Start date of the leave year
+        leave_year_end: End date of the leave year
+        staff_start_date: Date staff member started employment
+        staff_leaving_date: Date staff member is leaving (or None)
+
+    Returns:
+        Pro-rata entitlement rounded to 1 decimal place
+    """
+    # Determine effective start (later of leave year start or staff start)
+    effective_start = leave_year_start
+    if staff_start_date and staff_start_date > leave_year_start:
+        effective_start = staff_start_date
+
+    # Determine effective end (earlier of leave year end or leaving date)
+    effective_end = leave_year_end
+    if staff_leaving_date and staff_leaving_date < leave_year_end:
+        effective_end = staff_leaving_date
+
+    # If staff not active during this leave year
+    if effective_start > effective_end:
+        return 0.0
+
+    # Calculate days worked vs total days in year
+    total_days_in_year = (leave_year_end - leave_year_start).days + 1
+    days_worked = (effective_end - effective_start).days + 1
+
+    # Pro-rata calculation
+    prorata = (days_worked / total_days_in_year) * full_entitlement
+    return round(prorata, 1)  # Round to 1 decimal for half-days
+
+
 @router.get("/leave-summary", response_model=AllStaffLeaveSummary)
 def get_all_staff_leave_summary(
     year: Optional[int] = None,
@@ -866,21 +936,41 @@ def get_all_staff_leave_summary(
     """Get leave summary for all staff - viewable by staff and admin."""
     require_staff(current_user)
 
-    if year is None:
-        year = date.today().year
+    # Get leave year configuration from settings
+    settings = db.query(SiteSettings).first()
+    leave_year_start_month = settings.leave_year_start_month if settings else 1
 
-    year_start = date(year, 1, 1)
-    year_end = date(year, 12, 31)
+    # Determine which leave year to show
+    today = date.today()
+    if year is None:
+        # Default to current leave year
+        if leave_year_start_month == 1:
+            year = today.year
+        else:
+            # For non-calendar year, determine which leave year we're in
+            if today.month >= leave_year_start_month:
+                year = today.year
+            else:
+                year = today.year - 1
+
+    # Calculate leave year boundaries
+    year_start, year_end = get_leave_year_dates(year, leave_year_start_month)
 
     # Get all users with yard staff access (admin or is_yard_staff flag)
-    staff_users = db.query(User).filter(
+    staff_users = db.query(User).outerjoin(
+        StaffProfile, User.id == StaffProfile.user_id
+    ).filter(
         (User.role == UserRole.ADMIN) | (User.is_yard_staff == True),
         User.is_active == True
     ).all()
 
     summaries = []
     for user in staff_users:
-        # Calculate annual leave taken (approved holiday requests this year)
+        # Get staff start date from profile
+        profile = db.query(StaffProfile).filter(StaffProfile.user_id == user.id).first()
+        staff_start_date = profile.start_date if profile else None
+
+        # Calculate annual leave taken (approved holiday requests this leave year)
         annual_leave_taken = db.query(func.coalesce(func.sum(HolidayRequest.days_requested), 0)).filter(
             HolidayRequest.staff_id == user.id,
             HolidayRequest.status == LeaveStatus.APPROVED,
@@ -898,7 +988,17 @@ def get_all_staff_leave_summary(
             HolidayRequest.start_date <= year_end
         ).scalar() or 0
 
-        # Count unplanned absences this year
+        # Calculate upcoming approved leave (approved but not yet taken - future dates)
+        annual_leave_upcoming = db.query(func.coalesce(func.sum(HolidayRequest.days_requested), 0)).filter(
+            HolidayRequest.staff_id == user.id,
+            HolidayRequest.status == LeaveStatus.APPROVED,
+            HolidayRequest.leave_type == LeaveType.ANNUAL,
+            HolidayRequest.start_date > today,  # Only future dates
+            HolidayRequest.start_date >= year_start,
+            HolidayRequest.start_date <= year_end
+        ).scalar() or 0
+
+        # Count unplanned absences this leave year
         unplanned_absences = db.query(UnplannedAbsence).filter(
             UnplannedAbsence.staff_id == user.id,
             UnplannedAbsence.date >= year_start,
@@ -911,25 +1011,673 @@ def get_all_staff_leave_summary(
         is_regular = user.staff_type in [None, StaffType.REGULAR]
 
         if is_regular:
-            entitlement = user.annual_leave_entitlement or 28
-            remaining = float(entitlement - float(annual_leave_taken))
+            full_entitlement = user.annual_leave_entitlement or 23
+            # Calculate pro-rata entitlement
+            prorata = calculate_prorata_entitlement(
+                full_entitlement,
+                year_start,
+                year_end,
+                staff_start_date,
+                user.leaving_date
+            )
+            remaining = float(prorata - float(annual_leave_taken))
         else:
             # Casual/on-call staff - no fixed entitlement
-            entitlement = None
+            full_entitlement = None
+            prorata = None
             remaining = None
 
         summaries.append(StaffLeaveSummary(
             staff_id=user.id,
             staff_name=user.name,
             staff_type=staff_type,
-            annual_leave_entitlement=entitlement,
+            annual_leave_entitlement=full_entitlement,
+            prorata_entitlement=prorata,
             annual_leave_taken=float(annual_leave_taken),
             annual_leave_remaining=remaining,
             annual_leave_pending=float(annual_leave_pending),
+            annual_leave_upcoming=float(annual_leave_upcoming),
             unplanned_absences_this_year=unplanned_absences
         ))
 
     return AllStaffLeaveSummary(
         year=year,
+        leave_year_start=year_start.isoformat(),
+        leave_year_end=year_end.isoformat(),
         staff_summaries=summaries
+    )
+
+
+# ============== Payroll Endpoints ==============
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Require admin role for payroll operations."""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return current_user
+
+
+@router.get("/payroll-summary", response_model=PayrollSummaryResponse)
+def get_payroll_summary(
+    period_type: str = "month",  # "week" or "month"
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    week: Optional[int] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Get payroll summary for a period (admin only).
+
+    Shows approved hours, hourly rates, adjustments, and calculated pay for all staff.
+    """
+    today = date.today()
+    year = year or today.year
+    month = month or today.month
+
+    # Calculate period date range
+    if period_type == "week":
+        if week:
+            # Get the Monday of the specified ISO week
+            jan4 = date(year, 1, 4)
+            start_of_year = jan4 - timedelta(days=jan4.weekday())
+            period_start = start_of_year + timedelta(weeks=week - 1)
+        else:
+            # Current week
+            period_start = today - timedelta(days=today.weekday())
+        period_end = period_start + timedelta(days=6)
+        period_label = f"Week {period_start.isocalendar()[1]}, {period_start.strftime('%b %Y')}"
+    else:  # month
+        period_start = date(year, month, 1)
+        _, last_day = monthrange(year, month)
+        period_end = date(year, month, last_day)
+        period_label = period_start.strftime("%B %Y")
+
+    # Get all staff users
+    staff_users = db.query(User).filter(
+        (User.role == UserRole.STAFF) | (User.is_yard_staff == True),
+        User.is_active == True
+    ).all()
+
+    staff_summaries = []
+    total_hours = 0.0
+    total_base_pay = 0.0
+    total_adjustments_amount = 0.0
+    total_pay_amount = 0.0
+
+    for user in staff_users:
+        # Get staff profile for hourly rate
+        profile = db.query(StaffProfile).filter(StaffProfile.user_id == user.id).first()
+        hourly_rate = float(profile.hourly_rate) if profile and profile.hourly_rate else 0.0
+        staff_type = user.staff_type.value if user.staff_type else None
+
+        # Calculate approved hours
+        timesheets = db.query(Timesheet).filter(
+            Timesheet.staff_id == user.id,
+            Timesheet.status == TimesheetStatus.APPROVED,
+            Timesheet.date >= period_start,
+            Timesheet.date <= period_end
+        ).all()
+
+        approved_hours = 0.0
+        for ts in timesheets:
+            if ts.clock_out:
+                hours = calculate_hours(ts.clock_in, ts.clock_out, ts.break_minutes)
+                approved_hours += hours
+
+        timesheet_count = len(timesheets)
+        base_pay = approved_hours * hourly_rate
+
+        # Get adjustments for this period
+        adjustments = db.query(PayrollAdjustment).filter(
+            PayrollAdjustment.staff_id == user.id,
+            PayrollAdjustment.payment_date >= period_start,
+            PayrollAdjustment.payment_date <= period_end
+        ).all()
+
+        bonus_total = sum(float(a.amount) for a in adjustments if a.adjustment_type == PayrollAdjustmentType.BONUS)
+        adhoc_total = sum(float(a.amount) for a in adjustments if a.adjustment_type == PayrollAdjustmentType.ADHOC)
+        tips_total = sum(float(a.amount) for a in adjustments if a.adjustment_type == PayrollAdjustmentType.TIP)
+        taxable_adj = sum(float(a.amount) for a in adjustments if a.taxable)
+        non_taxable_adj = sum(float(a.amount) for a in adjustments if not a.taxable)
+
+        adjustment_summary = PayrollAdjustmentSummary(
+            bonus_total=bonus_total,
+            adhoc_total=adhoc_total,
+            tips_total=tips_total,
+            taxable_adjustments=taxable_adj,
+            non_taxable_adjustments=non_taxable_adj
+        )
+
+        staff_total_pay = base_pay + bonus_total + adhoc_total + tips_total
+        taxable_pay = base_pay + taxable_adj
+        non_taxable_pay = non_taxable_adj
+
+        staff_summaries.append(StaffPayrollPeriod(
+            staff_id=user.id,
+            staff_name=user.name,
+            staff_type=staff_type,
+            hourly_rate=hourly_rate,
+            approved_hours=approved_hours,
+            timesheet_count=timesheet_count,
+            base_pay=base_pay,
+            adjustments=adjustment_summary,
+            total_pay=staff_total_pay,
+            taxable_pay=taxable_pay,
+            non_taxable_pay=non_taxable_pay
+        ))
+
+        total_hours += approved_hours
+        total_base_pay += base_pay
+        total_adjustments_amount += bonus_total + adhoc_total + tips_total
+        total_pay_amount += staff_total_pay
+
+    return PayrollSummaryResponse(
+        period_type=period_type,
+        period_start=period_start,
+        period_end=period_end,
+        period_label=period_label,
+        staff_summaries=staff_summaries,
+        total_approved_hours=total_hours,
+        total_base_pay=total_base_pay,
+        total_adjustments=total_adjustments_amount,
+        total_pay=total_pay_amount
+    )
+
+
+@router.post("/payroll-adjustments", response_model=PayrollAdjustmentResponse, status_code=status.HTTP_201_CREATED)
+def create_payroll_adjustment(
+    data: PayrollAdjustmentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Create a payroll adjustment (bonus, ad-hoc payment, or tip)."""
+    # Verify staff exists
+    staff = db.query(User).filter(User.id == data.staff_id).first()
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+
+    adjustment = PayrollAdjustment(
+        staff_id=data.staff_id,
+        adjustment_type=PayrollAdjustmentType(data.adjustment_type),
+        amount=data.amount,
+        description=data.description,
+        payment_date=data.payment_date,
+        taxable=data.taxable,
+        notes=data.notes,
+        created_by_id=current_user.id,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    db.add(adjustment)
+    db.commit()
+    db.refresh(adjustment)
+
+    return PayrollAdjustmentResponse(
+        id=adjustment.id,
+        staff_id=adjustment.staff_id,
+        adjustment_type=adjustment.adjustment_type.value,
+        amount=float(adjustment.amount),
+        description=adjustment.description,
+        payment_date=adjustment.payment_date,
+        taxable=adjustment.taxable,
+        notes=adjustment.notes,
+        created_by_id=adjustment.created_by_id,
+        created_at=adjustment.created_at,
+        updated_at=adjustment.updated_at,
+        staff_name=staff.name,
+        created_by_name=current_user.name
+    )
+
+
+@router.get("/payroll-adjustments", response_model=PayrollAdjustmentListResponse)
+def list_payroll_adjustments(
+    staff_id: Optional[int] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    adjustment_type: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """List payroll adjustments with optional filters."""
+    query = db.query(PayrollAdjustment)
+
+    if staff_id:
+        query = query.filter(PayrollAdjustment.staff_id == staff_id)
+    if start_date:
+        query = query.filter(PayrollAdjustment.payment_date >= start_date)
+    if end_date:
+        query = query.filter(PayrollAdjustment.payment_date <= end_date)
+    if adjustment_type:
+        query = query.filter(PayrollAdjustment.adjustment_type == PayrollAdjustmentType(adjustment_type))
+
+    query = query.order_by(PayrollAdjustment.payment_date.desc())
+    adjustments = query.all()
+
+    # Enrich with names
+    results = []
+    for adj in adjustments:
+        staff = db.query(User).filter(User.id == adj.staff_id).first()
+        created_by = db.query(User).filter(User.id == adj.created_by_id).first() if adj.created_by_id else None
+
+        results.append(PayrollAdjustmentResponse(
+            id=adj.id,
+            staff_id=adj.staff_id,
+            adjustment_type=adj.adjustment_type.value,
+            amount=float(adj.amount),
+            description=adj.description,
+            payment_date=adj.payment_date,
+            taxable=adj.taxable,
+            notes=adj.notes,
+            created_by_id=adj.created_by_id,
+            created_at=adj.created_at,
+            updated_at=adj.updated_at,
+            staff_name=staff.name if staff else None,
+            created_by_name=created_by.name if created_by else None
+        ))
+
+    return PayrollAdjustmentListResponse(
+        adjustments=results,
+        total=len(results)
+    )
+
+
+@router.delete("/payroll-adjustments/{adjustment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_payroll_adjustment(
+    adjustment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Delete a payroll adjustment."""
+    adjustment = db.query(PayrollAdjustment).filter(PayrollAdjustment.id == adjustment_id).first()
+    if not adjustment:
+        raise HTTPException(status_code=404, detail="Adjustment not found")
+
+    db.delete(adjustment)
+    db.commit()
+    return None
+
+
+# ============== Staff Thanks Endpoints ==============
+
+def require_livery(current_user: User):
+    """Require user to be a livery owner."""
+    if current_user.role != UserRole.LIVERY and current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Livery owner access required"
+        )
+    return current_user
+
+
+@router.get("/thanks/staff-list", response_model=list)
+def get_staff_for_thanks(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get list of staff members that can receive thanks (for livery owners)."""
+    require_livery(current_user)
+
+    # Get all users who are yard staff
+    staff = db.query(User).filter(
+        User.is_yard_staff == True,
+        User.is_active == True
+    ).all()
+
+    return [{"id": s.id, "name": s.name} for s in staff]
+
+
+@router.post("/thanks", response_model=StaffThanksResponse)
+def send_thanks(
+    thanks_data: StaffThanksCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Send a thank you message to a staff member, optionally with a tip.
+
+    If a tip is included, tip_paid will be False until payment is completed via Stripe.
+    """
+    require_livery(current_user)
+
+    # Verify the recipient is a valid staff member
+    recipient = db.query(User).filter(
+        User.id == thanks_data.staff_id,
+        User.is_yard_staff == True,
+        User.is_active == True
+    ).first()
+
+    if not recipient:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+
+    # Create the thanks record
+    # If there's a tip, it starts as unpaid until Stripe payment completes
+    thanks = StaffThanks(
+        staff_id=thanks_data.staff_id,
+        sender_id=current_user.id,
+        message=thanks_data.message,
+        tip_amount=thanks_data.tip_amount if thanks_data.tip_amount and thanks_data.tip_amount > 0 else None,
+        tip_paid=thanks_data.tip_amount is None or thanks_data.tip_amount <= 0  # No tip = "paid"
+    )
+    db.add(thanks)
+    db.commit()
+    db.refresh(thanks)
+
+    return StaffThanksResponse(
+        id=thanks.id,
+        staff_id=thanks.staff_id,
+        sender_id=thanks.sender_id,
+        message=thanks.message,
+        tip_amount=float(thanks.tip_amount) if thanks.tip_amount else None,
+        tip_paid=thanks.tip_paid,
+        read_at=thanks.read_at,
+        created_at=thanks.created_at,
+        staff_name=recipient.name,
+        sender_name=current_user.name
+    )
+
+
+class TipCheckoutResponse(BaseModel):
+    checkout_url: str
+    session_id: str
+
+
+@router.post("/thanks/{thanks_id}/pay-tip", response_model=TipCheckoutResponse)
+def create_tip_checkout(
+    thanks_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Create a Stripe checkout session to pay a tip."""
+    from app.models.settings import SiteSettings
+    from app.config import get_app_config
+
+    require_livery(current_user)
+
+    # Get the thanks record
+    thanks = db.query(StaffThanks).filter(
+        StaffThanks.id == thanks_id,
+        StaffThanks.sender_id == current_user.id
+    ).first()
+
+    if not thanks:
+        raise HTTPException(status_code=404, detail="Thanks message not found")
+
+    if not thanks.tip_amount or thanks.tip_amount <= 0:
+        raise HTTPException(status_code=400, detail="No tip to pay")
+
+    if thanks.tip_paid:
+        raise HTTPException(status_code=400, detail="Tip already paid")
+
+    # Get Stripe configuration
+    site_settings = db.query(SiteSettings).first()
+    if not site_settings or not site_settings.stripe_enabled or not site_settings.stripe_secret_key:
+        raise HTTPException(
+            status_code=503,
+            detail="Payment processing is not configured"
+        )
+
+    # Get recipient name
+    recipient = db.query(User).filter(User.id == thanks.staff_id).first()
+    recipient_name = recipient.name if recipient else "Staff Member"
+
+    # Import and configure Stripe
+    try:
+        import stripe
+        stripe.api_key = site_settings.stripe_secret_key
+    except ImportError:
+        raise HTTPException(status_code=503, detail="Stripe not available")
+
+    # Get frontend URL
+    app_config = get_app_config(db)
+    frontend_url = app_config['frontend_url']
+
+    # Convert to pence
+    amount_pence = int(float(thanks.tip_amount) * 100)
+
+    try:
+        # Create Stripe checkout session
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'gbp',
+                    'product_data': {
+                        'name': f'Tip for {recipient_name}',
+                        'description': f'Thank you tip',
+                    },
+                    'unit_amount': amount_pence,
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=f"{frontend_url}/book/send-thanks?tip_success=true&thanks_id={thanks.id}",
+            cancel_url=f"{frontend_url}/book/send-thanks?tip_cancelled=true&thanks_id={thanks.id}",
+            metadata={
+                'thanks_id': str(thanks.id),
+                'type': 'staff_tip',
+            },
+            expires_at=int((datetime.utcnow().timestamp()) + 1800),  # 30 minutes
+        )
+
+        # Store the session ID
+        thanks.tip_payment_intent_id = checkout_session.id
+        db.commit()
+
+        return TipCheckoutResponse(
+            checkout_url=checkout_session.url,
+            session_id=checkout_session.id
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Payment error: {str(e)}")
+
+
+@router.post("/thanks/{thanks_id}/verify-tip")
+def verify_tip_payment(
+    thanks_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Verify tip payment status with Stripe (for cases where webhook didn't fire)."""
+    from app.models.settings import SiteSettings
+
+    require_livery(current_user)
+
+    thanks = db.query(StaffThanks).filter(
+        StaffThanks.id == thanks_id,
+        StaffThanks.sender_id == current_user.id
+    ).first()
+
+    if not thanks:
+        raise HTTPException(status_code=404, detail="Thanks message not found")
+
+    if thanks.tip_paid:
+        return {"status": "paid", "thanks_id": thanks.id}
+
+    if not thanks.tip_payment_intent_id:
+        raise HTTPException(status_code=400, detail="No payment session found")
+
+    # Get Stripe configuration
+    site_settings = db.query(SiteSettings).first()
+    if not site_settings or not site_settings.stripe_secret_key:
+        raise HTTPException(status_code=503, detail="Payment processing not configured")
+
+    try:
+        import stripe
+        stripe.api_key = site_settings.stripe_secret_key
+
+        # Check the checkout session status
+        session = stripe.checkout.Session.retrieve(thanks.tip_payment_intent_id)
+
+        if session.payment_status == 'paid' and not thanks.tip_paid:
+            # Mark as paid and create payroll adjustment
+            thanks.tip_paid = True
+            thanks.tip_payment_intent_id = session.payment_intent
+
+            # Create payroll adjustment for the staff member
+            sender = db.query(User).filter(User.id == thanks.sender_id).first()
+            adjustment = PayrollAdjustment(
+                staff_id=thanks.staff_id,
+                adjustment_type=PayrollAdjustmentType.TIP,
+                amount=thanks.tip_amount,
+                description=f"Tip from {sender.name if sender else 'Livery Owner'}",
+                payment_date=date.today(),
+                taxable=False,
+                notes=thanks.message[:200] if thanks.message else None,
+                created_by_id=thanks.sender_id,
+                thanks_id=thanks.id
+            )
+            db.add(adjustment)
+            db.commit()
+
+            return {"status": "paid", "thanks_id": thanks.id}
+
+        return {"status": "pending", "thanks_id": thanks.id}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Verification error: {str(e)}")
+
+
+@router.get("/thanks/my-received", response_model=StaffThanksListResponse)
+def get_my_received_thanks(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all thanks messages received by the current staff member."""
+    require_staff(current_user)
+
+    thanks_list = db.query(StaffThanks).filter(
+        StaffThanks.staff_id == current_user.id
+    ).order_by(StaffThanks.created_at.desc()).all()
+
+    results = []
+    for thanks in thanks_list:
+        sender = db.query(User).filter(User.id == thanks.sender_id).first()
+        results.append(StaffThanksResponse(
+            id=thanks.id,
+            staff_id=thanks.staff_id,
+            sender_id=thanks.sender_id,
+            message=thanks.message,
+            tip_amount=float(thanks.tip_amount) if thanks.tip_amount else None,
+            tip_paid=thanks.tip_paid,
+            read_at=thanks.read_at,
+            created_at=thanks.created_at,
+            staff_name=current_user.name,
+            sender_name=sender.name if sender else "Unknown"
+        ))
+
+    unread_count = sum(1 for t in thanks_list if t.read_at is None)
+
+    return StaffThanksListResponse(
+        thanks=results,
+        total=len(results),
+        unread_count=unread_count
+    )
+
+
+@router.get("/thanks/unread-count", response_model=StaffThanksUnreadCount)
+def get_unread_thanks_count(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get count of unread thanks messages for notification badge."""
+    require_staff(current_user)
+
+    count = db.query(StaffThanks).filter(
+        StaffThanks.staff_id == current_user.id,
+        StaffThanks.read_at == None
+    ).count()
+
+    return StaffThanksUnreadCount(unread_count=count)
+
+
+@router.post("/thanks/{thanks_id}/mark-read", response_model=StaffThanksResponse)
+def mark_thanks_as_read(
+    thanks_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Mark a thanks message as read."""
+    require_staff(current_user)
+
+    thanks = db.query(StaffThanks).filter(
+        StaffThanks.id == thanks_id,
+        StaffThanks.staff_id == current_user.id
+    ).first()
+
+    if not thanks:
+        raise HTTPException(status_code=404, detail="Thanks message not found")
+
+    if thanks.read_at is None:
+        thanks.read_at = datetime.utcnow()
+        db.commit()
+        db.refresh(thanks)
+
+    sender = db.query(User).filter(User.id == thanks.sender_id).first()
+
+    return StaffThanksResponse(
+        id=thanks.id,
+        staff_id=thanks.staff_id,
+        sender_id=thanks.sender_id,
+        message=thanks.message,
+        tip_amount=float(thanks.tip_amount) if thanks.tip_amount else None,
+        tip_paid=thanks.tip_paid,
+        read_at=thanks.read_at,
+        created_at=thanks.created_at,
+        staff_name=current_user.name,
+        sender_name=sender.name if sender else "Unknown"
+    )
+
+
+@router.post("/thanks/mark-all-read")
+def mark_all_thanks_as_read(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Mark all thanks messages as read."""
+    require_staff(current_user)
+
+    db.query(StaffThanks).filter(
+        StaffThanks.staff_id == current_user.id,
+        StaffThanks.read_at == None
+    ).update({"read_at": datetime.utcnow()})
+    db.commit()
+
+    return {"message": "All thanks marked as read"}
+
+
+@router.get("/thanks/my-sent", response_model=StaffThanksListResponse)
+def get_my_sent_thanks(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get all thanks messages sent by the current livery owner."""
+    require_livery(current_user)
+
+    thanks_list = db.query(StaffThanks).filter(
+        StaffThanks.sender_id == current_user.id
+    ).order_by(StaffThanks.created_at.desc()).all()
+
+    results = []
+    for thanks in thanks_list:
+        staff = db.query(User).filter(User.id == thanks.staff_id).first()
+        results.append(StaffThanksResponse(
+            id=thanks.id,
+            staff_id=thanks.staff_id,
+            sender_id=thanks.sender_id,
+            message=thanks.message,
+            tip_amount=float(thanks.tip_amount) if thanks.tip_amount else None,
+            tip_paid=thanks.tip_paid,
+            read_at=thanks.read_at,
+            created_at=thanks.created_at,
+            staff_name=staff.name if staff else "Unknown",
+            sender_name=current_user.name
+        ))
+
+    return StaffThanksListResponse(
+        thanks=results,
+        total=len(results),
+        unread_count=0  # Sent thanks don't have unread status
     )

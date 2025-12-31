@@ -1,7 +1,7 @@
 from typing import Optional, List
 from datetime import date, datetime
 from decimal import Decimal
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.service import ServiceCategory, RequestStatus, ChargeStatus, PreferredTime, RecurringPattern
 
 
@@ -50,8 +50,7 @@ class ServiceResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Service Request Schemas
@@ -139,8 +138,7 @@ class ServiceRequestResponse(BaseModel):
     rehab_program_name: Optional[str] = None
     rehab_task_description: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Rehab Assistance Request Schemas
@@ -160,8 +158,7 @@ class MyServiceRequestsSummary(BaseModel):
     scheduled_requests: List[ServiceRequestResponse]
     completed_requests: List[ServiceRequestResponse]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Staff view
@@ -171,8 +168,7 @@ class StaffServiceRequestsSummary(BaseModel):
     scheduled_today: List[ServiceRequestResponse]
     completed: List[ServiceRequestResponse]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Insurance claim schemas

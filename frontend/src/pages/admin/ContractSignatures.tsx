@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { contractsApi, usersApi } from '../../services/api';
 import { useRequestState } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, Select, Textarea } from '../../components/ui';
@@ -40,7 +40,7 @@ export function AdminContractSignatures() {
     notes: '',
   });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [sigData, templateData, userData] = await Promise.all([
         contractsApi.listSignatures(),
@@ -55,11 +55,11 @@ export function AdminContractSignatures() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setError, setLoading]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const filteredSignatures = useMemo(() => {
     return signatures.filter((sig) => {

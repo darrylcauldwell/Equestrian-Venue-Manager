@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { contractsApi } from '../services/api';
 
@@ -10,11 +10,7 @@ export default function SigningComplete() {
   const [status, setStatus] = useState<SigningStatus>('processing');
   const [message, setMessage] = useState('Processing your signature...');
 
-  useEffect(() => {
-    handleSigningCallback();
-  }, []);
-
-  const handleSigningCallback = async () => {
+  const handleSigningCallback = useCallback(async () => {
     const event = searchParams.get('event');
     const envelopeId = searchParams.get('envelope_id');
     const signatureId = searchParams.get('signature_id');
@@ -50,7 +46,11 @@ export default function SigningComplete() {
       setStatus('error');
       setMessage('Invalid signing callback. Please return to your contracts page.');
     }
-  };
+  }, [searchParams]);
+
+  useEffect(() => {
+    handleSigningCallback();
+  }, [handleSigningCallback]);
 
   const getStatusIcon = () => {
     switch (status) {

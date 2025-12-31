@@ -102,14 +102,25 @@ test.describe('Admin Settings Page', () => {
       const venueDetails = page.locator('details:has(summary h3:text("Venue Details"))');
       await venueDetails.locator('summary').first().click();
 
-      // Edit address fields
-      await page.locator('#address_street').fill('123 Stable Lane');
-      await page.locator('#address_town').fill('Horseville');
-      await page.locator('#address_county').fill('Equestershire');
-      await page.locator('#address_postcode').fill('EQ1 2AB');
+      // Edit address fields - clear first to replace existing values
+      const streetInput = page.locator('#address_street');
+      await streetInput.clear();
+      await streetInput.fill('123 Stable Lane');
 
-      await expect(page.locator('#address_street')).toHaveValue('123 Stable Lane');
-      await expect(page.locator('#address_town')).toHaveValue('Horseville');
+      const townInput = page.locator('#address_town');
+      await townInput.clear();
+      await townInput.fill('Horseville');
+
+      const countyInput = page.locator('#address_county');
+      await countyInput.clear();
+      await countyInput.fill('Equestershire');
+
+      const postcodeInput = page.locator('#address_postcode');
+      await postcodeInput.clear();
+      await postcodeInput.fill('EQ1 2AB');
+
+      await expect(streetInput).toHaveValue('123 Stable Lane');
+      await expect(townInput).toHaveValue('Horseville');
     });
 
     test('can edit what3words field', async ({ page }) => {
@@ -137,13 +148,21 @@ test.describe('Admin Settings Page', () => {
       const venueDetails = page.locator('details:has(summary h3:text("Venue Details"))');
       await venueDetails.locator('summary').first().click();
 
-      // Edit security fields
-      await page.locator('#gate_code').fill('1234');
-      await page.locator('#key_safe_code').fill('5678');
-      await page.locator('#security_info').fill('Gate closes at 9pm');
+      // Edit security fields - clear first to replace existing values
+      const gateCodeInput = page.locator('#gate_code');
+      await gateCodeInput.clear();
+      await gateCodeInput.fill('1234');
 
-      await expect(page.locator('#gate_code')).toHaveValue('1234');
-      await expect(page.locator('#key_safe_code')).toHaveValue('5678');
+      const keySafeInput = page.locator('#key_safe_code');
+      await keySafeInput.clear();
+      await keySafeInput.fill('5678');
+
+      const securityInfoInput = page.locator('#security_info');
+      await securityInfoInput.clear();
+      await securityInfoInput.fill('Gate closes at 9pm');
+
+      await expect(gateCodeInput).toHaveValue('1234');
+      await expect(keySafeInput).toHaveValue('5678');
     });
   });
 
@@ -235,6 +254,61 @@ test.describe('Admin Settings Page', () => {
       // Expand booking limits
       const limitsSection = page.locator('details.advanced-options:has(summary:text("Booking Limits"))');
       await expect(limitsSection).toBeVisible();
+    });
+  });
+
+  test.describe('Staff Management Section', () => {
+    test('staff management section is collapsible', async ({ page }) => {
+      await page.goto('/book/admin/settings');
+      await waitForPageReady(page);
+      await dismissPopups(page);
+
+      // Find the Staff Management section
+      const staffSection = page.locator('details:has(summary h3:text("Staff Management"))');
+      await expect(staffSection).toBeVisible();
+
+      // Click to expand
+      await staffSection.locator('summary').first().click();
+
+      // Leave year dropdown should be visible
+      await expect(page.locator('#leave_year_start_month')).toBeVisible();
+    });
+
+    test('can change leave year start month', async ({ page }) => {
+      await page.goto('/book/admin/settings');
+      await waitForPageReady(page);
+      await dismissPopups(page);
+
+      // Expand staff management section
+      const staffSection = page.locator('details:has(summary h3:text("Staff Management"))');
+      await staffSection.locator('summary').first().click();
+
+      // Change leave year start month to April (financial year)
+      const leaveMonthSelect = page.locator('#leave_year_start_month');
+      await leaveMonthSelect.waitFor({ state: 'visible' });
+
+      // Get current value and select a different month
+      const currentValue = await leaveMonthSelect.inputValue();
+      const newValue = currentValue === '4' ? '1' : '4';
+
+      await leaveMonthSelect.selectOption(newValue);
+      // Wait for React state update
+      await page.waitForTimeout(100);
+      await expect(leaveMonthSelect).toHaveValue(newValue);
+    });
+
+    test('leave year start month has all 12 months', async ({ page }) => {
+      await page.goto('/book/admin/settings');
+      await waitForPageReady(page);
+      await dismissPopups(page);
+
+      // Expand staff management section
+      const staffSection = page.locator('details:has(summary h3:text("Staff Management"))');
+      await staffSection.locator('summary').first().click();
+
+      // Check that all 12 months are available
+      const options = await page.locator('#leave_year_start_month option').count();
+      expect(options).toBe(12);
     });
   });
 

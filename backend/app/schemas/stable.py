@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 # ============== Stable Block Schemas ==============
@@ -21,8 +21,7 @@ class StableBlockResponse(BaseModel):
     sequence: int
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============== Stable Schemas ==============
@@ -50,8 +49,7 @@ class StableResponse(BaseModel):
     sequence: int
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StableWithBlock(StableResponse):

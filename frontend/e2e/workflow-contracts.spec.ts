@@ -112,21 +112,37 @@ test.describe('Contract Workflow', () => {
       await loginAs('admin');
       await page.goto('/book');
       await waitForPageReady(page);
+      await dismissPopups(page);
+
       // Open hamburger menu
       const menuBtn = page.locator('.hamburger-btn').first();
+      await expect(menuBtn).toBeVisible({ timeout: 5000 });
       await menuBtn.click();
       await page.waitForTimeout(500);
-      // Try to find contracts link directly first, or look in "My Venue" submenu
-      let contractsLink = page.locator('a[href*="admin/contracts"]').first();
-      if (!await contractsLink.isVisible({ timeout: 1000 })) {
-        // Try expanding "My Venue" submenu (where admin contracts live)
-        const myVenueBtn = page.locator('.nav-dropdown-trigger').filter({ hasText: /my venue/i }).first();
-        if (await myVenueBtn.isVisible({ timeout: 2000 })) {
-          await myVenueBtn.click();
-          await page.waitForTimeout(500);
-        }
-        contractsLink = page.locator('a[href*="admin/contracts"]').first();
+
+      // Dismiss any popups that might have appeared after menu opened
+      await dismissPopups(page);
+
+      // Expand "My Venue" submenu (where admin contracts live) - this is REQUIRED
+      const myVenueBtn = page.locator('.nav-dropdown-trigger').filter({ hasText: /my venue/i }).first();
+      await expect(myVenueBtn).toBeVisible({ timeout: 5000 });
+      await myVenueBtn.click();
+      await page.waitForTimeout(500);
+
+      // Verify dropdown expanded by checking if contracts link is visible
+      const contractsLink = page.locator('a[href*="admin/contracts"]').first();
+
+      // If link still not visible after 2s, try clicking dropdown again (may have been blocked)
+      if (!await contractsLink.isVisible({ timeout: 2000 })) {
+        await dismissPopups(page);
+        await myVenueBtn.click({ force: true });
+        await page.waitForTimeout(500);
       }
+
+      // Dismiss any popups that might have appeared after dropdown clicked
+      await dismissPopups(page);
+
+      // Look for contracts link - it should now be visible after expanding dropdown
       await expect(contractsLink).toBeVisible({ timeout: 5000 });
     });
 
@@ -219,19 +235,25 @@ test.describe('Contract Template Creation Flow', () => {
 
     const createBtn = page.locator('button').filter({ hasText: /create template/i }).first();
     if (await createBtn.isVisible({ timeout: 3000 })) {
+      // Dismiss any popups that might have appeared after page load
+      await dismissPopups(page);
+
       await createBtn.click();
 
       // Wait for modal to appear - use ds-modal
       const modal = page.locator('.ds-modal, .modal, [role="dialog"]').first();
-      if (await modal.isVisible({ timeout: 5000 })) {
-        // Check for template name field - look in form inputs with various types
-        const nameInput = page.locator('input[type="text"], input[name*="name"], input[id*="name"]').first();
-        await expect(nameInput).toBeVisible();
+      await expect(modal).toBeVisible({ timeout: 5000 });
 
-        // Check for contract type select
-        const typeSelect = page.locator('select').first();
-        await expect(typeSelect).toBeVisible();
-      }
+      // Dismiss any popups that appeared after modal opened
+      await dismissPopups(page);
+
+      // Check for template name field - look for ds-input inside the modal
+      const nameInput = modal.locator('input.ds-input, input[placeholder*="name" i]').first();
+      await expect(nameInput).toBeVisible();
+
+      // Check for contract type select
+      const typeSelect = modal.locator('select.ds-select, select').first();
+      await expect(typeSelect).toBeVisible();
     }
     // Test passes if page loaded - create button may not exist without data
   });
