@@ -55,7 +55,8 @@ export default function Weather() {
   const [error, setError] = useState<string | null>(null);
 
   // Use custom rugging guide from settings if available, otherwise use defaults
-  const rugMatrix = settings?.rugging_guide || defaultRugMatrix;
+  // Ensure rugMatrix is never undefined - use nullish coalescing for proper fallback
+  const rugMatrix: RuggingGuide = settings?.rugging_guide ?? defaultRugMatrix;
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -101,6 +102,11 @@ export default function Weather() {
   const daytimeMaxTemp = forecast.daytime.temp_max;
   const overnightRange = getTempRange(overnightMinTemp);
   const daytimeRange = getTempRange(daytimeMaxTemp);
+
+  // Safety check: ensure rugMatrix has required ranges before rendering
+  if (!rugMatrix[overnightRange] || !rugMatrix[daytimeRange]) {
+    return null;
+  }
 
   return (
     <div className="weather-widget">

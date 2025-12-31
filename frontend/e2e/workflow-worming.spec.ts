@@ -27,21 +27,17 @@ test.describe('Admin Worming Management', () => {
       await venueDropdown.click();
       await page.waitForTimeout(500);
 
-      // Verify dropdown expanded by checking aria-expanded or that child link is now visible
-      // If the click didn't work (popup blocked it), retry
-      const wormCountsLink = page.locator('a[href*="worming"]').filter({ hasText: 'Worm Counts' });
+      // Expand "Horse Care" sub-dropdown where "Worm Counts" lives
+      const horseCareDropdown = page.locator('.nav-sub-dropdown-trigger').filter({ hasText: 'Horse Care' });
+      await expect(horseCareDropdown).toBeVisible({ timeout: 5000 });
+      await horseCareDropdown.click();
+      await page.waitForTimeout(500);
 
-      // If link still not visible after 2s, try clicking dropdown again (may have been blocked)
-      if (!await wormCountsLink.isVisible({ timeout: 2000 })) {
-        await dismissPopups(page);
-        await venueDropdown.click({ force: true });
-        await page.waitForTimeout(500);
-      }
-
-      // Dismiss any popups that might have appeared after dropdown clicked
+      // Dismiss any popups that might have appeared
       await dismissPopups(page);
 
-      // Now the link should be visible
+      // Now the Worm Counts link should be visible
+      const wormCountsLink = page.locator('a[href*="worming"]').filter({ hasText: 'Worm Counts' });
       await expect(wormCountsLink).toBeVisible({ timeout: 5000 });
       await wormCountsLink.click();
 

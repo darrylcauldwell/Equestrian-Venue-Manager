@@ -3,7 +3,7 @@ import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, afterAll, vi } from 'vitest';
 
 // Store original error handler
-const originalOnError = global.onerror;
+const originalOnError = globalThis.onerror;
 
 // Suppress jsdom unhandled errors from expected React errors (e.g., testing error boundaries)
 beforeAll(() => {
@@ -18,7 +18,7 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  global.onerror = originalOnError;
+  globalThis.onerror = originalOnError;
 });
 
 // Clean up after each test to prevent memory leaks

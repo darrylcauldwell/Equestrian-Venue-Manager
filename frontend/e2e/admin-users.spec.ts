@@ -37,10 +37,10 @@ test.describe('Admin User Management', () => {
     await expect(page.locator('button').filter({ hasText: /reset pw/i }).first()).toBeVisible();
   });
 
-  test('can see status dropdown for other users', async ({ page }) => {
+  test('can see status toggle button for other users', async ({ page }) => {
     await page.goto('/book/admin/users');
-    // Status is controlled by a select, not a button
-    await expect(page.locator('select.status-select').first()).toBeVisible();
+    // Status is controlled by a toggle button (Enable/Disable), not a select
+    await expect(page.locator('button').filter({ hasText: /disable|enable/i }).first()).toBeVisible();
   });
 
   test('shows user status badges', async ({ page }) => {

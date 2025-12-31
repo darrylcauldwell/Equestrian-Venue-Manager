@@ -129,20 +129,17 @@ test.describe('Contract Workflow', () => {
       await myVenueBtn.click();
       await page.waitForTimeout(500);
 
-      // Verify dropdown expanded by checking if contracts link is visible
-      const contractsLink = page.locator('a[href*="admin/contracts"]').first();
+      // Expand "Document Management" sub-dropdown where "Contract Templates" lives
+      const docMgmtDropdown = page.locator('.nav-sub-dropdown-trigger').filter({ hasText: 'Document Management' });
+      await expect(docMgmtDropdown).toBeVisible({ timeout: 5000 });
+      await docMgmtDropdown.click();
+      await page.waitForTimeout(500);
 
-      // If link still not visible after 2s, try clicking dropdown again (may have been blocked)
-      if (!await contractsLink.isVisible({ timeout: 2000 })) {
-        await dismissPopups(page);
-        await myVenueBtn.click({ force: true });
-        await page.waitForTimeout(500);
-      }
-
-      // Dismiss any popups that might have appeared after dropdown clicked
+      // Dismiss any popups that might have appeared
       await dismissPopups(page);
 
-      // Look for contracts link - it should now be visible after expanding dropdown
+      // Now the contracts link should be visible
+      const contractsLink = page.locator('a[href*="admin/contracts"]').first();
       await expect(contractsLink).toBeVisible({ timeout: 5000 });
     });
 
