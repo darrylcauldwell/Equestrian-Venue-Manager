@@ -1,52 +1,69 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { staffApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { StaffThanks } from '../types';
 import './ThanksNotificationPopup.css';
 
-const DISMISSAL_KEY = 'thanks-notification-dismissed';
+// Store dismissed thanks per user to avoid cross-user issues
+const getDismissalKey = (userId: number) => `thanks-dismissed-${userId}`;
 
 export function ThanksNotificationPopup() {
   const { user } = useAuth();
   const [unreadThanks, setUnreadThanks] = useState<StaffThanks[]>([]);
-  const [dismissed, setDismissed] = useState(() => {
-    // Check sessionStorage for recent dismissal
-    const stored = sessionStorage.getItem(DISMISSAL_KEY);
-    if (stored) {
-      const { thanksIds } = JSON.parse(stored);
-      return thanksIds as number[];
+  const [dismissed, setDismissed] = useState<number[]>([]);
+
+  // Load dismissed IDs when user changes
+  useEffect(() => {
+    if (user) {
+      const stored = sessionStorage.getItem(getDismissalKey(user.id));
+      if (stored) {
+        try {
+          const { thanksIds } = JSON.parse(stored);
+          setDismissed(thanksIds || []);
+        } catch {
+          setDismissed([]);
+        }
+      } else {
+        setDismissed([]);
+      }
     }
-    return [] as number[];
-  });
+  }, [user]);
+
+  const loadUnreadThanks = useCallback(async () => {
+    if (!user) return;
+    try {
+      const response = await staffApi.getMyReceivedThanks();
+      // Only filter by read_at - dismissed filtering happens in render
+      const unread = response.thanks.filter((t) => !t.read_at);
+      setUnreadThanks(unread);
+    } catch (error) {
+      console.error('Failed to load thanks:', error);
+    }
+  }, [user]);
 
   useEffect(() => {
     // Only check for staff users
     if (user && user.is_yard_staff) {
       loadUnreadThanks();
-    }
-  }, [user]);
 
-  const loadUnreadThanks = async () => {
-    try {
-      const response = await staffApi.getMyReceivedThanks();
-      const unread = response.thanks.filter(
-        (t) => !t.read_at && !dismissed.includes(t.id)
-      );
-      setUnreadThanks(unread);
-    } catch (error) {
-      console.error('Failed to load thanks:', error);
+      // Poll for new thanks every 2 minutes
+      const interval = setInterval(loadUnreadThanks, 120000);
+      return () => clearInterval(interval);
     }
-  };
+  }, [user, loadUnreadThanks]);
+
+  // Filter out dismissed thanks for display
+  const displayThanks = unreadThanks.filter((t) => !dismissed.includes(t.id));
 
   const handleDismiss = () => {
-    const newDismissed = [...dismissed, ...unreadThanks.map((t) => t.id)];
+    if (!user) return;
+    const newDismissed = [...dismissed, ...displayThanks.map((t) => t.id)];
     sessionStorage.setItem(
-      DISMISSAL_KEY,
+      getDismissalKey(user.id),
       JSON.stringify({ thanksIds: newDismissed })
     );
     setDismissed(newDismissed);
-    setUnreadThanks([]);
   };
 
   const handleViewAll = async () => {
@@ -59,13 +76,13 @@ export function ThanksNotificationPopup() {
     handleDismiss();
   };
 
-  // Don't show if no unread thanks
-  if (unreadThanks.length === 0) {
+  // Don't show if no unread thanks to display
+  if (displayThanks.length === 0) {
     return null;
   }
 
-  const latestThanks = unreadThanks[0];
-  const hasMore = unreadThanks.length > 1;
+  const latestThanks = displayThanks[0];
+  const hasMore = displayThanks.length > 1;
 
   return (
     <div className="thanks-notification-overlay">
@@ -110,7 +127,7 @@ export function ThanksNotificationPopup() {
 
         {hasMore && (
           <p className="more-thanks">
-            +{unreadThanks.length - 1} more thank you message{unreadThanks.length > 2 ? 's' : ''}
+            +{displayThanks.length - 1} more thank you message{displayThanks.length > 2 ? 's' : ''}
           </p>
         )}
 

@@ -25,6 +25,7 @@ const MyHorses = lazy(() => import('./pages/MyHorses').then(m => ({ default: m.M
 const HorseHealthRecords = lazy(() => import('./pages/HorseHealthRecords').then(m => ({ default: m.HorseHealthRecords })));
 const HorseFeed = lazy(() => import('./pages/HorseFeed').then(m => ({ default: m.HorseFeed })));
 const HorseEmergencyContacts = lazy(() => import('./pages/HorseEmergencyContacts'));
+const HorseDetails = lazy(() => import('./pages/HorseDetails'));
 const MyInvoices = lazy(() => import('./pages/MyInvoices'));
 const ServiceRequests = lazy(() => import('./pages/ServiceRequests').then(m => ({ default: m.ServiceRequests })));
 const Noticeboard = lazy(() => import('./pages/Noticeboard').then(m => ({ default: m.Noticeboard })));
@@ -150,6 +151,7 @@ function App() {
 
         {/* Livery-only routes - staff without livery role cannot access */}
         <Route path="my-horses" element={<ProtectedRoute requireLivery><MyHorses /></ProtectedRoute>} />
+        <Route path="my-horses/:horseId" element={<ProtectedRoute requireLivery><HorseDetails /></ProtectedRoute>} />
         <Route path="my-horses/:horseId/health" element={<ProtectedRoute requireLivery><HorseHealthRecords /></ProtectedRoute>} />
         <Route path="my-horses/:horseId/feed" element={<ProtectedRoute requireLivery><HorseFeed /></ProtectedRoute>} />
         <Route path="my-horses/:horseId/emergency-contacts" element={<ProtectedRoute requireLivery><HorseEmergencyContacts /></ProtectedRoute>} />

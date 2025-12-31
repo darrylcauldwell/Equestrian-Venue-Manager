@@ -353,7 +353,7 @@ export function ServiceRequests() {
           <button className={`ds-tab ${activeTab === 'my-requests' ? 'active' : ''}`} onClick={() => setActiveTab('my-requests')}>
             My Requests
             {myRequests && (myRequests.pending_requests.length + (myRequests.quoted_requests?.length || 0)) > 0 && (
-              <span className="tab-badge">{myRequests.pending_requests.length + (myRequests.quoted_requests?.length || 0)}</span>
+              <span className="ds-tab-count">{myRequests.pending_requests.length + (myRequests.quoted_requests?.length || 0)}</span>
             )}
           </button>
         )}
@@ -671,7 +671,7 @@ function ExtraServicesTab({ groupedServices, horses, user, categoryFilter, setCa
         {categories.map(cat => (
           <button
             key={cat.value}
-            className={`filter-btn ${categoryFilter === cat.value ? 'active' : ''}`}
+            className={`ds-btn ${categoryFilter === cat.value ? 'ds-btn-primary' : 'ds-btn-secondary'}`}
             onClick={() => setCategoryFilter(cat.value)}
           >
             {cat.label}

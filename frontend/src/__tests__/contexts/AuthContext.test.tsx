@@ -20,9 +20,14 @@ describe('AuthContext', () => {
   });
 
   it('throws error when useAuth is used outside AuthProvider', () => {
+    // Suppress expected console.error from React for this test
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
     expect(() => {
       renderHook(() => useAuth());
     }).toThrow('useAuth must be used within an AuthProvider');
+
+    consoleSpy.mockRestore();
   });
 
   it('initializes with null user', async () => {

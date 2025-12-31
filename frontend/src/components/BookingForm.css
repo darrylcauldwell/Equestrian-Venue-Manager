@@ -79,16 +79,16 @@
 }
 
 /* Field validation error styling */
-.form-group.has-error input,
-.form-group.has-error select,
-.form-group.has-error textarea {
+.ds-form-group.has-error input,
+.ds-form-group.has-error select,
+.ds-form-group.has-error textarea {
   border-color: var(--color-error, #dc2626);
   background-color: var(--color-error-bg, #fef2f2);
 }
 
-.form-group.has-error input:focus,
-.form-group.has-error select:focus,
-.form-group.has-error textarea:focus {
+.ds-form-group.has-error input:focus,
+.ds-form-group.has-error select:focus,
+.ds-form-group.has-error textarea:focus {
   border-color: var(--color-error, #dc2626);
   box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
 }
@@ -172,13 +172,13 @@
     padding: 0.6rem 0.75rem;
   }
 
-  .form-group label {
+  .ds-form-group label {
     font-size: 0.9rem;
   }
 
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
+  .ds-form-group input,
+  .ds-form-group select,
+  .ds-form-group textarea {
     font-size: 16px;
     padding: 0.65rem;
   }

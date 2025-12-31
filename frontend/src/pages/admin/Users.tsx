@@ -540,18 +540,9 @@ export function AdminUsers() {
                 )}
               </td>
               <td>
-                {user.id !== currentUser?.id ? (
-                  <select
-                    value={user.is_active ? 'active' : 'disabled'}
-                    onChange={() => setToggleActiveTarget(user)}
-                    className={`status-select ${user.is_active ? 'status-active' : 'status-disabled'}`}
-                  >
-                    <option value="active">Active</option>
-                    <option value="disabled">Disabled</option>
-                  </select>
-                ) : (
-                  <span className={`badge active`}>Active</span>
-                )}
+                <span className={`ds-badge ${user.is_active ? 'ds-badge-success' : 'ds-badge-error'}`}>
+                  {user.is_active ? 'Active' : 'Disabled'}
+                </span>
               </td>
               <td className="actions-cell">
                 <button
@@ -561,12 +552,20 @@ export function AdminUsers() {
                   Edit
                 </button>
                 {user.id !== currentUser?.id ? (
-                  <button
-                    className="btn-small"
-                    onClick={() => setResetPasswordTarget(user)}
-                  >
-                    Reset PW
-                  </button>
+                  <>
+                    <button
+                      className="btn-small"
+                      onClick={() => setResetPasswordTarget(user)}
+                    >
+                      Reset PW
+                    </button>
+                    <button
+                      className={`btn-small ${user.is_active ? 'btn-danger' : 'btn-success'}`}
+                      onClick={() => setToggleActiveTarget(user)}
+                    >
+                      {user.is_active ? 'Disable' : 'Enable'}
+                    </button>
+                  </>
                 ) : (
                   <span className="current-user-badge">You</span>
                 )}

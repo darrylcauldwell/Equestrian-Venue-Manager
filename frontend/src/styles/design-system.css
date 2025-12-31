@@ -1252,3 +1252,57 @@ select:disabled {
   background: var(--border-color);
   margin: 0 1rem;
 }
+
+/* ============================================
+   FULLCALENDAR THEME OVERRIDE
+   Global theming for FullCalendar components
+   ============================================ */
+
+/* Override FullCalendar CSS variables globally */
+.fc,
+.fc-theme-standard {
+  --fc-border-color: var(--border-color);
+  --fc-page-bg-color: var(--bg-card);
+  --fc-neutral-bg-color: var(--bg-secondary);
+  --fc-today-bg-color: var(--color-primary-light);
+  --fc-highlight-color: rgba(74, 124, 35, 0.15);
+  --fc-now-indicator-color: var(--color-primary);
+  --fc-button-text-color: var(--text-inverse);
+  --fc-button-bg-color: var(--color-primary);
+  --fc-button-border-color: var(--color-primary);
+  --fc-button-hover-bg-color: var(--color-primary-hover);
+  --fc-button-hover-border-color: var(--color-primary-hover);
+  --fc-button-active-bg-color: var(--header-bg);
+  --fc-button-active-border-color: var(--header-bg);
+}
+
+/* Ensure all table cells have proper backgrounds */
+.fc-theme-standard td,
+.fc-theme-standard th,
+.fc-theme-standard .fc-scrollgrid {
+  border-color: var(--border-color) !important;
+}
+
+.fc-timegrid-slot,
+.fc-timegrid-slot-lane,
+.fc-daygrid-day,
+.fc-daygrid-day-frame {
+  background: var(--bg-card) !important;
+}
+
+.fc-col-header-cell,
+.fc-timegrid-slot-label {
+  background: var(--bg-secondary) !important;
+}
+
+.fc-daygrid-day-number,
+.fc-col-header-cell-cushion,
+.fc-timegrid-slot-label-cushion {
+  color: var(--text-primary) !important;
+}
+
+.fc-day-today,
+.fc-day-today .fc-daygrid-day-frame,
+.fc-timegrid-col.fc-day-today {
+  background: var(--color-primary-light) !important;
+}

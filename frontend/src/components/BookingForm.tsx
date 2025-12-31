@@ -151,7 +151,7 @@ export function BookingForm({ arenas, horses = [], selectedArena, startTime, end
 
           {/* Show horse selection for admins (optional) or livery members (required) */}
           {(isAdmin || isLiveryBooking) && horses.length > 0 && (
-            <div className={`form-group ${touched.horse && fieldErrors.horse ? 'has-error' : ''}`}>
+            <div className={`ds-form-group ${touched.horse && fieldErrors.horse ? 'has-error' : ''}`}>
               <label htmlFor="horse">
                 Horse {isAdmin && !isHorseRequired && <span className="optional-label">(optional)</span>}
               </label>
@@ -181,7 +181,7 @@ export function BookingForm({ arenas, horses = [], selectedArena, startTime, end
             </div>
           )}
 
-          <div className={`form-group ${touched.title && fieldErrors.title ? 'has-error' : ''}`}>
+          <div className={`ds-form-group ${touched.title && fieldErrors.title ? 'has-error' : ''}`}>
             <label htmlFor="title">Title</label>
             <input
               id="title"
@@ -209,7 +209,7 @@ export function BookingForm({ arenas, horses = [], selectedArena, startTime, end
           </div>
 
           <div className="form-row">
-            <div className={`form-group ${touched.start && fieldErrors.start ? 'has-error' : ''}`}>
+            <div className={`ds-form-group ${touched.start && fieldErrors.start ? 'has-error' : ''}`}>
               <label htmlFor="start">Start Time</label>
               <input
                 id="start"
@@ -224,7 +224,7 @@ export function BookingForm({ arenas, horses = [], selectedArena, startTime, end
               )}
             </div>
 
-            <div className={`form-group ${touched.end && fieldErrors.end ? 'has-error' : ''}`}>
+            <div className={`ds-form-group ${touched.end && fieldErrors.end ? 'has-error' : ''}`}>
               <label htmlFor="end">End Time</label>
               <input
                 id="end"

@@ -13,23 +13,17 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     exclude: ['**/node_modules/**', '**/e2e/**'],
 
-    /* Use forks pool for better memory isolation in CI, vmThreads locally */
-    pool: process.env.CI ? 'forks' : 'vmThreads',
+    /* Use forks pool for better memory isolation */
+    pool: 'forks',
 
     /* Limit parallel workers to prevent memory exhaustion */
     poolOptions: {
       forks: {
-        /* Single fork in CI for maximum memory efficiency */
-        maxForks: process.env.CI ? 1 : 2,
+        /* Single fork for maximum memory efficiency */
+        maxForks: 1,
         minForks: 1,
         /* Isolate each test file to prevent memory accumulation */
         isolate: true,
-      },
-      vmThreads: {
-        maxThreads: 4,
-        minThreads: 1,
-        /* Memory per thread limit */
-        memoryLimit: '512MB',
       },
     },
 
@@ -39,6 +33,9 @@ export default defineConfig({
     /* Timeouts */
     testTimeout: 30000,
     hookTimeout: 30000,
+
+    /* Disable watch mode by default */
+    watch: false,
 
     /* Coverage configuration with thresholds */
     coverage: {
@@ -69,18 +66,10 @@ export default defineConfig({
       skipFull: false,
     },
 
-    /* Reporter configuration */
-    reporters: ['default', 'junit'],
+    /* Reporter configuration - keep simple for CI compatibility */
+    reporters: process.env.CI ? ['verbose', 'junit'] : ['default'],
     outputFile: {
       junit: 'test-results.xml',
-    },
-
-    /* Fail on console errors during tests */
-    onConsoleLog: (log, type) => {
-      if (type === 'stderr' && log.includes('Error')) {
-        return false; // Don't suppress - let it show
-      }
-      return true;
     },
   },
 })
