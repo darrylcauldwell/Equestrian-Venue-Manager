@@ -139,12 +139,142 @@ docker compose restart backend
 
 ## Updating the Application
 
+### Pre-Upgrade Checklist
+
+Before upgrading, always:
+1. **Check the release notes** for breaking changes or special migration instructions
+2. **Create a database backup** (critical for rollback if needed)
+3. **Plan for brief downtime** - typically 2-5 minutes
+
+### Standard Upgrade Procedure
+
 ```bash
 cd /opt/evm
+
+# Step 1: Create a backup BEFORE any changes
+echo "Creating pre-upgrade backup..."
+docker compose exec -T db pg_dump -U evm evm_db > backup-pre-upgrade-$(date +%Y%m%d-%H%M%S).sql
+echo "Backup created: backup-pre-upgrade-*.sql"
+
+# Step 2: Pull new container images
+echo "Pulling new images..."
+docker compose pull
+
+# Step 3: Stop the application (brief downtime starts here)
+echo "Stopping application..."
+docker compose down
+
+# Step 4: Start database first and wait for it to be ready
+echo "Starting database..."
+docker compose up -d db
+sleep 10
+
+# Step 5: Run database migrations BEFORE starting the backend
+echo "Running database migrations..."
+docker compose run --rm backend alembic upgrade head
+
+# Step 6: Start all services
+echo "Starting all services..."
+docker compose up -d
+
+# Step 7: Verify services are healthy
+echo "Waiting for services to start..."
+sleep 15
+docker compose ps
+
+# Step 8: Test the application
+echo "Testing backend health..."
+docker compose exec -T backend curl -f http://localhost:8000/api/health && echo "Backend OK"
+
+echo "Upgrade complete!"
+```
+
+### Quick Upgrade (No Breaking Changes)
+
+For minor updates with no database changes, you can use this faster method:
+
+```bash
+cd /opt/evm
+
+# Backup first (always!)
+docker compose exec -T db pg_dump -U evm evm_db > backup-$(date +%Y%m%d).sql
+
+# Pull and restart (rolling update)
 docker compose pull
 docker compose up -d
 docker compose exec -T backend alembic upgrade head
 ```
+
+### Rollback Procedure
+
+If something goes wrong after an upgrade:
+
+```bash
+cd /opt/evm
+
+# Step 1: Stop the application
+docker compose down
+
+# Step 2: Restore the database from backup
+cat backup-pre-upgrade-YYYYMMDD-HHMMSS.sql | docker compose exec -T db psql -U evm evm_db
+
+# Step 3: Pull the previous version (if you know the tag)
+# Edit docker-compose.yml to specify the previous image tags, or:
+# Contact support for previous image versions
+
+# Step 4: Start the application
+docker compose up -d
+```
+
+### Handling Migration Failures
+
+If `alembic upgrade head` fails:
+
+```bash
+# Check what migrations have been applied
+docker compose exec -T backend alembic current
+
+# Check what migrations are pending
+docker compose exec -T backend alembic heads
+
+# View migration history
+docker compose exec -T backend alembic history
+
+# If stuck, you may need to:
+# 1. Restore from backup
+# 2. Fix the migration issue
+# 3. Re-run migrations
+```
+
+### Verifying a Successful Upgrade
+
+After upgrading, verify:
+
+```bash
+cd /opt/evm
+
+# 1. All containers running
+docker compose ps
+# All should show "Up" status
+
+# 2. Backend API responding
+curl -f http://localhost/api/health
+
+# 3. Check logs for errors
+docker compose logs --tail=50 backend | grep -i error
+
+# 4. Test login through the web UI
+# Navigate to your domain/IP and log in as admin
+```
+
+### Upgrade Best Practices
+
+1. **Always backup first** - No exceptions
+2. **Test in staging** if you have one - Test upgrades before production
+3. **Read release notes** - Check for breaking changes or special instructions
+4. **Upgrade during low-usage times** - Early morning or weekends
+5. **Keep backup files** - Store at least 2 weeks of backups off-server
+6. **Monitor after upgrade** - Check logs for the first hour after upgrading
 
 ## Database Operations
 
