@@ -153,8 +153,16 @@ cd /opt/evm
 
 # Step 1: Create a backup BEFORE any changes
 echo "Creating pre-upgrade backup..."
-docker compose exec -T db pg_dump -U evm evm_db > backup-pre-upgrade-$(date +%Y%m%d-%H%M%S).sql
-echo "Backup created: backup-pre-upgrade-*.sql"
+BACKUP_FILE="backup-pre-upgrade-$(date +%Y%m%d-%H%M%S).sql"
+docker compose exec -T db pg_dump -U evm evm_db > "$BACKUP_FILE"
+
+# Verify backup was created and has content
+if [ -s "$BACKUP_FILE" ]; then
+  echo "Backup created: $BACKUP_FILE ($(du -h $BACKUP_FILE | cut -f1))"
+else
+  echo "ERROR: Backup file is empty or missing. Aborting upgrade."
+  exit 1
+fi
 
 # Step 2: Pull new container images
 echo "Pulling new images..."
@@ -167,7 +175,13 @@ docker compose down
 # Step 4: Start database first and wait for it to be ready
 echo "Starting database..."
 docker compose up -d db
-sleep 10
+
+echo "Waiting for database to be ready..."
+until docker compose exec -T db pg_isready -U evm -d evm_db > /dev/null 2>&1; do
+  echo "  Database not ready yet, waiting..."
+  sleep 2
+done
+echo "Database is ready"
 
 # Step 5: Run database migrations BEFORE starting the backend
 echo "Running database migrations..."
@@ -177,16 +191,26 @@ docker compose run --rm backend alembic upgrade head
 echo "Starting all services..."
 docker compose up -d
 
-# Step 7: Verify services are healthy
+# Step 7: Wait for services and verify health
 echo "Waiting for services to start..."
-sleep 15
+sleep 10
+
+echo "Checking service status..."
 docker compose ps
 
 # Step 8: Test the application
 echo "Testing backend health..."
-docker compose exec -T backend curl -f http://localhost:8000/api/health && echo "Backend OK"
+for i in {1..10}; do
+  if docker compose exec -T backend curl -sf http://localhost:8000/api/health > /dev/null 2>&1; then
+    echo "Backend is healthy!"
+    break
+  fi
+  echo "  Waiting for backend... ($i/10)"
+  sleep 3
+done
 
-echo "Upgrade complete!"
+echo ""
+echo "Upgrade complete! Verify by logging into the web UI."
 ```
 
 ### Quick Upgrade (No Breaking Changes)
@@ -212,17 +236,54 @@ If something goes wrong after an upgrade:
 ```bash
 cd /opt/evm
 
-# Step 1: Stop the application
-docker compose down
+# Step 1: Stop application services (keep database running)
+docker compose stop backend frontend
+# For SSL deployments also stop: docker compose stop traefik
+# For non-SSL deployments also stop: docker compose stop nginx
 
-# Step 2: Restore the database from backup
+# Step 2: Ensure database is running
+docker compose up -d db
+sleep 5
+
+# Step 3: Drop and recreate the database, then restore from backup
+# Replace YYYYMMDD-HHMMSS with your actual backup filename
+docker compose exec -T db psql -U evm -c "DROP DATABASE evm_db;"
+docker compose exec -T db psql -U evm -c "CREATE DATABASE evm_db OWNER evm;"
 cat backup-pre-upgrade-YYYYMMDD-HHMMSS.sql | docker compose exec -T db psql -U evm evm_db
 
-# Step 3: Pull the previous version (if you know the tag)
-# Edit docker-compose.yml to specify the previous image tags, or:
-# Contact support for previous image versions
+# Step 4: Edit .env to use previous image version (if needed)
+# Change IMAGE_TAG=latest to IMAGE_TAG=previous-tag
+nano .env
 
-# Step 4: Start the application
+# Step 5: Pull the previous version and restart
+docker compose pull
+docker compose up -d
+
+echo "Rollback complete - verify the application is working"
+```
+
+### Alternative: Full Reset Rollback
+
+If partial rollback fails, do a complete reset:
+
+```bash
+cd /opt/evm
+
+# Stop everything
+docker compose down
+
+# Start only database
+docker compose up -d db
+sleep 10
+
+# Drop and recreate database
+docker compose exec -T db psql -U evm -d postgres -c "DROP DATABASE IF EXISTS evm_db;"
+docker compose exec -T db psql -U evm -d postgres -c "CREATE DATABASE evm_db OWNER evm;"
+
+# Restore backup
+cat backup-pre-upgrade-YYYYMMDD-HHMMSS.sql | docker compose exec -T db psql -U evm evm_db
+
+# Start all services
 docker compose up -d
 ```
 
@@ -255,15 +316,24 @@ cd /opt/evm
 
 # 1. All containers running
 docker compose ps
-# All should show "Up" status
+# All services should show "Up" or "Up (healthy)" status
 
-# 2. Backend API responding
-curl -f http://localhost/api/health
+# 2. Database is healthy
+docker compose exec -T db pg_isready -U evm -d evm_db && echo "Database OK"
 
-# 3. Check logs for errors
-docker compose logs --tail=50 backend | grep -i error
+# 3. Backend API responding (direct container check)
+docker compose exec -T backend curl -sf http://localhost:8000/api/health && echo "Backend OK"
 
-# 4. Test login through the web UI
+# 4. Frontend proxy working (external check via nginx/traefik)
+curl -sf http://localhost/api/health && echo "Proxy routing OK"
+
+# 5. Check backend logs for errors
+docker compose logs --tail=100 backend | grep -iE "(error|exception|failed)" || echo "No errors found"
+
+# 6. Check migration status
+docker compose exec -T backend alembic current
+
+# 7. Test login through the web UI
 # Navigate to your domain/IP and log in as admin
 ```
 
