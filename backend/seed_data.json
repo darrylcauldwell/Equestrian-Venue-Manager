@@ -7547,7 +7547,7 @@
       "total_value": 4500.0,
       "annual_payment": 1500.0,
       "scheme_provider": "Rural Payments Agency",
-      "next_inspection_date": "2025-06-15",
+      "next_inspection_date": "2026-06-15",
       "notes": "SFI payment for hedgerow management. Must maintain minimum 2m width, one side cut annually on rotation."
     },
     {
@@ -7562,7 +7562,7 @@
       "total_value": 12000.0,
       "annual_payment": 800.0,
       "scheme_provider": "Rural Payments Agency",
-      "next_inspection_date": "2025-09-01",
+      "next_inspection_date": "2026-09-01",
       "inspection_notes": "15-year woodland creation agreement. Annual inspection checks survival rate and maintenance.",
       "notes": "Shelter belt plantation. Must maintain tree protection, replace failures, control weeds until established."
     },
@@ -7601,8 +7601,8 @@
       "reference_number": "TH-2024-ASH-789",
       "application_date": "2024-09-01",
       "decision_date": "2024-11-15",
-      "agreement_start_date": "2025-01-01",
-      "agreement_end_date": "2025-12-31",
+      "agreement_start_date": "2026-01-01",
+      "agreement_end_date": "2026-12-31",
       "total_value": 3200.0,
       "scheme_provider": "Forestry Commission",
       "notes": "Grant for removing 8 ash trees affected by dieback and replanting with diverse native species."
