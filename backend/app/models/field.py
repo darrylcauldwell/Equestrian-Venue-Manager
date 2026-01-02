@@ -148,3 +148,32 @@ class TurnoutGroupHorse(Base):
     horse = relationship("Horse")
     turned_out_by = relationship("User", foreign_keys=[turned_out_by_id])
     brought_in_by = relationship("User", foreign_keys=[brought_in_by_id])
+
+
+class HorseFieldAssignment(Base):
+    """Permanent field assignment for livery horses with history tracking.
+
+    When a horse's field changes, the current assignment's end_date is set
+    and a new assignment record is created. NULL end_date = current assignment.
+    """
+    __tablename__ = "horse_field_assignments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    horse_id = Column(Integer, ForeignKey("horses.id", ondelete="CASCADE"), nullable=False, index=True)
+    field_id = Column(Integer, ForeignKey("fields.id", ondelete="SET NULL"), nullable=True, index=True)
+
+    # Assignment period
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=True)  # NULL = current assignment
+
+    # Audit
+    assigned_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    notes = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    horse = relationship("Horse", backref="field_assignments")
+    field = relationship("Field")
+    assigned_by = relationship("User")

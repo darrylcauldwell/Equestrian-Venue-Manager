@@ -933,28 +933,29 @@
 
 .payroll-toolbar .period-selector {
   display: flex;
-  gap: 10px;
+  gap: var(--space-3);
   align-items: center;
   flex-wrap: wrap;
 }
 
-.payroll-toolbar select {
-  padding: 8px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  cursor: pointer;
+.payroll-toolbar .period-selector .ds-select {
+  width: auto;
+  min-width: 120px;
+}
+
+.payroll-toolbar .period-nav-btn {
+  padding: 0.625rem 0.75rem;
+  min-width: auto;
+  font-weight: bold;
 }
 
 .payroll-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .payroll-header h3 {
@@ -1017,9 +1018,28 @@
   padding: 12px 15px;
 }
 
-.payroll-view .tips-highlight {
+/* Tips Column - Tax-free highlighting */
+.payroll-view .tips-header {
+  position: relative;
+}
+
+.payroll-view .tips-header .tax-free-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
   color: var(--color-success);
-  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payroll-view .tips-cell {
+  background: var(--color-success-bg);
+  color: var(--text-primary);
+}
+
+.payroll-view .tips-cell.has-tips {
+  color: var(--color-success);
+  font-weight: 600;
 }
 
 /* Payroll Notes */

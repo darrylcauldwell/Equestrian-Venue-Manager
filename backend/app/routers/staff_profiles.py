@@ -6,6 +6,7 @@ import string
 from typing import List, Optional
 from datetime import datetime, date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
@@ -268,8 +269,8 @@ def create_staff_member(
     with staff role and their staff profile in a single transaction.
     Returns the created profile along with the temporary password.
     """
-    # Check username uniqueness
-    existing_user = db.query(User).filter(User.username == data.username).first()
+    # Check username uniqueness (case-insensitive)
+    existing_user = db.query(User).filter(func.lower(User.username) == func.lower(data.username)).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

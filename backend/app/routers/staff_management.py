@@ -656,13 +656,37 @@ def create_holiday_request(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Create a holiday request."""
+    """Create a holiday request. Admin can create for any staff member and auto-approve."""
     require_staff(current_user)
 
+    # Determine staff_id and status based on user role
+    is_admin = current_user.role in ["admin", "coach"]
+
+    if data.staff_id and is_admin:
+        # Admin creating leave for a staff member - verify staff exists
+        staff = db.query(User).filter(User.id == data.staff_id).first()
+        if not staff:
+            raise HTTPException(status_code=404, detail="Staff member not found")
+        target_staff_id = data.staff_id
+        # Admin-created leave is auto-approved
+        leave_status = LeaveStatus.APPROVED
+        approved_by_id = current_user.id
+        approval_date = datetime.utcnow()
+    else:
+        # Staff creating their own request
+        target_staff_id = current_user.id
+        leave_status = LeaveStatus.PENDING
+        approved_by_id = None
+        approval_date = None
+
+    # Create the request (exclude staff_id from data as we set it manually)
+    request_data = data.model_dump(exclude={'staff_id'})
     request = HolidayRequest(
-        **data.model_dump(),
-        staff_id=current_user.id,
-        status=LeaveStatus.PENDING
+        **request_data,
+        staff_id=target_staff_id,
+        status=leave_status,
+        approved_by_id=approved_by_id,
+        approval_date=approval_date
     )
     db.add(request)
     db.commit()
@@ -678,17 +702,25 @@ def update_holiday_request(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update a pending holiday request (own only)."""
+    """Update a holiday request. Staff can edit own pending requests. Admin can edit any request."""
     require_staff(current_user)
 
     request = db.query(HolidayRequest).filter(HolidayRequest.id == request_id).first()
     if not request:
         raise HTTPException(status_code=404, detail="Holiday request not found")
 
-    if request.staff_id != current_user.id:
+    is_admin = current_user.role in ["admin", "coach"]
+    is_own = request.staff_id == current_user.id
+
+    if is_admin:
+        # Admin can edit any request (pending or approved)
+        pass
+    elif is_own:
+        # Staff can only edit their own pending requests
+        if request.status != LeaveStatus.PENDING:
+            raise HTTPException(status_code=400, detail="Can only edit pending requests")
+    else:
         raise HTTPException(status_code=403, detail="Cannot edit others' requests")
-    if request.status != LeaveStatus.PENDING:
-        raise HTTPException(status_code=400, detail="Can only edit pending requests")
 
     update_data = data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -760,7 +792,7 @@ def cancel_holiday_request(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Cancel a holiday request (own pending only, or manager can cancel any)."""
+    """Cancel a holiday request (own pending only, or admin can cancel any status)."""
     require_staff(current_user)
 
     request = db.query(HolidayRequest).filter(HolidayRequest.id == request_id).first()
@@ -768,7 +800,15 @@ def cancel_holiday_request(
         raise HTTPException(status_code=404, detail="Holiday request not found")
 
     is_own = request.staff_id == current_user.id
+    is_admin = current_user.role in [UserRole.ADMIN, UserRole.COACH]
 
+    # Admin can cancel any holiday regardless of status
+    if is_admin:
+        request.status = LeaveStatus.CANCELLED
+        db.commit()
+        return
+
+    # Staff can only cancel their own pending requests
     if not is_own:
         raise HTTPException(status_code=403, detail="Cannot cancel others' requests")
 
@@ -1137,21 +1177,19 @@ def get_payroll_summary(
             PayrollAdjustment.payment_date <= period_end
         ).all()
 
-        bonus_total = sum(float(a.amount) for a in adjustments if a.adjustment_type == PayrollAdjustmentType.BONUS)
-        adhoc_total = sum(float(a.amount) for a in adjustments if a.adjustment_type == PayrollAdjustmentType.ADHOC)
+        oneoff_total = sum(float(a.amount) for a in adjustments if a.adjustment_type == PayrollAdjustmentType.ONEOFF)
         tips_total = sum(float(a.amount) for a in adjustments if a.adjustment_type == PayrollAdjustmentType.TIP)
         taxable_adj = sum(float(a.amount) for a in adjustments if a.taxable)
         non_taxable_adj = sum(float(a.amount) for a in adjustments if not a.taxable)
 
         adjustment_summary = PayrollAdjustmentSummary(
-            bonus_total=bonus_total,
-            adhoc_total=adhoc_total,
+            oneoff_total=oneoff_total,
             tips_total=tips_total,
             taxable_adjustments=taxable_adj,
             non_taxable_adjustments=non_taxable_adj
         )
 
-        staff_total_pay = base_pay + bonus_total + adhoc_total + tips_total
+        staff_total_pay = base_pay + oneoff_total + tips_total
         taxable_pay = base_pay + taxable_adj
         non_taxable_pay = non_taxable_adj
 
@@ -1171,7 +1209,7 @@ def get_payroll_summary(
 
         total_hours += approved_hours
         total_base_pay += base_pay
-        total_adjustments_amount += bonus_total + adhoc_total + tips_total
+        total_adjustments_amount += oneoff_total + tips_total
         total_pay_amount += staff_total_pay
 
     return PayrollSummaryResponse(
@@ -1193,7 +1231,7 @@ def create_payroll_adjustment(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Create a payroll adjustment (bonus, ad-hoc payment, or tip)."""
+    """Create a payroll adjustment (one-off payment or tip)."""
     # Verify staff exists
     staff = db.query(User).filter(User.id == data.staff_id).first()
     if not staff:

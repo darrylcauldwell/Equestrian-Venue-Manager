@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-from app.routers import auth, users, arenas, bookings, horses, health_records, feed, services, notices, professionals, tasks, staff_management, staff_profiles, clinics, lessons, payments, settings, uploads, weather, stables, livery_packages, compliance, turnout, account, backup, rehab, fields, invoices, billing, holiday_livery, contracts, grants, land_features, flood_warnings, feature_flags, risk_assessments
+from app.routers import auth, users, arenas, bookings, horses, health_records, feed, services, notices, professionals, tasks, staff_management, staff_profiles, clinics, lessons, payments, settings, uploads, weather, stables, livery_packages, compliance, turnout, account, backup, rehab, fields, invoices, billing, holiday_livery, contracts, grants, land_features, flood_warnings, feature_flags, risk_assessments, sheep_flocks
 from app.services.scheduler import start_scheduler, stop_scheduler
 from app.database import SessionLocal
 from app.models.settings import SiteSettings
@@ -120,6 +120,7 @@ app.include_router(land_features.router, prefix="/api/land-features", tags=["Lan
 app.include_router(flood_warnings.router, prefix="/api/flood-warnings", tags=["Flood Monitoring"])
 app.include_router(feature_flags.router, prefix="/api", tags=["Feature Flags"])
 app.include_router(risk_assessments.router, prefix="/api", tags=["Risk Assessments"])
+app.include_router(sheep_flocks.router, prefix="/api", tags=["Sheep Flocks"])
 
 
 @app.get("/api/health")

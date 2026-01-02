@@ -2,6 +2,7 @@ import secrets
 import string
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -74,8 +75,8 @@ def admin_create_user(
     db: Session = Depends(get_db)
 ):
     """Admin creates a new user with a temporary password"""
-    # Check username uniqueness
-    existing_user = db.query(User).filter(User.username == user_data.username).first()
+    # Check username uniqueness (case-insensitive)
+    existing_user = db.query(User).filter(func.lower(User.username) == func.lower(user_data.username)).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -64,6 +64,9 @@ class Horse(Base):
     turnout_alone = Column(Boolean, default=False, nullable=False)  # Must go out alone
     turnout_notes = Column(Text, nullable=True)
 
+    # Field assignment status
+    box_rest = Column(Boolean, default=False, nullable=False)  # Horse on box rest (no field turnout)
+
     owner = relationship("User", back_populates="horses")
     stable = relationship("Stable", back_populates="horses")
     livery_package = relationship("LiveryPackage", backref="horses")

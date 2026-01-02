@@ -573,6 +573,68 @@ class LandManagementEnums(BaseModel):
     suggestion_priorities: List[dict]
 
 
+# ============================================================================
+# Sheep Flock Schemas
+# ============================================================================
+
+class SheepFlockBase(BaseModel):
+    name: str
+    count: int
+    breed: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class SheepFlockCreate(SheepFlockBase):
+    pass
+
+
+class SheepFlockUpdate(BaseModel):
+    name: Optional[str] = None
+    count: Optional[int] = None
+    breed: Optional[str] = None
+    notes: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class SheepFlockResponse(SheepFlockBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    # Derived
+    current_field_id: Optional[int] = None
+    current_field_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SheepFlockFieldAssignmentCreate(BaseModel):
+    field_id: int
+    start_date: Optional[date] = None  # Defaults to today
+    notes: Optional[str] = None
+
+
+class SheepFlockFieldAssignmentResponse(BaseModel):
+    id: int
+    flock_id: int
+    field_id: Optional[int]
+    start_date: date
+    end_date: Optional[date]
+    assigned_by_id: int
+    notes: Optional[str]
+    created_at: datetime
+    # Nested
+    flock_name: Optional[str] = None
+    field_name: Optional[str] = None
+    assigned_by_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SheepFlockWithHistory(SheepFlockResponse):
+    assignment_history: List[SheepFlockFieldAssignmentResponse] = []
+
+
 # Update forward references
 GrantDetailResponse.model_rebuild()
 LandFeatureDetailResponse.model_rebuild()

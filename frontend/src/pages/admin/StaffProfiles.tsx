@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { staffProfilesApi, contractsApi } from '../../services/api';
 import { useModalForm, useRequestState } from '../../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Textarea, Select } from '../../components/ui';
@@ -164,6 +163,18 @@ export function AdminStaffProfiles() {
         qualifications: fullProfile.qualifications || '',
         dbs_check_date: fullProfile.dbs_check_date || '',
         dbs_certificate_number: fullProfile.dbs_certificate_number || '',
+        // Payroll fields
+        hourly_rate: fullProfile.hourly_rate,
+        national_insurance_number: fullProfile.national_insurance_number || '',
+        bank_account_number: fullProfile.bank_account_number || '',
+        bank_sort_code: fullProfile.bank_sort_code || '',
+        bank_account_name: fullProfile.bank_account_name || '',
+        tax_code: fullProfile.tax_code || '',
+        student_loan_plan: fullProfile.student_loan_plan || '',
+        // P45 fields
+        p45_date_left_previous: fullProfile.p45_date_left_previous || '',
+        p45_tax_paid_previous: fullProfile.p45_tax_paid_previous,
+        p45_pay_to_date_previous: fullProfile.p45_pay_to_date_previous,
       });
       setAdminNotes(fullProfile.notes || '');
     } catch {
@@ -436,12 +447,6 @@ export function AdminStaffProfiles() {
                       >
                         Edit
                       </button>
-                      <Link
-                        to={`/book/admin/staff?user=${profile.user_id}`}
-                        className="ds-btn ds-btn-sm ds-btn-secondary"
-                      >
-                        Rota
-                      </Link>
                       <button
                         className="ds-btn ds-btn-sm ds-btn-danger"
                         onClick={() => setDeleteConfirm(profile)}
@@ -689,6 +694,139 @@ export function AdminStaffProfiles() {
                   ...profileModal.formData,
                   dbs_certificate_number: e.target.value
                 })}
+              />
+            </FormGroup>
+          </FormRow>
+
+          <h4 className="form-section-title">Payroll Information</h4>
+          <FormRow>
+            <FormGroup label="Hourly Rate (£)">
+              <Input
+                type="number"
+                min={0}
+                step={0.01}
+                value={(profileModal.formData as { hourly_rate?: number }).hourly_rate || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  hourly_rate: e.target.value ? parseFloat(e.target.value) : undefined
+                })}
+                placeholder="e.g., 12.50"
+              />
+            </FormGroup>
+            <FormGroup label="National Insurance Number">
+              <Input
+                value={(profileModal.formData as { national_insurance_number?: string }).national_insurance_number || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  national_insurance_number: e.target.value.toUpperCase()
+                })}
+                placeholder="e.g., AB123456C"
+                maxLength={13}
+              />
+            </FormGroup>
+          </FormRow>
+
+          <FormGroup label="Bank Account Name">
+            <Input
+              value={(profileModal.formData as { bank_account_name?: string }).bank_account_name || ''}
+              onChange={(e) => profileModal.setFormData({
+                ...profileModal.formData,
+                bank_account_name: e.target.value
+              })}
+              placeholder="Name as shown on bank account"
+            />
+          </FormGroup>
+          <FormRow>
+            <FormGroup label="Sort Code">
+              <Input
+                value={(profileModal.formData as { bank_sort_code?: string }).bank_sort_code || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  bank_sort_code: e.target.value
+                })}
+                placeholder="e.g., 12-34-56"
+                maxLength={8}
+              />
+            </FormGroup>
+            <FormGroup label="Account Number">
+              <Input
+                value={(profileModal.formData as { bank_account_number?: string }).bank_account_number || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  bank_account_number: e.target.value
+                })}
+                placeholder="8 digit account number"
+                maxLength={8}
+              />
+            </FormGroup>
+          </FormRow>
+
+          <FormRow>
+            <FormGroup label="Tax Code">
+              <Input
+                value={(profileModal.formData as { tax_code?: string }).tax_code || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  tax_code: e.target.value.toUpperCase()
+                })}
+                placeholder="e.g., 1257L, BR, 0T"
+              />
+              <small className="form-help">Leave blank if unknown</small>
+            </FormGroup>
+            <FormGroup label="Student Loan Plan">
+              <select
+                className="ds-select"
+                value={(profileModal.formData as { student_loan_plan?: string }).student_loan_plan || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  student_loan_plan: e.target.value
+                })}
+              >
+                <option value="">None / Not applicable</option>
+                <option value="plan_1">Plan 1 (pre-2012)</option>
+                <option value="plan_2">Plan 2 (post-2012)</option>
+                <option value="plan_4">Plan 4 (Scotland)</option>
+                <option value="postgrad">Postgraduate Loan</option>
+              </select>
+            </FormGroup>
+          </FormRow>
+
+          <h4 className="form-section-title">P45 Information (Previous Employer)</h4>
+          <FormRow>
+            <FormGroup label="Date Left Previous Employer">
+              <Input
+                type="date"
+                value={(profileModal.formData as { p45_date_left_previous?: string }).p45_date_left_previous || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  p45_date_left_previous: e.target.value
+                })}
+              />
+            </FormGroup>
+            <FormGroup label="Tax Paid to Date (£)">
+              <Input
+                type="number"
+                min={0}
+                step={0.01}
+                value={(profileModal.formData as { p45_tax_paid_previous?: number }).p45_tax_paid_previous || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  p45_tax_paid_previous: e.target.value ? parseFloat(e.target.value) : undefined
+                })}
+                placeholder="From P45"
+              />
+            </FormGroup>
+            <FormGroup label="Pay to Date (£)">
+              <Input
+                type="number"
+                min={0}
+                step={0.01}
+                value={(profileModal.formData as { p45_pay_to_date_previous?: number }).p45_pay_to_date_previous || ''}
+                onChange={(e) => profileModal.setFormData({
+                  ...profileModal.formData,
+                  p45_pay_to_date_previous: e.target.value ? parseFloat(e.target.value) : undefined
+                })}
+                placeholder="From P45"
               />
             </FormGroup>
           </FormRow>

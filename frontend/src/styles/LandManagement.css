@@ -512,6 +512,128 @@
   font-size: 0.75rem;
 }
 
+/* Occupancy Grid */
+.occupancy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.occupancy-card {
+  border-left: 3px solid var(--color-primary);
+}
+
+.occupancy-card.resting {
+  border-left-color: var(--color-warning);
+  opacity: 0.8;
+}
+
+.occupancy-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.occupancy-section {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.occupancy-section h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.occupant-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.occupant-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.occupant-list li:last-child {
+  border-bottom: none;
+}
+
+.occupant-name {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.occupant-owner,
+.occupant-breed {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.occupant-count {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+}
+
+.occupant-since {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.capacity {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Sheep Flocks Grid */
+.sheep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.sheep-card {
+  border-left: 3px solid var(--color-info);
+}
+
+.sheep-card.inactive {
+  opacity: 0.6;
+  border-left-color: var(--text-muted);
+}
+
+.flock-info {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.flock-info .label {
+  color: var(--text-secondary);
+}
+
+.flock-notes {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.section-desc {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .dashboard-grid {
@@ -525,7 +647,9 @@
   .grants-grid,
   .features-grid,
   .stations-grid,
-  .troughs-grid {
+  .troughs-grid,
+  .occupancy-grid,
+  .sheep-grid {
     grid-template-columns: 1fr;
   }
 

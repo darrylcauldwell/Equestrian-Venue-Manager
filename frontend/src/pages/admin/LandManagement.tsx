@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { grantsApi, landFeaturesApi, floodWarningsApi, fieldAnalyticsApi, fieldsApi } from '../../services/api';
+import { grantsApi, landFeaturesApi, floodWarningsApi, fieldAnalyticsApi, fieldsApi, fieldOccupancyApi, sheepFlocksApi } from '../../services/api';
 import type {
   Grant,
   GrantCreate,
@@ -24,6 +24,11 @@ import type {
   Field,
   MaintenanceDueItem,
   WaterTroughStatus,
+  FieldCurrentOccupancy,
+  SheepFlock,
+  SheepFlockCreate,
+  SheepFlockUpdate,
+  SheepFlockFieldAssignmentCreate,
 } from '../../types';
 import { useModalForm } from '../../hooks';
 import {
@@ -159,6 +164,15 @@ const defaultPaymentForm: GrantPaymentScheduleCreate = {
   amount: 0,
 };
 
+const defaultSheepFlockForm: SheepFlockCreate = {
+  name: '',
+  count: 1,
+};
+
+const defaultSheepAssignForm: SheepFlockFieldAssignmentCreate = {
+  field_id: 0,
+};
+
 export function AdminLandManagement() {
   // Active tab state
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -175,6 +189,8 @@ export function AdminLandManagement() {
   const [floodStatus, setFloodStatus] = useState<FloodWarningStatus | null>(null);
   const [fields, setFields] = useState<Field[]>([]);
   const [rotationSuggestions, setRotationSuggestions] = useState<FieldRotationSuggestion[]>([]);
+  const [fieldOccupancy, setFieldOccupancy] = useState<FieldCurrentOccupancy[]>([]);
+  const [sheepFlocks, setSheepFlocks] = useState<SheepFlock[]>([]);
 
   // Dashboard stats
   const [maintenanceDue, setMaintenanceDue] = useState<MaintenanceDueItem[]>([]);
@@ -196,21 +212,28 @@ export function AdminLandManagement() {
   const maintenanceModal = useModalForm<FeatureMaintenanceLogCreate>(defaultMaintenanceForm);
   const stationModal = useModalForm<FloodMonitoringStationCreate>(defaultStationForm);
   const paymentModal = useModalForm<GrantPaymentScheduleCreate>(defaultPaymentForm);
+  const sheepFlockModal = useModalForm<SheepFlockCreate>(defaultSheepFlockForm);
+  const sheepAssignModal = useModalForm<SheepFlockFieldAssignmentCreate>(defaultSheepAssignForm);
+
+  // Selected sheep flock for assign modal
+  const [selectedFlock, setSelectedFlock] = useState<SheepFlock | null>(null);
 
   // Confirm modal
   const [deleteTarget, setDeleteTarget] = useState<{
-    type: 'grant' | 'feature' | 'station';
-    item: Grant | LandFeature | FloodMonitoringStation;
+    type: 'grant' | 'feature' | 'station' | 'sheep_flock';
+    item: Grant | LandFeature | FloodMonitoringStation | SheepFlock;
   } | null>(null);
 
   // Tabs configuration
   const tabs = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'fields', label: 'Fields', count: fields.length },
+    { id: 'occupancy', label: 'Occupancy', count: fieldOccupancy.reduce((sum, f) => sum + f.total_horse_count + f.total_sheep_count, 0) },
+    { id: 'sheep', label: 'Sheep Flocks', count: sheepFlocks.length },
     { id: 'grants', label: 'Grants', count: grants.length },
     { id: 'features', label: 'Features', count: features.length },
     { id: 'water', label: 'Water Mgmt' },
-    { id: 'flood', label: 'Flood Monitor' },
+    { id: 'flood', label: 'Flood Monitor', count: stations.length },
     { id: 'analytics', label: 'Analytics' },
   ];
 
@@ -225,6 +248,8 @@ export function AdminLandManagement() {
         loadFloodStatus(),
         loadFields(),
         loadDashboardData(),
+        loadFieldOccupancy(),
+        loadSheepFlocks(),
       ]);
       setError('');
     } catch (err) {
@@ -267,6 +292,25 @@ export function AdminLandManagement() {
   const loadFields = async () => {
     const data = await fieldsApi.list();
     setFields(data);
+  };
+
+  const loadFieldOccupancy = async () => {
+    try {
+      const data = await fieldOccupancyApi.getAllOccupancy();
+      setFieldOccupancy(data);
+    } catch {
+      // Might fail if no fields exist
+      setFieldOccupancy([]);
+    }
+  };
+
+  const loadSheepFlocks = async () => {
+    try {
+      const data = await sheepFlocksApi.list();
+      setSheepFlocks(data);
+    } catch {
+      setSheepFlocks([]);
+    }
   };
 
   const loadDashboardData = async () => {
@@ -463,6 +507,58 @@ export function AdminLandManagement() {
     }
   };
 
+  // Sheep Flock handlers
+  const handleSheepFlockSubmit = async () => {
+    try {
+      if (sheepFlockModal.isEditing) {
+        await sheepFlocksApi.update(sheepFlockModal.editingId!, sheepFlockModal.formData as SheepFlockUpdate);
+        setSuccess('Sheep flock updated');
+      } else {
+        await sheepFlocksApi.create(sheepFlockModal.formData);
+        setSuccess('Sheep flock created');
+      }
+      sheepFlockModal.close();
+      await loadSheepFlocks();
+      await loadFieldOccupancy();
+    } catch {
+      setError('Failed to save sheep flock');
+    }
+  };
+
+  const handleEditSheepFlock = (flock: SheepFlock) => {
+    sheepFlockModal.edit(flock.id, {
+      name: flock.name,
+      count: flock.count,
+      breed: flock.breed,
+      notes: flock.notes,
+    });
+  };
+
+  const handleAssignSheepFlock = async () => {
+    if (!selectedFlock) return;
+    try {
+      await sheepFlocksApi.assignToField(selectedFlock.id, sheepAssignModal.formData);
+      setSuccess(`${selectedFlock.name} assigned to field`);
+      sheepAssignModal.close();
+      setSelectedFlock(null);
+      await loadSheepFlocks();
+      await loadFieldOccupancy();
+    } catch {
+      setError('Failed to assign flock to field');
+    }
+  };
+
+  const handleRemoveSheepFlockFromField = async (flock: SheepFlock) => {
+    try {
+      await sheepFlocksApi.removeFromField(flock.id);
+      setSuccess(`${flock.name} removed from field`);
+      await loadSheepFlocks();
+      await loadFieldOccupancy();
+    } catch {
+      setError('Failed to remove flock from field');
+    }
+  };
+
   // Delete handler
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -480,11 +576,16 @@ export function AdminLandManagement() {
           await floodWarningsApi.deleteStation(deleteTarget.item.id);
           await loadStations();
           break;
+        case 'sheep_flock':
+          await sheepFlocksApi.delete(deleteTarget.item.id);
+          await loadSheepFlocks();
+          await loadFieldOccupancy();
+          break;
       }
-      setSuccess(`${deleteTarget.type} deleted`);
+      setSuccess(`${deleteTarget.type.replace('_', ' ')} deleted`);
       setDeleteTarget(null);
     } catch {
-      setError(`Failed to delete ${deleteTarget.type}`);
+      setError(`Failed to delete ${deleteTarget.type.replace('_', ' ')}`);
     }
   };
 
@@ -659,6 +760,139 @@ export function AdminLandManagement() {
       {/* Fields Tab */}
       <TabPanel id="fields" activeTab={activeTab}>
         <Fields />
+      </TabPanel>
+
+      {/* Occupancy Tab */}
+      <TabPanel id="occupancy" activeTab={activeTab}>
+        <div className="tab-header">
+          <h2>Field Occupancy</h2>
+        </div>
+
+        {fieldOccupancy.length === 0 ? (
+          <Empty title="No fields configured" />
+        ) : (
+          <div className="occupancy-grid">
+            {fieldOccupancy.map((field) => (
+              <Card
+                key={field.field_id}
+                className={`occupancy-card ${field.is_resting ? 'resting' : ''}`}
+              >
+                <CardHeader>
+                  <h3>{field.field_name}</h3>
+                  <div className="occupancy-badges">
+                    <Badge variant={
+                      field.current_condition === 'excellent' ? 'success' :
+                      field.current_condition === 'good' ? 'info' :
+                      field.current_condition === 'fair' ? 'warning' : 'error'
+                    }>
+                      {field.current_condition}
+                    </Badge>
+                    {field.is_resting && <Badge variant="warning">Resting</Badge>}
+                  </div>
+                </CardHeader>
+                <CardBody>
+                  {field.max_horses && (
+                    <p className="capacity">
+                      Capacity: {field.total_horse_count}/{field.max_horses} horses
+                    </p>
+                  )}
+
+                  <div className="occupancy-section">
+                    <h4>Horses ({field.current_horses.length})</h4>
+                    {field.current_horses.length === 0 ? (
+                      <p className="text-muted">No horses assigned</p>
+                    ) : (
+                      <ul className="occupant-list">
+                        {field.current_horses.map((horse) => (
+                          <li key={horse.horse_id}>
+                            <span className="occupant-name">{horse.horse_name}</span>
+                            {horse.owner_name && <span className="occupant-owner">({horse.owner_name})</span>}
+                            <span className="occupant-since">Since {formatDate(horse.assigned_since)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="occupancy-section">
+                    <h4>Sheep ({field.total_sheep_count})</h4>
+                    {field.current_sheep.length === 0 ? (
+                      <p className="text-muted">No sheep flocks assigned</p>
+                    ) : (
+                      <ul className="occupant-list">
+                        {field.current_sheep.map((flock) => (
+                          <li key={flock.flock_id}>
+                            <span className="occupant-name">{flock.flock_name}</span>
+                            <span className="occupant-count">{flock.count} sheep</span>
+                            {flock.breed && <span className="occupant-breed">({flock.breed})</span>}
+                            <span className="occupant-since">Since {formatDate(flock.assigned_since)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+        )}
+      </TabPanel>
+
+      {/* Sheep Flocks Tab */}
+      <TabPanel id="sheep" activeTab={activeTab}>
+        <div className="tab-header">
+          <h2>Sheep Flocks</h2>
+          <Button onClick={() => sheepFlockModal.open()}>Add Flock</Button>
+        </div>
+
+        <p className="section-desc">
+          Sheep flocks are used for worm control grazing. Sheep help break the parasite lifecycle
+          by consuming worm larvae that would otherwise affect horses.
+        </p>
+
+        {sheepFlocks.length === 0 ? (
+          <Empty title="No sheep flocks configured" />
+        ) : (
+          <div className="sheep-grid">
+            {sheepFlocks.map((flock) => (
+              <Card key={flock.id} className={`sheep-card ${!flock.is_active ? 'inactive' : ''}`}>
+                <CardHeader>
+                  <h3>{flock.name}</h3>
+                  <Badge variant="info">{flock.count} sheep</Badge>
+                </CardHeader>
+                <CardBody>
+                  {flock.breed && (
+                    <div className="flock-info">
+                      <span className="label">Breed:</span>
+                      <span>{flock.breed}</span>
+                    </div>
+                  )}
+                  <div className="flock-info">
+                    <span className="label">Current Field:</span>
+                    <span>{flock.current_field_name || 'Not assigned'}</span>
+                  </div>
+                  {flock.notes && <p className="flock-notes">{flock.notes}</p>}
+                </CardBody>
+                <div className="card-actions">
+                  {flock.current_field_id ? (
+                    <Button size="sm" variant="secondary" onClick={() => handleRemoveSheepFlockFromField(flock)}>
+                      Remove from Field
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="primary" onClick={() => {
+                      setSelectedFlock(flock);
+                      sheepAssignModal.open();
+                    }}>
+                      Assign to Field
+                    </Button>
+                  )}
+                  <Button size="sm" variant="ghost" onClick={() => handleEditSheepFlock(flock)}>Edit</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setDeleteTarget({ type: 'sheep_flock', item: flock })}>Delete</Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </TabPanel>
 
       {/* Grants Tab */}
@@ -1730,12 +1964,106 @@ export function AdminLandManagement() {
         </form>
       </Modal>
 
+      {/* Sheep Flock Modal */}
+      <Modal
+        isOpen={sheepFlockModal.isOpen}
+        onClose={sheepFlockModal.close}
+        title={sheepFlockModal.isEditing ? 'Edit Sheep Flock' : 'Add Sheep Flock'}
+      >
+        <form onSubmit={(e) => { e.preventDefault(); handleSheepFlockSubmit(); }}>
+          <FormGroup label="Flock Name" required>
+            <Input
+              value={sheepFlockModal.formData.name || ''}
+              onChange={(e) => sheepFlockModal.setFormData({ ...sheepFlockModal.formData, name: e.target.value })}
+              placeholder="e.g., Main Flock, Hill Sheep"
+              required
+            />
+          </FormGroup>
+
+          <FormRow>
+            <FormGroup label="Number of Sheep" required>
+              <Input
+                type="number"
+                min="1"
+                value={sheepFlockModal.formData.count || 1}
+                onChange={(e) => sheepFlockModal.setFormData({ ...sheepFlockModal.formData, count: parseInt(e.target.value) || 1 })}
+                required
+              />
+            </FormGroup>
+
+            <FormGroup label="Breed">
+              <Input
+                value={sheepFlockModal.formData.breed || ''}
+                onChange={(e) => sheepFlockModal.setFormData({ ...sheepFlockModal.formData, breed: e.target.value })}
+                placeholder="e.g., Suffolk, Texel"
+              />
+            </FormGroup>
+          </FormRow>
+
+          <FormGroup label="Notes">
+            <Textarea
+              value={sheepFlockModal.formData.notes || ''}
+              onChange={(e) => sheepFlockModal.setFormData({ ...sheepFlockModal.formData, notes: e.target.value })}
+              rows={2}
+            />
+          </FormGroup>
+
+          <div className="modal-actions">
+            <Button type="button" variant="secondary" onClick={sheepFlockModal.close}>Cancel</Button>
+            <Button type="submit" variant="primary">{sheepFlockModal.isEditing ? 'Save' : 'Create'}</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Sheep Assign to Field Modal */}
+      <Modal
+        isOpen={sheepAssignModal.isOpen}
+        onClose={() => { sheepAssignModal.close(); setSelectedFlock(null); }}
+        title={`Assign ${selectedFlock?.name || 'Flock'} to Field`}
+      >
+        <form onSubmit={(e) => { e.preventDefault(); handleAssignSheepFlock(); }}>
+          <FormGroup label="Select Field" required>
+            <Select
+              value={sheepAssignModal.formData.field_id || ''}
+              onChange={(e) => sheepAssignModal.setFormData({ ...sheepAssignModal.formData, field_id: parseInt(e.target.value) })}
+              required
+            >
+              <option value="">Choose a field...</option>
+              {fields.filter((f) => f.is_active && !f.is_resting).map((f) => (
+                <option key={f.id} value={f.id}>{f.name}</option>
+              ))}
+            </Select>
+          </FormGroup>
+
+          <FormGroup label="Start Date">
+            <Input
+              type="date"
+              value={sheepAssignModal.formData.start_date || ''}
+              onChange={(e) => sheepAssignModal.setFormData({ ...sheepAssignModal.formData, start_date: e.target.value })}
+            />
+          </FormGroup>
+
+          <FormGroup label="Notes">
+            <Textarea
+              value={sheepAssignModal.formData.notes || ''}
+              onChange={(e) => sheepAssignModal.setFormData({ ...sheepAssignModal.formData, notes: e.target.value })}
+              rows={2}
+            />
+          </FormGroup>
+
+          <div className="modal-actions">
+            <Button type="button" variant="secondary" onClick={() => { sheepAssignModal.close(); setSelectedFlock(null); }}>Cancel</Button>
+            <Button type="submit" variant="primary">Assign to Field</Button>
+          </div>
+        </form>
+      </Modal>
+
       {/* Confirm Delete Modal */}
       <ConfirmModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteConfirm}
-        title={`Delete ${deleteTarget?.type}`}
+        title={`Delete ${deleteTarget?.type?.replace('_', ' ')}`}
         message={`Are you sure you want to delete "${(deleteTarget?.item as { name?: string })?.name || (deleteTarget?.item as { station_name?: string })?.station_name}"? This action cannot be undone.`}
         confirmLabel="Delete"
         variant="danger"

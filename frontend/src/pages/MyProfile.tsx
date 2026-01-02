@@ -97,11 +97,8 @@ export function MyProfile() {
 
   const parseQualifications = (qualStr?: string): string[] => {
     if (!qualStr) return [];
-    try {
-      return JSON.parse(qualStr);
-    } catch {
-      return [];
-    }
+    // Qualifications are stored as comma-separated strings
+    return qualStr.split(',').map(q => q.trim()).filter(q => q.length > 0);
   };
 
   const formatStaffType = (staffType?: string): string => {

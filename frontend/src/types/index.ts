@@ -332,6 +332,8 @@ export interface Horse {
   // Turnout preferences
   turnout_alone?: boolean;
   turnout_notes?: string;
+  // Field assignment
+  box_rest?: boolean;
 }
 
 // ============== Emergency Contact Types ==============
@@ -1444,6 +1446,7 @@ export interface HolidayRequest {
 }
 
 export interface CreateHolidayRequest {
+  staff_id?: number;  // Admin can specify staff_id to create leave for others
   start_date: string;
   end_date: string;
   leave_type?: LeaveType;
@@ -1548,7 +1551,7 @@ export interface AllStaffLeaveSummary {
 }
 
 // Payroll Types
-export type PayrollAdjustmentType = 'bonus' | 'adhoc' | 'tip';
+export type PayrollAdjustmentType = 'oneoff' | 'tip';
 
 export interface PayrollAdjustmentCreate {
   staff_id: number;
@@ -1582,8 +1585,7 @@ export interface PayrollAdjustmentListResponse {
 }
 
 export interface PayrollAdjustmentSummary {
-  bonus_total: number;
-  adhoc_total: number;
+  oneoff_total: number;
   tips_total: number;
   taxable_adjustments: number;
   non_taxable_adjustments: number;
@@ -4373,4 +4375,120 @@ export interface ComplianceSummary {
 export interface RiskAssessmentEnums {
   categories: EnumOption[];
   triggers: EnumOption[];
+}
+
+// ============== Horse Field Assignment Types ==============
+
+export interface HorseFieldAssignmentCreate {
+  field_id: number;
+  start_date?: string;
+  notes?: string;
+}
+
+export interface HorseFieldAssignment {
+  id: number;
+  horse_id: number;
+  field_id: number | null;
+  start_date: string;
+  end_date?: string;
+  assigned_by_id: number;
+  notes?: string;
+  created_at: string;
+  updated_at?: string;
+  horse_name?: string;
+  field_name?: string;
+  assigned_by_name?: string;
+}
+
+export interface HorseFieldAssignmentHistory {
+  horse_id: number;
+  horse_name: string;
+  box_rest: boolean;
+  current_assignment?: HorseFieldAssignment;
+  history: HorseFieldAssignment[];
+}
+
+// ============== Field Occupancy Types ==============
+
+export interface FieldOccupantHorse {
+  horse_id: number;
+  horse_name: string;
+  owner_name?: string;
+  assigned_since: string;
+}
+
+export interface FieldOccupantSheep {
+  flock_id: number;
+  flock_name: string;
+  count: number;
+  breed?: string;
+  assigned_since: string;
+}
+
+export type FieldConditionType = 'excellent' | 'good' | 'fair' | 'poor' | 'resting';
+
+export interface FieldCurrentOccupancy {
+  field_id: number;
+  field_name: string;
+  max_horses?: number;
+  current_condition: FieldConditionType;
+  is_resting: boolean;
+  current_horses: FieldOccupantHorse[];
+  current_sheep: FieldOccupantSheep[];
+  total_horse_count: number;
+  total_sheep_count: number;
+}
+
+// ============== Sheep Flock Types ==============
+
+export interface SheepFlockCreate {
+  name: string;
+  count: number;
+  breed?: string;
+  notes?: string;
+}
+
+export interface SheepFlockUpdate {
+  name?: string;
+  count?: number;
+  breed?: string;
+  notes?: string;
+  is_active?: boolean;
+}
+
+export interface SheepFlock {
+  id: number;
+  name: string;
+  count: number;
+  breed?: string;
+  notes?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  current_field_id?: number;
+  current_field_name?: string;
+}
+
+export interface SheepFlockFieldAssignmentCreate {
+  field_id: number;
+  start_date?: string;
+  notes?: string;
+}
+
+export interface SheepFlockFieldAssignment {
+  id: number;
+  flock_id: number;
+  field_id: number | null;
+  start_date: string;
+  end_date?: string;
+  assigned_by_id: number;
+  notes?: string;
+  created_at: string;
+  flock_name?: string;
+  field_name?: string;
+  assigned_by_name?: string;
+}
+
+export interface SheepFlockWithHistory extends SheepFlock {
+  assignment_history: SheepFlockFieldAssignment[];
 }

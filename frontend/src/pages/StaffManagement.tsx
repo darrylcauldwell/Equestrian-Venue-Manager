@@ -151,6 +151,7 @@ export default function StaffManagement() {
   });
 
   const holidayModal = useModalForm<CreateHolidayRequest>({
+    staff_id: undefined,
     start_date: '',
     end_date: '',
     days_requested: 1,
@@ -882,20 +883,43 @@ export default function StaffManagement() {
       <Modal
         isOpen={holidayModal.isOpen}
         onClose={holidayModal.close}
-        title="Request Holiday"
+        title={isManager ? "Add Leave" : "Request Holiday"}
         footer={
           <>
             <button className="ds-btn ds-btn-secondary" onClick={holidayModal.close}>Cancel</button>
-            <button className="ds-btn ds-btn-primary" onClick={handleCreateHoliday}>Submit Request</button>
+            <button className="ds-btn ds-btn-primary" onClick={handleCreateHoliday}>
+              {isManager ? 'Add Leave' : 'Submit Request'}
+            </button>
           </>
         }
       >
+        {isManager && (
+          <FormGroup label="Staff Member" required>
+            <Select
+              value={holidayModal.formData.staff_id || ''}
+              onChange={(e) => holidayModal.updateField('staff_id', parseInt(e.target.value) || undefined)}
+              required
+            >
+              <option value="">Select staff member</option>
+              {staffList.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </Select>
+          </FormGroup>
+        )}
         <FormRow>
           <FormGroup label="Start Date" required>
             <Input
               type="date"
               value={holidayModal.formData.start_date}
-              onChange={(e) => holidayModal.updateField('start_date', e.target.value)}
+              onChange={(e) => {
+                const newStartDate = e.target.value;
+                holidayModal.updateField('start_date', newStartDate);
+                // Auto-set end date to start date if empty or before new start date
+                if (!holidayModal.formData.end_date || holidayModal.formData.end_date < newStartDate) {
+                  holidayModal.updateField('end_date', newStartDate);
+                }
+              }}
               required
             />
           </FormGroup>
@@ -904,6 +928,7 @@ export default function StaffManagement() {
               type="date"
               value={holidayModal.formData.end_date}
               onChange={(e) => holidayModal.updateField('end_date', e.target.value)}
+              min={holidayModal.formData.start_date}
               required
             />
           </FormGroup>
@@ -1439,7 +1464,7 @@ function HolidaysTab({
     <div className="holidays-view">
       <div className="tab-actions">
         <button className="ds-btn ds-btn-primary" onClick={onOpenModal}>
-          Request Holiday
+          {isManager ? 'Add Leave' : 'Request Holiday'}
         </button>
       </div>
 
@@ -1499,6 +1524,7 @@ function HolidaysTab({
               <th>Days</th>
               <th>Type</th>
               <th>Approved By</th>
+              {isManager && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -1509,10 +1535,17 @@ function HolidaysTab({
                 <td>{h.days_requested}</td>
                 <td>{enums?.leave_types.find(t => t.value === h.leave_type)?.label || h.leave_type}</td>
                 <td>{h.approved_by_name || '-'}</td>
+                {isManager && (
+                  <td className="action-buttons">
+                    <button className="btn-danger btn-sm" onClick={() => onCancel(h.id)}>
+                      Cancel
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
             {holidays?.approved.length === 0 && (
-              <tr><td colSpan={isManager ? 5 : 4} className="empty">No approved holidays</td></tr>
+              <tr><td colSpan={isManager ? 6 : 4} className="empty">No approved holidays</td></tr>
             )}
           </tbody>
         </table>
@@ -1745,7 +1778,7 @@ function PayrollTab({
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
   const [adjustmentForm, setAdjustmentForm] = useState<PayrollAdjustmentCreate>({
     staff_id: 0,
-    adjustment_type: 'bonus',
+    adjustment_type: 'oneoff',
     amount: 0,
     description: '',
     payment_date: new Date().toISOString().split('T')[0],
@@ -1777,7 +1810,7 @@ function PayrollTab({
       setShowAdjustmentModal(false);
       setAdjustmentForm({
         staff_id: 0,
-        adjustment_type: 'bonus',
+        adjustment_type: 'oneoff',
         amount: 0,
         description: '',
         payment_date: new Date().toISOString().split('T')[0],
@@ -1823,10 +1856,34 @@ function PayrollTab({
     <div className="payroll-view">
       <div className="payroll-toolbar">
         <div className="period-selector">
+          <button
+            className="ds-btn ds-btn-secondary period-nav-btn"
+            onClick={() => {
+              if (periodType === 'month') {
+                if (month === 1) {
+                  setMonth(12);
+                  setYear(year - 1);
+                } else {
+                  setMonth(month - 1);
+                }
+              } else {
+                if (week && week <= 1) {
+                  setWeek(52);
+                  setYear(year - 1);
+                } else {
+                  setWeek((week || 1) - 1);
+                }
+              }
+            }}
+            title={periodType === 'month' ? 'Previous month' : 'Previous week'}
+          >
+            ←
+          </button>
+
           <select
             value={periodType}
             onChange={(e) => setPeriodType(e.target.value as 'week' | 'month')}
-            className="period-type-select"
+            className="ds-select"
           >
             <option value="month">Monthly</option>
             <option value="week">Weekly</option>
@@ -1835,7 +1892,7 @@ function PayrollTab({
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value))}
-            className="year-select"
+            className="ds-select"
           >
             {[year - 1, year, year + 1].map(y => (
               <option key={y} value={y}>{y}</option>
@@ -1846,7 +1903,7 @@ function PayrollTab({
             <select
               value={month}
               onChange={(e) => setMonth(parseInt(e.target.value))}
-              className="month-select"
+              className="ds-select"
             >
               {monthNames.map((name, idx) => (
                 <option key={idx + 1} value={idx + 1}>{name}</option>
@@ -1856,13 +1913,37 @@ function PayrollTab({
             <select
               value={week || getISOWeek(new Date())}
               onChange={(e) => setWeek(parseInt(e.target.value))}
-              className="week-select"
+              className="ds-select"
             >
               {getWeekOptions().map(w => (
                 <option key={w.value} value={w.value}>{w.label}</option>
               ))}
             </select>
           )}
+
+          <button
+            className="ds-btn ds-btn-secondary period-nav-btn"
+            onClick={() => {
+              if (periodType === 'month') {
+                if (month === 12) {
+                  setMonth(1);
+                  setYear(year + 1);
+                } else {
+                  setMonth(month + 1);
+                }
+              } else {
+                if (week && week >= 52) {
+                  setWeek(1);
+                  setYear(year + 1);
+                } else {
+                  setWeek((week || 1) + 1);
+                }
+              }
+            }}
+            title={periodType === 'month' ? 'Next month' : 'Next week'}
+          >
+            →
+          </button>
         </div>
 
         <button
@@ -1891,7 +1972,7 @@ function PayrollTab({
             </div>
             <div className="summary-card">
               <div className="summary-value">{formatCurrency(payrollSummary.total_base_pay)}</div>
-              <div className="summary-label">Base Pay</div>
+              <div className="summary-label">Earned Pay</div>
             </div>
             <div className="summary-card">
               <div className="summary-value">{formatCurrency(payrollSummary.total_adjustments)}</div>
@@ -1909,13 +1990,12 @@ function PayrollTab({
                 <tr>
                   <th>Staff</th>
                   <th>Type</th>
-                  <th>Rate</th>
+                  <th>Hourly Rate</th>
                   <th>Hours</th>
-                  <th>Base Pay</th>
-                  <th>Bonus</th>
-                  <th>Ad-hoc</th>
-                  <th>Tips</th>
+                  <th>Earned Pay</th>
+                  <th>One-off</th>
                   <th>Taxable</th>
+                  <th className="tips-header">Tips<span className="tax-free-label">Tax-free</span></th>
                   <th>Total</th>
                 </tr>
               </thead>
@@ -1924,20 +2004,19 @@ function PayrollTab({
                   <tr key={s.staff_id}>
                     <td><strong>{s.staff_name}</strong></td>
                     <td>{s.staff_type || '-'}</td>
-                    <td>{s.hourly_rate ? formatCurrency(s.hourly_rate) : '-'}</td>
+                    <td>{formatCurrency(s.hourly_rate || 0)}</td>
                     <td>{s.approved_hours.toFixed(1)}</td>
                     <td>{formatCurrency(s.base_pay)}</td>
-                    <td>{s.adjustments.bonus_total > 0 ? formatCurrency(s.adjustments.bonus_total) : '-'}</td>
-                    <td>{s.adjustments.adhoc_total > 0 ? formatCurrency(s.adjustments.adhoc_total) : '-'}</td>
-                    <td className={s.adjustments.tips_total > 0 ? 'tips-highlight' : ''}>
-                      {s.adjustments.tips_total > 0 ? formatCurrency(s.adjustments.tips_total) : '-'}
-                    </td>
+                    <td>{formatCurrency(s.adjustments.oneoff_total)}</td>
                     <td>{formatCurrency(s.taxable_pay)}</td>
+                    <td className={s.adjustments.tips_total > 0 ? 'tips-cell has-tips' : 'tips-cell'}>
+                      {formatCurrency(s.adjustments.tips_total)}
+                    </td>
                     <td><strong>{formatCurrency(s.total_pay)}</strong></td>
                   </tr>
                 ))}
                 {payrollSummary.staff_summaries.length === 0 && (
-                  <tr><td colSpan={10} className="empty">No payroll data for this period</td></tr>
+                  <tr><td colSpan={9} className="empty">No payroll data for this period</td></tr>
                 )}
               </tbody>
               {payrollSummary.staff_summaries.length > 0 && (
@@ -1947,7 +2026,6 @@ function PayrollTab({
                     <td><strong>{payrollSummary.total_approved_hours.toFixed(1)}</strong></td>
                     <td><strong>{formatCurrency(payrollSummary.total_base_pay)}</strong></td>
                     <td colSpan={3}><strong>{formatCurrency(payrollSummary.total_adjustments)}</strong></td>
-                    <td>-</td>
                     <td><strong>{formatCurrency(payrollSummary.total_pay)}</strong></td>
                   </tr>
                 </tfoot>
@@ -1956,7 +2034,7 @@ function PayrollTab({
           </div>
 
           <div className="payroll-notes">
-            <p><strong>Note:</strong> Tips are shown separately as they are tax-free. Taxable pay includes base pay plus taxable adjustments (bonuses, ad-hoc payments).</p>
+            <p><strong>Note:</strong> Tips are shown separately as they are tax-free. Taxable pay includes base pay plus taxable one-off payments.</p>
           </div>
         </>
       )}
@@ -1993,7 +2071,7 @@ function PayrollTab({
             <Select
               value={adjustmentForm.adjustment_type}
               onChange={(e) => {
-                const type = e.target.value as 'bonus' | 'adhoc' | 'tip';
+                const type = e.target.value as 'oneoff' | 'tip';
                 setAdjustmentForm({
                   ...adjustmentForm,
                   adjustment_type: type,
@@ -2002,8 +2080,7 @@ function PayrollTab({
               }}
               required
             >
-              <option value="bonus">Bonus</option>
-              <option value="adhoc">Ad-hoc Payment</option>
+              <option value="oneoff">One-off Payment</option>
               <option value="tip">Tip (Tax-free)</option>
             </Select>
           </FormGroup>

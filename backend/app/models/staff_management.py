@@ -169,13 +169,12 @@ class UnplannedAbsence(Base):
 
 
 class PayrollAdjustmentType(str, enum.Enum):
-    BONUS = "bonus"
-    ADHOC = "adhoc"  # Ad-hoc payment for services
+    ONEOFF = "oneoff"  # One-off payment (bonus, extra work, etc.)
     TIP = "tip"  # Tips from livery owners
 
 
 class PayrollAdjustment(Base):
-    """Bonus, ad-hoc payments, and tips for staff payroll."""
+    """One-off payments and tips for staff payroll."""
     __tablename__ = "payroll_adjustments"
 
     id = Column(Integer, primary_key=True, index=True)

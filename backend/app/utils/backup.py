@@ -5,7 +5,7 @@ from datetime import datetime, date, timedelta, time as time_obj
 from decimal import Decimal
 from typing import Dict, Any, List, Tuple, Optional, Callable
 from sqlalchemy.orm import Session
-from sqlalchemy import text, inspect as sa_inspect
+from sqlalchemy import text, inspect as sa_inspect, func
 from enum import Enum
 
 
@@ -16,7 +16,7 @@ class SeedingError(Exception):
 from app.models import (
     User, UserRole, Arena, Horse, Booking, BookingType, PaymentStatus, SiteSettings,
     Service, ServiceRequest, ServiceCategory, Notice, NoticeCategory, NoticePriority, Professional, ProfessionalCategory,
-    YardTask, TaskComment, Shift, Timesheet, HolidayRequest, UnplannedAbsence,
+    YardTask, TaskComment, Shift, Timesheet, HolidayRequest, UnplannedAbsence, PayrollAdjustment,
     ClinicRequest, ClinicParticipant, Discipline, ClinicStatus, LiveryPackage, Stable, StableBlock,
     FarrierRecord, DentistRecord, VaccinationRecord, WormingRecord, WeightRecord, BodyConditionRecord, SaddleFitRecord,
     FeedRequirement, FeedAddition, FeedSupplyAlert, SupplyStatus,
@@ -33,7 +33,8 @@ from app.models.medication_log import (
 )
 from app.models.invoice import Invoice, InvoiceLineItem, InvoiceStatus
 from app.models.staff_management import ShiftType, ShiftRole
-from app.models.field import TurnoutGroup, TurnoutGroupHorse, FieldUsageLog, FieldUsageHorse
+from app.models.field import TurnoutGroup, TurnoutGroupHorse, FieldUsageLog, FieldUsageHorse, HorseFieldAssignment
+from app.models.land_management import SheepFlock, SheepFlockFieldAssignment
 from app.models.staff_management import LeaveType, LeaveStatus
 from app.models.task import TaskCategory, TaskPriority, TaskStatus, AssignmentType
 from app.models.turnout import TurnoutStatus, TurnoutType
@@ -365,6 +366,18 @@ def export_database(db: Session) -> Tuple[Dict[str, Any], Dict[str, int]]:
     data["grants"] = export_models(db, Grant)
     entity_counts["grants"] = len(data["grants"])
 
+    # Horse Field Assignments (permanent livery field assignments)
+    data["horse_field_assignments"] = export_models(db, HorseFieldAssignment)
+    entity_counts["horse_field_assignments"] = len(data["horse_field_assignments"])
+
+    # Sheep Flocks (for worm control grazing)
+    data["sheep_flocks"] = export_models(db, SheepFlock)
+    entity_counts["sheep_flocks"] = len(data["sheep_flocks"])
+
+    # Sheep Flock Field Assignments
+    data["sheep_flock_field_assignments"] = export_models(db, SheepFlockFieldAssignment)
+    entity_counts["sheep_flock_field_assignments"] = len(data["sheep_flock_field_assignments"])
+
     return data, entity_counts
 
 
@@ -652,6 +665,10 @@ def import_database(
         if "timesheets" in data:
             counts["timesheets"] = _import_timesheets(db, data["timesheets"], user_map, log)
 
+        # 21b. Payroll Adjustments (bonuses, tips, ad-hoc payments)
+        if "payroll_adjustments" in data:
+            counts["payroll_adjustments"] = _import_payroll_adjustments(db, data["payroll_adjustments"], user_map, log)
+
         # 22. Ledger Entries (account/billing data)
         if "ledger_entries" in data:
             counts["ledger_entries"] = _import_ledger_entries(db, data["ledger_entries"], user_map, log)
@@ -774,6 +791,18 @@ def import_database(
         if "risk_assessment_acknowledgements" in data:
             counts["risk_assessment_acknowledgements"] = _import_risk_assessment_acknowledgements(db, data["risk_assessment_acknowledgements"], user_map, log)
 
+        # 48. Sheep Flocks (for worm control grazing)
+        if "sheep_flocks" in data:
+            counts["sheep_flocks"] = _import_sheep_flocks(db, data["sheep_flocks"], log)
+
+        # 49. Sheep Flock Field Assignments
+        if "sheep_flock_field_assignments" in data:
+            counts["sheep_flock_field_assignments"] = _import_sheep_flock_field_assignments(db, data["sheep_flock_field_assignments"], user_map, log)
+
+        # 50. Horse Field Assignments (permanent livery field assignments)
+        if "horse_field_assignments" in data:
+            counts["horse_field_assignments"] = _import_horse_field_assignments(db, data["horse_field_assignments"], user_map, log)
+
         # Single commit at the end - all or nothing
         db.commit()
         log("All data imported successfully.")
@@ -815,7 +844,7 @@ def _import_users(db: Session, users_data: List[Dict], log: Callable) -> Tuple[D
     for user_data in users_data:
         username = user_data.get("username")
         old_id = user_data.get("id")  # Original ID from backup
-        existing = db.query(User).filter(User.username == username).first()
+        existing = db.query(User).filter(func.lower(User.username) == func.lower(username)).first()
         if existing:
             # Update existing user with seed data (name, email, phone, etc.)
             if user_data.get("name"):
@@ -926,6 +955,11 @@ def _import_staff_profiles(db: Session, profiles_data: List[Dict], user_map: Dic
             bio=profile_data.get("bio"),
             start_date=profile_data.get("start_date"),
             job_title=profile_data.get("job_title"),
+            hourly_rate=profile_data.get("hourly_rate"),
+            national_insurance_number=profile_data.get("national_insurance_number"),
+            bank_sort_code=profile_data.get("bank_sort_code"),
+            bank_account_number=profile_data.get("bank_account_number"),
+            bank_account_name=profile_data.get("bank_account_name"),
             personal_email=profile_data.get("personal_email"),
             personal_phone=profile_data.get("personal_phone"),
             address_street=profile_data.get("address_street"),
@@ -1649,11 +1683,11 @@ def _import_lesson_requests(
     today = date.today()
 
     for req_data in lesson_requests_data:
-        # Get coach profile by username
+        # Get coach profile by username (case-insensitive)
         coach_username = req_data.get("coach_username")
         coach_profile = db.query(CoachProfile).join(
             User, CoachProfile.user_id == User.id
-        ).filter(User.username == coach_username).first()
+        ).filter(func.lower(User.username) == func.lower(coach_username)).first()
         if not coach_profile:
             log(f"  Warning: Coach profile not found for {coach_username}, skipping lesson request")
             continue
@@ -2262,6 +2296,59 @@ def _import_timesheets(db: Session, timesheets_data: List[Dict], user_map: Dict[
         db.add(timesheet)
         count += 1
         log(f"  Created timesheet: {staff_username} on {ts_date} ({status_str})")
+
+    db.flush()
+    return count
+
+
+def _import_payroll_adjustments(db: Session, adjustments_data: List[Dict], user_map: Dict[str, int], log: Callable) -> int:
+    """Import payroll adjustments (bonuses, tips, ad-hoc payments) from seed data."""
+    from app.models.staff_management import PayrollAdjustmentType
+    log("Importing payroll adjustments...")
+    count = 0
+    today = date.today()
+
+    for adj_data in adjustments_data:
+        # Get staff by username
+        staff_username = adj_data.get("staff_username")
+        staff_id = user_map.get(staff_username)
+        if not staff_id:
+            log(f"  Warning: Staff '{staff_username}' not found, skipping payroll adjustment")
+            continue
+
+        # Calculate payment date
+        days_from_now = adj_data.get("days_from_now", 0)
+        payment_date = today + timedelta(days=days_from_now)
+
+        # Parse adjustment type
+        adj_type_str = adj_data.get("adjustment_type", "bonus")
+        try:
+            adjustment_type = PayrollAdjustmentType(adj_type_str)
+        except ValueError:
+            adjustment_type = PayrollAdjustmentType.BONUS
+
+        # Get created_by if specified
+        created_by_id = None
+        created_by_username = adj_data.get("created_by_username")
+        if created_by_username:
+            created_by_id = user_map.get(created_by_username)
+
+        # Determine taxable (tips are not taxable by default)
+        taxable = adj_data.get("taxable", adjustment_type != PayrollAdjustmentType.TIP)
+
+        adjustment = PayrollAdjustment(
+            staff_id=staff_id,
+            adjustment_type=adjustment_type,
+            amount=adj_data.get("amount", 0),
+            description=adj_data.get("description", ""),
+            payment_date=payment_date,
+            taxable=taxable,
+            notes=adj_data.get("notes"),
+            created_by_id=created_by_id,
+        )
+        db.add(adjustment)
+        count += 1
+        log(f"  Created {adj_type_str}: £{adj_data.get('amount', 0):.2f} for {staff_username} on {payment_date}")
 
     db.flush()
     return count
@@ -3526,11 +3613,11 @@ def _import_coach_availability_slots(db: Session, slots_data: List[Dict], user_m
     today = date.today()
 
     for slot_data in slots_data:
-        # Get coach profile by username
+        # Get coach profile by username (case-insensitive)
         coach_username = slot_data.get("coach_username")
         coach_profile = db.query(CoachProfile).join(
             User, CoachProfile.user_id == User.id
-        ).filter(User.username == coach_username).first()
+        ).filter(func.lower(User.username) == func.lower(coach_username)).first()
 
         if not coach_profile:
             log(f"  Warning: Coach profile for '{coach_username}' not found, skipping availability slot")
@@ -4112,6 +4199,149 @@ def _import_risk_assessment_acknowledgements(db: Session, acks_data: List[Dict],
         db.add(ack)
         count += 1
         log(f"  Created acknowledgement for {username} on '{assessment_title}'")
+
+    db.flush()
+    return count
+
+
+def _import_sheep_flocks(db: Session, flocks_data: List[Dict], log: Callable) -> int:
+    """Import sheep flocks for worm control grazing."""
+    log("Importing sheep flocks...")
+    count = 0
+
+    for flock_data in flocks_data:
+        # Check if flock with same name already exists
+        existing = db.query(SheepFlock).filter(SheepFlock.name == flock_data["name"]).first()
+        if existing:
+            log(f"  Sheep flock '{flock_data['name']}' already exists, skipping")
+            continue
+
+        flock = SheepFlock(
+            name=flock_data["name"],
+            count=flock_data.get("count", 10),
+            breed=flock_data.get("breed"),
+            notes=flock_data.get("notes"),
+            is_active=flock_data.get("is_active", True),
+        )
+        db.add(flock)
+        count += 1
+        log(f"  Created sheep flock: {flock_data['name']} ({flock_data.get('count', 10)} sheep)")
+
+    db.flush()
+    return count
+
+
+def _import_sheep_flock_field_assignments(db: Session, assignments_data: List[Dict], user_map: Dict[str, int], log: Callable) -> int:
+    """Import sheep flock field assignments."""
+    log("Importing sheep flock field assignments...")
+    count = 0
+
+    for assign_data in assignments_data:
+        # Find flock by name
+        flock_name = assign_data.get("flock_name")
+        flock = db.query(SheepFlock).filter(SheepFlock.name == flock_name).first()
+        if not flock:
+            log(f"  Sheep flock '{flock_name}' not found, skipping assignment")
+            continue
+
+        # Find field by name
+        field_name = assign_data.get("field_name")
+        field = db.query(Field).filter(Field.name == field_name).first() if field_name else None
+
+        # Get assigner user
+        assigned_by_username = assign_data.get("assigned_by_username", "admin")
+        assigned_by_id = user_map.get(assigned_by_username)
+        if not assigned_by_id:
+            # Fall back to first admin
+            admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+            assigned_by_id = admin.id if admin else 1
+
+        # Handle relative dates
+        start_date = date.today()
+        if assign_data.get("start_days_ago") is not None:
+            start_date = date.today() - timedelta(days=assign_data["start_days_ago"])
+        elif assign_data.get("start_date"):
+            start_date = datetime.strptime(assign_data["start_date"], "%Y-%m-%d").date()
+
+        end_date = None
+        if assign_data.get("end_days_ago") is not None:
+            end_date = date.today() - timedelta(days=assign_data["end_days_ago"])
+        elif assign_data.get("end_date"):
+            end_date = datetime.strptime(assign_data["end_date"], "%Y-%m-%d").date()
+
+        assignment = SheepFlockFieldAssignment(
+            flock_id=flock.id,
+            field_id=field.id if field else None,
+            start_date=start_date,
+            end_date=end_date,
+            assigned_by_id=assigned_by_id,
+            notes=assign_data.get("notes"),
+        )
+        db.add(assignment)
+        count += 1
+        field_str = field_name if field_name else "no field"
+        log(f"  Assigned '{flock_name}' to {field_str}")
+
+    db.flush()
+    return count
+
+
+def _import_horse_field_assignments(db: Session, assignments_data: List[Dict], user_map: Dict[str, int], log: Callable) -> int:
+    """Import horse field assignments for permanent livery turnout."""
+    log("Importing horse field assignments...")
+    count = 0
+
+    for assign_data in assignments_data:
+        # Find horse by name
+        horse_name = assign_data.get("horse_name")
+        horse = db.query(Horse).filter(Horse.name == horse_name).first()
+        if not horse:
+            log(f"  Horse '{horse_name}' not found, skipping assignment")
+            continue
+
+        # Find field by name (can be None for box rest)
+        field_name = assign_data.get("field_name")
+        field = db.query(Field).filter(Field.name == field_name).first() if field_name else None
+
+        # Get assigner user
+        assigned_by_username = assign_data.get("assigned_by_username", "admin")
+        assigned_by_id = user_map.get(assigned_by_username)
+        if not assigned_by_id:
+            # Fall back to first admin
+            admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+            assigned_by_id = admin.id if admin else 1
+
+        # Handle relative dates
+        start_date = date.today()
+        if assign_data.get("start_days_ago") is not None:
+            start_date = date.today() - timedelta(days=assign_data["start_days_ago"])
+        elif assign_data.get("start_date"):
+            start_date = datetime.strptime(assign_data["start_date"], "%Y-%m-%d").date()
+
+        end_date = None
+        if assign_data.get("end_days_ago") is not None:
+            end_date = date.today() - timedelta(days=assign_data["end_days_ago"])
+        elif assign_data.get("end_date"):
+            end_date = datetime.strptime(assign_data["end_date"], "%Y-%m-%d").date()
+
+        # Update horse box_rest flag
+        if field is None:
+            horse.box_rest = True
+        else:
+            horse.box_rest = False
+
+        assignment = HorseFieldAssignment(
+            horse_id=horse.id,
+            field_id=field.id if field else None,
+            start_date=start_date,
+            end_date=end_date,
+            assigned_by_id=assigned_by_id,
+            notes=assign_data.get("notes"),
+        )
+        db.add(assignment)
+        count += 1
+        field_str = field_name if field_name else "Box Rest"
+        log(f"  Assigned '{horse_name}' to {field_str}")
 
     db.flush()
     return count

@@ -225,3 +225,72 @@ class FieldRotationReport(BaseModel):
     """Report showing field usage and rotation status."""
     generated_at: datetime
     fields: List[FieldRotationEntry]
+
+
+# ============== Horse Field Assignment ==============
+
+class HorseFieldAssignmentCreate(BaseModel):
+    """Assign a horse to a field."""
+    field_id: int
+    start_date: Optional[date] = None  # Defaults to today
+    notes: Optional[str] = None
+
+
+class HorseFieldAssignmentResponse(BaseModel):
+    """Response for a horse field assignment."""
+    id: int
+    horse_id: int
+    field_id: Optional[int]
+    start_date: date
+    end_date: Optional[date]
+    assigned_by_id: int
+    notes: Optional[str]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    # Nested
+    horse_name: Optional[str] = None
+    field_name: Optional[str] = None
+    assigned_by_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class HorseFieldAssignmentHistory(BaseModel):
+    """Full assignment history for a horse."""
+    horse_id: int
+    horse_name: str
+    box_rest: bool
+    current_assignment: Optional[HorseFieldAssignmentResponse]
+    history: List[HorseFieldAssignmentResponse]
+
+
+# ============== Field Occupancy ==============
+
+class FieldOccupantHorse(BaseModel):
+    """A horse currently in a field."""
+    horse_id: int
+    horse_name: str
+    owner_name: Optional[str] = None
+    assigned_since: date
+
+
+class FieldOccupantSheep(BaseModel):
+    """A sheep flock currently in a field."""
+    flock_id: int
+    flock_name: str
+    count: int
+    breed: Optional[str] = None
+    assigned_since: date
+
+
+class FieldCurrentOccupancy(BaseModel):
+    """Current horses and sheep in a field."""
+    field_id: int
+    field_name: str
+    max_horses: Optional[int]
+    current_condition: FieldCondition
+    is_resting: bool
+    current_horses: List[FieldOccupantHorse]
+    current_sheep: List[FieldOccupantSheep]
+    total_horse_count: int
+    total_sheep_count: int

@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 from app.database import get_db
 from app.models.user import User, UserRole
@@ -249,11 +249,11 @@ def approve_holiday_livery_request(
         # Create new user account
         temp_password = generate_temp_password()
 
-        # Generate username from email
+        # Generate username from email (case-insensitive check)
         base_username = request.guest_email.split('@')[0].lower()
         username = base_username
         counter = 1
-        while db.query(User).filter(User.username == username).first():
+        while db.query(User).filter(func.lower(User.username) == username).first():
             username = f"{base_username}{counter}"
             counter += 1
 

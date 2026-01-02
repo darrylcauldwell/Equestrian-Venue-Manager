@@ -9,8 +9,10 @@ from app.models.user import User
 from app.models.horse import Horse
 from app.models.field import (
     Field, FieldCondition, FieldUsageLog, FieldUsageHorse,
-    HorseCompanion, CompanionRelationship, TurnoutGroup, TurnoutGroupHorse
+    HorseCompanion, CompanionRelationship, TurnoutGroup, TurnoutGroupHorse,
+    HorseFieldAssignment
 )
+from app.models.land_management import SheepFlock, SheepFlockFieldAssignment
 from app.schemas.field import (
     FieldCreate, FieldUpdate, FieldResponse, FieldSummary,
     FieldConditionUpdate, FieldRestRequest,
@@ -18,7 +20,9 @@ from app.schemas.field import (
     TurnoutGroupCreate, TurnoutGroupUpdate, TurnoutGroupResponse,
     TurnoutGroupHorseResponse, DailyTurnoutSummary,
     FieldUsageLogCreate, FieldUsageLogResponse,
-    FieldRotationEntry, FieldRotationReport
+    FieldRotationEntry, FieldRotationReport,
+    HorseFieldAssignmentCreate, HorseFieldAssignmentResponse, HorseFieldAssignmentHistory,
+    FieldCurrentOccupancy, FieldOccupantHorse, FieldOccupantSheep
 )
 from app.utils.auth import get_current_user, require_roles
 
@@ -70,6 +74,69 @@ async def get_fields_summary(
         ))
 
     return summaries
+
+
+@router.get("/occupancy-summary", response_model=List[FieldCurrentOccupancy])
+async def get_all_fields_occupancy(
+    include_inactive: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "staff"]))
+):
+    """Get occupancy summary for all fields."""
+    query = db.query(Field)
+    if not include_inactive:
+        query = query.filter(Field.is_active == True)
+    fields = query.order_by(Field.display_order, Field.name).all()
+
+    result = []
+    for field in fields:
+        # Get horses
+        horse_assignments = db.query(HorseFieldAssignment).filter(
+            HorseFieldAssignment.field_id == field.id,
+            HorseFieldAssignment.end_date.is_(None)
+        ).all()
+
+        horses = []
+        for assignment in horse_assignments:
+            horse = assignment.horse
+            owner = horse.owner if horse else None
+            horses.append(FieldOccupantHorse(
+                horse_id=horse.id if horse else 0,
+                horse_name=horse.name if horse else "Unknown",
+                owner_name=owner.name if owner else None,
+                assigned_since=assignment.start_date
+            ))
+
+        # Get sheep
+        sheep_assignments = db.query(SheepFlockFieldAssignment).filter(
+            SheepFlockFieldAssignment.field_id == field.id,
+            SheepFlockFieldAssignment.end_date.is_(None)
+        ).all()
+
+        sheep = []
+        for assignment in sheep_assignments:
+            flock = assignment.flock
+            sheep.append(FieldOccupantSheep(
+                flock_id=flock.id if flock else 0,
+                flock_name=flock.name if flock else "Unknown",
+                count=flock.count if flock else 0,
+                breed=flock.breed if flock else None,
+                assigned_since=assignment.start_date
+            ))
+
+        result.append(FieldCurrentOccupancy(
+            field_id=field.id,
+            field_name=field.name,
+            max_horses=field.max_horses,
+            current_condition=field.current_condition,
+            is_resting=field.is_resting,
+            current_horses=horses,
+            current_sheep=sheep,
+            total_horse_count=len(horses),
+            total_sheep_count=sum(s.count for s in sheep)
+        ))
+
+    return result
 
 
 @router.get("/{field_id}", response_model=FieldResponse)
@@ -861,3 +928,284 @@ async def acknowledge_suggestion(
     db.commit()
 
     return {"message": "Suggestion acknowledged"}
+
+
+# ============== Horse Field Assignments ==============
+
+@router.get("/horses/{horse_id}/field-assignment", response_model=Optional[HorseFieldAssignmentResponse])
+async def get_horse_field_assignment(
+    horse_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get current field assignment for a horse."""
+    horse = db.query(Horse).filter(Horse.id == horse_id).first()
+    if not horse:
+        raise HTTPException(status_code=404, detail="Horse not found")
+
+    # Check access for livery users
+    if current_user.role == "livery" and horse.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Get current assignment (no end_date)
+    assignment = db.query(HorseFieldAssignment).filter(
+        HorseFieldAssignment.horse_id == horse_id,
+        HorseFieldAssignment.end_date.is_(None)
+    ).first()
+
+    if not assignment:
+        return None
+
+    return _assignment_to_response(assignment)
+
+
+@router.post("/horses/{horse_id}/field-assignment", response_model=HorseFieldAssignmentResponse)
+async def assign_horse_to_field(
+    horse_id: int,
+    assignment_data: HorseFieldAssignmentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "staff"]))
+):
+    """
+    Assign a horse to a field.
+
+    If the horse already has a field assignment, it will be ended
+    and a new assignment created. This creates an automatic history.
+    """
+    horse = db.query(Horse).filter(Horse.id == horse_id).first()
+    if not horse:
+        raise HTTPException(status_code=404, detail="Horse not found")
+
+    # Verify field exists if provided
+    field = None
+    if assignment_data.field_id:
+        field = db.query(Field).filter(Field.id == assignment_data.field_id).first()
+        if not field:
+            raise HTTPException(status_code=404, detail="Field not found")
+        if not field.is_active:
+            raise HTTPException(status_code=400, detail="Field is not active")
+        if field.is_resting:
+            raise HTTPException(status_code=400, detail="Field is currently resting")
+
+    start_date = assignment_data.start_date or date.today()
+
+    # End any current assignment
+    current_assignment = db.query(HorseFieldAssignment).filter(
+        HorseFieldAssignment.horse_id == horse_id,
+        HorseFieldAssignment.end_date.is_(None)
+    ).first()
+
+    if current_assignment:
+        # End the current assignment the day before the new one starts
+        end_date = start_date - timedelta(days=1) if start_date > current_assignment.start_date else current_assignment.start_date
+        current_assignment.end_date = end_date
+        current_assignment.updated_at = datetime.utcnow()
+
+    # Create new assignment
+    new_assignment = HorseFieldAssignment(
+        horse_id=horse_id,
+        field_id=assignment_data.field_id,
+        start_date=start_date,
+        assigned_by_id=current_user.id,
+        notes=assignment_data.notes
+    )
+    db.add(new_assignment)
+
+    # If moving to box rest, update horse flag
+    if not assignment_data.field_id:
+        horse.box_rest = True
+    else:
+        horse.box_rest = False
+
+    db.commit()
+    db.refresh(new_assignment)
+
+    return _assignment_to_response(new_assignment)
+
+
+@router.delete("/horses/{horse_id}/field-assignment")
+async def remove_horse_field_assignment(
+    horse_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "staff"]))
+):
+    """
+    Remove a horse from their current field (ends assignment).
+
+    This does NOT delete the assignment, just sets the end_date.
+    """
+    horse = db.query(Horse).filter(Horse.id == horse_id).first()
+    if not horse:
+        raise HTTPException(status_code=404, detail="Horse not found")
+
+    current_assignment = db.query(HorseFieldAssignment).filter(
+        HorseFieldAssignment.horse_id == horse_id,
+        HorseFieldAssignment.end_date.is_(None)
+    ).first()
+
+    if not current_assignment:
+        raise HTTPException(status_code=404, detail="Horse has no current field assignment")
+
+    current_assignment.end_date = date.today()
+    current_assignment.updated_at = datetime.utcnow()
+
+    db.commit()
+
+    return {"message": "Field assignment ended"}
+
+
+@router.get("/horses/{horse_id}/field-history", response_model=HorseFieldAssignmentHistory)
+async def get_horse_field_history(
+    horse_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get full field assignment history for a horse."""
+    horse = db.query(Horse).filter(Horse.id == horse_id).first()
+    if not horse:
+        raise HTTPException(status_code=404, detail="Horse not found")
+
+    # Check access for livery users
+    if current_user.role == "livery" and horse.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Get all assignments, newest first
+    assignments = db.query(HorseFieldAssignment).filter(
+        HorseFieldAssignment.horse_id == horse_id
+    ).order_by(HorseFieldAssignment.start_date.desc()).all()
+
+    # Current assignment is the one without end_date
+    current = next((a for a in assignments if a.end_date is None), None)
+    history = [a for a in assignments if a.end_date is not None]
+
+    return HorseFieldAssignmentHistory(
+        horse_id=horse.id,
+        horse_name=horse.name,
+        box_rest=horse.box_rest,
+        current_assignment=_assignment_to_response(current) if current else None,
+        history=[_assignment_to_response(a) for a in history]
+    )
+
+
+@router.put("/horses/{horse_id}/box-rest")
+async def set_horse_box_rest(
+    horse_id: int,
+    box_rest: bool,
+    notes: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "staff"]))
+):
+    """
+    Set a horse to box rest status.
+
+    If setting to box rest, ends current field assignment.
+    If removing from box rest, just clears the flag (no automatic field assignment).
+    """
+    horse = db.query(Horse).filter(Horse.id == horse_id).first()
+    if not horse:
+        raise HTTPException(status_code=404, detail="Horse not found")
+
+    horse.box_rest = box_rest
+
+    if box_rest:
+        # End any current field assignment
+        current_assignment = db.query(HorseFieldAssignment).filter(
+            HorseFieldAssignment.horse_id == horse_id,
+            HorseFieldAssignment.end_date.is_(None)
+        ).first()
+
+        if current_assignment:
+            current_assignment.end_date = date.today()
+            current_assignment.updated_at = datetime.utcnow()
+
+        # Create a box rest assignment (field_id = None)
+        box_rest_assignment = HorseFieldAssignment(
+            horse_id=horse_id,
+            field_id=None,
+            start_date=date.today(),
+            assigned_by_id=current_user.id,
+            notes=notes or "Placed on box rest"
+        )
+        db.add(box_rest_assignment)
+
+    db.commit()
+
+    return {"message": f"Horse box rest set to {box_rest}"}
+
+
+def _assignment_to_response(assignment: HorseFieldAssignment) -> HorseFieldAssignmentResponse:
+    """Convert HorseFieldAssignment to response schema."""
+    return HorseFieldAssignmentResponse(
+        id=assignment.id,
+        horse_id=assignment.horse_id,
+        field_id=assignment.field_id,
+        start_date=assignment.start_date,
+        end_date=assignment.end_date,
+        assigned_by_id=assignment.assigned_by_id,
+        notes=assignment.notes,
+        created_at=assignment.created_at,
+        updated_at=assignment.updated_at,
+        horse_name=assignment.horse.name if assignment.horse else None,
+        field_name=assignment.field.name if assignment.field else "Box Rest",
+        assigned_by_name=assignment.assigned_by.name if assignment.assigned_by else None
+    )
+
+
+# ============== Field Occupancy ==============
+
+@router.get("/{field_id}/occupancy", response_model=FieldCurrentOccupancy)
+async def get_field_occupancy(
+    field_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["admin", "staff"]))
+):
+    """Get current occupancy of a specific field (horses and sheep)."""
+    field = db.query(Field).filter(Field.id == field_id).first()
+    if not field:
+        raise HTTPException(status_code=404, detail="Field not found")
+
+    # Get horses currently assigned to this field
+    horse_assignments = db.query(HorseFieldAssignment).filter(
+        HorseFieldAssignment.field_id == field_id,
+        HorseFieldAssignment.end_date.is_(None)
+    ).all()
+
+    horses = []
+    for assignment in horse_assignments:
+        horse = assignment.horse
+        owner = horse.owner if horse else None
+        horses.append(FieldOccupantHorse(
+            horse_id=horse.id if horse else 0,
+            horse_name=horse.name if horse else "Unknown",
+            owner_name=owner.name if owner else None,
+            assigned_since=assignment.start_date
+        ))
+
+    # Get sheep flocks currently assigned to this field
+    sheep_assignments = db.query(SheepFlockFieldAssignment).filter(
+        SheepFlockFieldAssignment.field_id == field_id,
+        SheepFlockFieldAssignment.end_date.is_(None)
+    ).all()
+
+    sheep = []
+    for assignment in sheep_assignments:
+        flock = assignment.flock
+        sheep.append(FieldOccupantSheep(
+            flock_id=flock.id if flock else 0,
+            flock_name=flock.name if flock else "Unknown",
+            count=flock.count if flock else 0,
+            breed=flock.breed if flock else None,
+            assigned_since=assignment.start_date
+        ))
+
+    return FieldCurrentOccupancy(
+        field_id=field.id,
+        field_name=field.name,
+        max_horses=field.max_horses,
+        current_condition=field.current_condition,
+        is_resting=field.is_resting,
+        current_horses=horses,
+        current_sheep=sheep,
+        total_horse_count=len(horses),
+        total_sheep_count=sum(s.count for s in sheep)
+    )

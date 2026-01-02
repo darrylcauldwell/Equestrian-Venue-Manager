@@ -100,7 +100,7 @@ class HolidayRequestBase(BaseModel):
 
 
 class HolidayRequestCreate(HolidayRequestBase):
-    pass
+    staff_id: Optional[int] = None  # Admin can specify staff_id, otherwise uses current user
 
 
 class HolidayRequestUpdate(BaseModel):
@@ -236,9 +236,9 @@ class AllStaffLeaveSummary(BaseModel):
 # ============== Payroll Adjustment Schemas ==============
 
 class PayrollAdjustmentCreate(BaseModel):
-    """Create a payroll adjustment (bonus, ad-hoc, or tip)."""
+    """Create a payroll adjustment (one-off or tip)."""
     staff_id: int
-    adjustment_type: str  # bonus, adhoc, tip
+    adjustment_type: str  # oneoff, tip
     amount: float
     description: str
     payment_date: date
@@ -275,8 +275,7 @@ class PayrollAdjustmentListResponse(BaseModel):
 
 class PayrollAdjustmentSummary(BaseModel):
     """Summary of adjustments for payroll period."""
-    bonus_total: float
-    adhoc_total: float
+    oneoff_total: float
     tips_total: float
     taxable_adjustments: float
     non_taxable_adjustments: float

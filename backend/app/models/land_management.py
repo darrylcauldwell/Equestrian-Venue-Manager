@@ -432,3 +432,57 @@ class FieldRotationSuggestion(Base):
     # Relationships
     field = relationship("Field")
     acknowledged_by = relationship("User")
+
+
+# ============================================================================
+# Sheep Flock Models
+# ============================================================================
+
+class SheepFlock(Base):
+    """Track sheep flocks for worm control grazing.
+
+    Sheep have a symbiotic relationship with horses - they help eliminate
+    parasitic worms by grazing and breaking the worm lifecycle.
+    """
+    __tablename__ = "sheep_flocks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    count = Column(Integer, nullable=False)  # Number of sheep in flock
+    breed = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship to field assignments
+    field_assignments = relationship("SheepFlockFieldAssignment", back_populates="flock", cascade="all, delete-orphan")
+
+
+class SheepFlockFieldAssignment(Base):
+    """Track sheep flock assignments to fields with history.
+
+    When a flock's field changes, the current assignment's end_date is set
+    and a new assignment record is created. NULL end_date = current assignment.
+    """
+    __tablename__ = "sheep_flock_field_assignments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    flock_id = Column(Integer, ForeignKey("sheep_flocks.id", ondelete="CASCADE"), nullable=False, index=True)
+    field_id = Column(Integer, ForeignKey("fields.id", ondelete="SET NULL"), nullable=True, index=True)
+
+    # Assignment period
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=True)  # NULL = current assignment
+
+    # Audit
+    assigned_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    notes = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    flock = relationship("SheepFlock", back_populates="field_assignments")
+    field = relationship("Field")
+    assigned_by = relationship("User")

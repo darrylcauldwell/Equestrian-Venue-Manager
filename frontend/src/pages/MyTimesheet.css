@@ -5,52 +5,67 @@
 }
 
 .my-timesheet-page .page-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .my-timesheet-page .page-header h1 {
-  margin: 0 0 0.5rem;
+  margin: 0;
   color: var(--text-primary);
 }
 
-.my-timesheet-page .page-header p {
+/* No actions message */
+.no-actions-needed {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-card);
+  border-radius: 8px;
   color: var(--text-secondary);
+}
+
+.no-actions-needed p {
   margin: 0;
 }
 
-/* Week navigation */
-.week-navigation {
+/* Footer with navigation */
+.timesheet-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-}
-
-.current-week {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-/* Week totals */
-.week-totals {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
+  margin-top: 1rem;
   padding: 0.75rem 1rem;
   background: var(--bg-card);
   border-radius: 8px;
   box-shadow: var(--shadow-sm);
+  position: sticky;
+  bottom: 0;
 }
 
-.week-totals span {
-  color: var(--text-secondary);
+/* Week navigation arrows */
+.week-navigation {
+  display: flex;
+  gap: 0.5rem;
 }
 
-.week-totals strong {
+.nav-arrow {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
   color: var(--text-primary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-arrow:hover {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  border-color: var(--color-primary);
 }
 
 /* Timesheet Matrix */
@@ -360,19 +375,53 @@
   .matrix-day {
     min-height: 180px;
   }
-
-  .week-totals {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
 }
 
 @media (max-width: 480px) {
+  .my-timesheet-page {
+    padding: 0.5rem;
+  }
+
   .timesheet-matrix {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
   .matrix-day {
     min-height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0.5rem;
+  }
+
+  .matrix-day .day-header {
+    flex-direction: row;
+    gap: 0.5rem;
+    width: auto;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+  }
+
+  .matrix-day .shift-info {
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    flex: 1;
+  }
+
+  .matrix-day .timesheet-edit,
+  .matrix-day .timesheet-display,
+  .matrix-day .timesheet-empty {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .timesheet-footer {
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .nav-arrow {
+    width: 36px;
+    height: 36px;
   }
 }

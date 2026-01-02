@@ -71,7 +71,7 @@ class FloodAPIService:
         Search for monitoring stations.
 
         Args:
-            search_term: Search by station or river name
+            search_term: Search by station label, river name, or town
             lat, lon: Search by location (requires both)
             dist_km: Distance in km for location search
 
@@ -85,14 +85,72 @@ class FloodAPIService:
             params["long"] = lon
             params["dist"] = dist_km
 
-        if search_term:
-            params["search"] = search_term
-
         # Only get level monitoring stations
         params["parameter"] = "level"
-        params["_limit"] = 50
 
-        data = await cls._get("/id/stations", params)
+        # The EA API 'search' only searches station labels, not river names or towns.
+        # So we need to fetch more stations and filter locally for comprehensive search.
+        if search_term:
+            # First try the EA API search (searches labels only)
+            params["search"] = search_term
+            params["_limit"] = 50
+            data = await cls._get("/id/stations", params)
+
+            stations = cls._parse_stations(data)
+
+            # If we got results from label search, return them
+            if stations:
+                return stations
+
+            # If no results, fetch more stations and search river names and towns locally
+            del params["search"]
+            params["_limit"] = 1000  # Get more stations for local filtering
+            data = await cls._get("/id/stations", params)
+
+            if not data or "items" not in data:
+                return []
+
+            # Filter locally by river name, town, or catchment
+            search_lower = search_term.lower()
+            stations = []
+            for item in data["items"]:
+                river_name = item.get("riverName", "") or ""
+                town = item.get("town", "") or ""
+                catchment = item.get("catchmentName", "") or ""
+                label = item.get("label", "")
+                if isinstance(label, list):
+                    label = label[0] if label else ""
+
+                # Check if search term matches river, town, catchment, or label
+                if (search_lower in river_name.lower() or
+                    search_lower in town.lower() or
+                    search_lower in catchment.lower() or
+                    search_lower in label.lower()):
+
+                    station_id = item.get("stationReference") or item.get("@id", "").split("/")[-1]
+                    stations.append({
+                        "station_id": station_id,
+                        "label": label,
+                        "river_name": river_name,
+                        "lat": item.get("lat"),
+                        "long": item.get("long"),
+                        "catchment_name": catchment,
+                        "town": town,
+                    })
+
+                # Limit results
+                if len(stations) >= 50:
+                    break
+
+            return stations
+        else:
+            params["_limit"] = 50
+            data = await cls._get("/id/stations", params)
+            return cls._parse_stations(data)
+
+    @classmethod
+    def _parse_stations(cls, data: Optional[Dict]) -> List[Dict]:
+        """Parse station data from EA API response."""
         if not data or "items" not in data:
             return []
 
@@ -100,7 +158,7 @@ class FloodAPIService:
         for item in data["items"]:
             # Handle both formats (some stations have different structures)
             station_id = item.get("stationReference") or item.get("@id", "").split("/")[-1]
-            river_name = item.get("riverName", "")
+            river_name = item.get("riverName", "") or ""
 
             # Get label/name
             label = item.get("label", "")

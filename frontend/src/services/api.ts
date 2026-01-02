@@ -256,6 +256,16 @@ import type {
   SSLSettingsUpdate,
   SSLStatusResponse,
   CertificateInfo,
+  HorseFieldAssignment,
+  HorseFieldAssignmentCreate,
+  HorseFieldAssignmentHistory,
+  FieldCurrentOccupancy,
+  SheepFlock,
+  SheepFlockCreate,
+  SheepFlockUpdate,
+  SheepFlockWithHistory,
+  SheepFlockFieldAssignment,
+  SheepFlockFieldAssignmentCreate,
 } from '../types';
 
 // Re-export factory utilities for use in other files
@@ -3947,6 +3957,113 @@ export const riskAssessmentsApi = {
   // Get count of pending acknowledgements (all staff)
   getPendingCount: async (): Promise<{ pending_count: number }> => {
     const response = await api.get('/risk-assessments/my/pending-count');
+    return response.data;
+  },
+};
+
+// Horse Field Assignments API
+export const horseFieldAssignmentsApi = {
+  // Get current field assignment for a horse
+  getCurrentAssignment: async (horseId: number): Promise<HorseFieldAssignment | null> => {
+    const response = await api.get(`/fields/horses/${horseId}/field-assignment`);
+    return response.data;
+  },
+
+  // Assign a horse to a field (auto-ends previous assignment)
+  assignToField: async (horseId: number, data: HorseFieldAssignmentCreate): Promise<HorseFieldAssignment> => {
+    const response = await api.post(`/fields/horses/${horseId}/field-assignment`, data);
+    return response.data;
+  },
+
+  // Remove horse from current field (ends assignment)
+  removeFromField: async (horseId: number): Promise<void> => {
+    await api.delete(`/fields/horses/${horseId}/field-assignment`);
+  },
+
+  // Get full assignment history for a horse
+  getHistory: async (horseId: number): Promise<HorseFieldAssignmentHistory> => {
+    const response = await api.get(`/fields/horses/${horseId}/field-history`);
+    return response.data;
+  },
+
+  // Set horse box rest status
+  setBoxRest: async (horseId: number, boxRest: boolean, notes?: string): Promise<void> => {
+    await api.put(`/fields/horses/${horseId}/box-rest`, null, {
+      params: { box_rest: boxRest, notes }
+    });
+  },
+};
+
+// Field Occupancy API
+export const fieldOccupancyApi = {
+  // Get occupancy for a specific field
+  getFieldOccupancy: async (fieldId: number): Promise<FieldCurrentOccupancy> => {
+    const response = await api.get(`/fields/${fieldId}/occupancy`);
+    return response.data;
+  },
+
+  // Get occupancy summary for all fields
+  getAllOccupancy: async (includeInactive: boolean = false): Promise<FieldCurrentOccupancy[]> => {
+    const response = await api.get('/fields/occupancy-summary', {
+      params: { include_inactive: includeInactive }
+    });
+    return response.data;
+  },
+};
+
+// Sheep Flocks API
+export const sheepFlocksApi = {
+  // List all flocks
+  list: async (includeInactive: boolean = false): Promise<SheepFlock[]> => {
+    const response = await api.get('/sheep-flocks/', {
+      params: { include_inactive: includeInactive }
+    });
+    return response.data;
+  },
+
+  // Create a new flock
+  create: async (data: SheepFlockCreate): Promise<SheepFlock> => {
+    const response = await api.post('/sheep-flocks/', data);
+    return response.data;
+  },
+
+  // Get a flock with history
+  get: async (flockId: number): Promise<SheepFlockWithHistory> => {
+    const response = await api.get(`/sheep-flocks/${flockId}`);
+    return response.data;
+  },
+
+  // Update a flock
+  update: async (flockId: number, data: SheepFlockUpdate): Promise<SheepFlock> => {
+    const response = await api.put(`/sheep-flocks/${flockId}`, data);
+    return response.data;
+  },
+
+  // Delete (soft-delete) a flock
+  delete: async (flockId: number): Promise<void> => {
+    await api.delete(`/sheep-flocks/${flockId}`);
+  },
+
+  // Assign flock to a field
+  assignToField: async (flockId: number, data: SheepFlockFieldAssignmentCreate): Promise<SheepFlockFieldAssignment> => {
+    const response = await api.post(`/sheep-flocks/${flockId}/assign-field`, data);
+    return response.data;
+  },
+
+  // Remove flock from current field
+  removeFromField: async (flockId: number): Promise<void> => {
+    await api.delete(`/sheep-flocks/${flockId}/field-assignment`);
+  },
+
+  // Get current assignment
+  getCurrentAssignment: async (flockId: number): Promise<SheepFlockFieldAssignment | null> => {
+    const response = await api.get(`/sheep-flocks/${flockId}/current-assignment`);
+    return response.data;
+  },
+
+  // Get assignment history
+  getAssignmentHistory: async (flockId: number): Promise<SheepFlockFieldAssignment[]> => {
+    const response = await api.get(`/sheep-flocks/${flockId}/assignment-history`);
     return response.data;
   },
 };

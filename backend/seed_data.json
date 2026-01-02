@@ -2811,6 +2811,290 @@
       "work_type": "yard_duties",
       "notes": "Half day - morning feeds and turnout only.",
       "status": "draft"
+    },
+    {
+      "staff_username": "staff1",
+      "days_ago": 14,
+      "clock_in": "07:00",
+      "clock_out": "15:30",
+      "break_minutes": 30,
+      "work_type": "yard_duties",
+      "notes": "Standard shift. Helped new livery owner settle their horse.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 288
+    },
+    {
+      "staff_username": "staff2",
+      "days_ago": 14,
+      "clock_in": "12:00",
+      "clock_out": "20:00",
+      "break_minutes": 30,
+      "work_type": "yard_duties",
+      "notes": "Evening shift. Chilly but horses all happy.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 288
+    },
+    {
+      "staff_username": "staff3",
+      "days_ago": 14,
+      "clock_in": "08:00",
+      "clock_out": "16:00",
+      "break_minutes": 30,
+      "work_type": "yard_duties",
+      "notes": "Covered for Barry. All horses fed and groomed.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 288
+    },
+    {
+      "staff_username": "staff1",
+      "days_ago": 21,
+      "clock_in": "07:30",
+      "clock_out": "16:00",
+      "break_minutes": 45,
+      "work_type": "yard_duties",
+      "notes": "Busy week before Christmas. Extra feeds for show horses.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 456
+    },
+    {
+      "staff_username": "staff2",
+      "days_ago": 21,
+      "clock_in": "13:00",
+      "clock_out": "20:30",
+      "break_minutes": 30,
+      "work_type": "yard_duties",
+      "notes": "Late finish - had to wait for farrier to complete.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 456
+    },
+    {
+      "staff_username": "staff3",
+      "days_ago": 21,
+      "clock_in": "07:00",
+      "clock_out": "15:00",
+      "break_minutes": 30,
+      "work_type": "yard_maintenance",
+      "notes": "Fixed water trough in paddock 2. Had been leaking for weeks.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 456
+    },
+    {
+      "staff_username": "staff4",
+      "days_ago": 21,
+      "clock_in": "09:00",
+      "clock_out": "14:00",
+      "break_minutes": 0,
+      "work_type": "events",
+      "notes": "Helped set up for weekend dressage competition.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 456
+    },
+    {
+      "staff_username": "staff1",
+      "days_ago": 28,
+      "clock_in": "07:00",
+      "clock_out": "15:30",
+      "break_minutes": 30,
+      "work_type": "yard_duties",
+      "notes": "Standard morning shift. Spirit was being extra spirited today.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 624
+    },
+    {
+      "staff_username": "staff2",
+      "days_ago": 28,
+      "clock_in": "12:30",
+      "clock_out": "20:00",
+      "break_minutes": 30,
+      "work_type": "yard_duties",
+      "notes": "Evening feeds. All rugs changed for colder weather.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 624
+    },
+    {
+      "staff_username": "staff3",
+      "days_ago": 28,
+      "clock_in": "08:00",
+      "clock_out": "14:00",
+      "break_minutes": 30,
+      "work_type": "yard_duties",
+      "notes": "Deep cleaned the feed room. Found some very old carrots.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 624
+    },
+    {
+      "staff_username": "staff4",
+      "days_ago": 28,
+      "clock_in": "10:00",
+      "clock_out": "16:00",
+      "break_minutes": 30,
+      "work_type": "office",
+      "notes": "Helped with end of month invoicing and feed orders.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 624
+    },
+    {
+      "staff_username": "staff1",
+      "days_ago": 35,
+      "clock_in": "07:30",
+      "clock_out": "16:30",
+      "break_minutes": 60,
+      "work_type": "yard_duties",
+      "notes": "Long day - covered both shifts while Daisy was off.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 792
+    },
+    {
+      "staff_username": "staff3",
+      "days_ago": 35,
+      "clock_in": "07:00",
+      "clock_out": "15:00",
+      "break_minutes": 30,
+      "work_type": "yard_duties",
+      "notes": "Morning shift. Vet visit for annual vaccinations.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 792
+    },
+    {
+      "staff_username": "staff4",
+      "days_ago": 35,
+      "clock_in": "14:00",
+      "clock_out": "19:00",
+      "break_minutes": 0,
+      "work_type": "events",
+      "notes": "Evening event - private party in clubhouse.",
+      "status": "approved",
+      "approved_by_username": "admin",
+      "hours_since_approved": 792
+    }
+  ],
+  "payroll_adjustments": [
+    {
+      "staff_username": "staff1",
+      "adjustment_type": "oneoff",
+      "amount": 150.0,
+      "description": "Christmas bonus - excellent work throughout the year",
+      "days_from_now": -21,
+      "taxable": true,
+      "notes": "Annual Christmas bonus",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "adjustment_type": "oneoff",
+      "amount": 100.0,
+      "description": "Christmas bonus",
+      "days_from_now": -21,
+      "taxable": true,
+      "notes": "Annual Christmas bonus",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "adjustment_type": "oneoff",
+      "amount": 150.0,
+      "description": "Christmas bonus - reliable and hardworking",
+      "days_from_now": -21,
+      "taxable": true,
+      "notes": "Annual Christmas bonus",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "adjustment_type": "oneoff",
+      "amount": 75.0,
+      "description": "Christmas bonus",
+      "days_from_now": -21,
+      "taxable": true,
+      "notes": "Annual Christmas bonus - part time staff",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff1",
+      "adjustment_type": "tip",
+      "amount": 20.0,
+      "description": "Thank you from Mrs Henderson for extra care of Shadowfax",
+      "days_from_now": -14,
+      "taxable": false,
+      "notes": "Client very happy with wound care"
+    },
+    {
+      "staff_username": "staff2",
+      "adjustment_type": "tip",
+      "amount": 15.0,
+      "description": "Tip from new livery owner for helping them settle in",
+      "days_from_now": -10,
+      "taxable": false
+    },
+    {
+      "staff_username": "staff1",
+      "adjustment_type": "oneoff",
+      "amount": 50.0,
+      "description": "Extra payment for covering weekend shifts",
+      "days_from_now": -7,
+      "taxable": true,
+      "notes": "Covered for staff2 during illness",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "adjustment_type": "tip",
+      "amount": 25.0,
+      "description": "Thank you from Felicity for excellent horse care",
+      "days_from_now": -5,
+      "taxable": false,
+      "notes": "Spirit looking fantastic for the show"
+    },
+    {
+      "staff_username": "staff2",
+      "adjustment_type": "oneoff",
+      "amount": 35.0,
+      "description": "Late night emergency callout - colic watch",
+      "days_from_now": -3,
+      "taxable": true,
+      "notes": "Called in at 11pm for Phoenix colic symptoms",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff1",
+      "adjustment_type": "tip",
+      "amount": 10.0,
+      "description": "Small thank you from day visitor",
+      "days_from_now": -2,
+      "taxable": false
+    },
+    {
+      "staff_username": "staff4",
+      "adjustment_type": "oneoff",
+      "amount": 45.0,
+      "description": "Extra hours for competition setup",
+      "days_from_now": -1,
+      "taxable": true,
+      "notes": "Stayed late to finish arena preparation",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "adjustment_type": "oneoff",
+      "amount": 50.0,
+      "description": "Spot bonus for fixing water trough",
+      "days_from_now": -20,
+      "taxable": true,
+      "notes": "Saved us calling a plumber - great initiative",
+      "created_by_username": "admin"
     }
   ],
   "fields": [
@@ -5683,79 +5967,381 @@
     }
   ],
   "shifts": [
-    {"_comment": "=== DAY 0 (Today) - staff4 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 0, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 0, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 0, "shift_type": "afternoon", "role": "office", "notes": "Answering phones and booking enquiries", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 0, "shift_type": "full_day", "role": "maintenance", "notes": "Arena surface maintenance", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 1 - staff3 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 1, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 1, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 1, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 1, "shift_type": "afternoon", "role": "teaching", "notes": "Assisting with afternoon lessons", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 2 - staff2 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 2, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 2, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 2, "shift_type": "full_day", "role": "maintenance", "notes": "Field fencing repairs", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 3 - staff1 OFF ==="},
-    {"staff_username": "staff2", "days_from_now": 3, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 3, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 3, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 4 - All staff working (busy day) ==="},
-    {"staff_username": "staff1", "days_from_now": 4, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 4, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 4, "shift_type": "afternoon", "role": "teaching", "notes": "Clinic setup and assistance", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 4, "shift_type": "full_day", "role": "maintenance", "notes": "Pre-clinic facility checks", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 5 - staff3 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 5, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 5, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 5, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 6 - staff2 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 6, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 6, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 6, "shift_type": "morning", "role": "office", "notes": "Weekend booking enquiries", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 7 - staff1 OFF ==="},
-    {"staff_username": "staff2", "days_from_now": 7, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 7, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 7, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 8 - staff4 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 8, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 8, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 8, "shift_type": "full_day", "role": "maintenance", "notes": "Water trough cleaning", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 9 - staff3 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 9, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 9, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 9, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 10 - staff2 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 10, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 10, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 10, "shift_type": "afternoon", "role": "teaching", "notes": "Children's lesson helper", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 11 - staff1 OFF ==="},
-    {"staff_username": "staff2", "days_from_now": 11, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 11, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 11, "shift_type": "full_day", "role": "maintenance", "notes": "Hedge trimming around paddocks", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 12 - All staff working ==="},
-    {"staff_username": "staff1", "days_from_now": 12, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 12, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 12, "shift_type": "morning", "role": "office", "notes": "Invoicing and admin", "created_by_username": "admin"},
-    {"staff_username": "staff4", "days_from_now": 12, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
-
-    {"_comment": "=== DAY 13 - staff4 OFF ==="},
-    {"staff_username": "staff1", "days_from_now": 13, "shift_type": "afternoon", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff2", "days_from_now": 13, "shift_type": "morning", "role": "yard_duties", "created_by_username": "admin"},
-    {"staff_username": "staff3", "days_from_now": 13, "shift_type": "full_day", "role": "yard_duties", "created_by_username": "admin"}
+    {
+      "_comment": "=== DAY 0 (Today) - staff4 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 0,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 0,
+      "shift_type": "morning",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 0,
+      "shift_type": "afternoon",
+      "role": "office",
+      "notes": "Answering phones and booking enquiries",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 0,
+      "shift_type": "full_day",
+      "role": "maintenance",
+      "notes": "Arena surface maintenance",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 1 - staff3 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 1,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 1,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 1,
+      "shift_type": "morning",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 1,
+      "shift_type": "afternoon",
+      "role": "teaching",
+      "notes": "Assisting with afternoon lessons",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 2 - staff2 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 2,
+      "shift_type": "morning",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 2,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 2,
+      "shift_type": "full_day",
+      "role": "maintenance",
+      "notes": "Field fencing repairs",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 3 - staff1 OFF ==="
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 3,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 3,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 3,
+      "shift_type": "afternoon",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 4 - All staff working (busy day) ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 4,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 4,
+      "shift_type": "morning",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 4,
+      "shift_type": "afternoon",
+      "role": "teaching",
+      "notes": "Clinic setup and assistance",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 4,
+      "shift_type": "full_day",
+      "role": "maintenance",
+      "notes": "Pre-clinic facility checks",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 5 - staff3 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 5,
+      "shift_type": "morning",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 5,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 5,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 6 - staff2 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 6,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 6,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 6,
+      "shift_type": "morning",
+      "role": "office",
+      "notes": "Weekend booking enquiries",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 7 - staff1 OFF ==="
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 7,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 7,
+      "shift_type": "morning",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 7,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 8 - staff4 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 8,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 8,
+      "shift_type": "afternoon",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 8,
+      "shift_type": "full_day",
+      "role": "maintenance",
+      "notes": "Water trough cleaning",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 9 - staff3 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 9,
+      "shift_type": "morning",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 9,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 9,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 10 - staff2 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 10,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 10,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 10,
+      "shift_type": "afternoon",
+      "role": "teaching",
+      "notes": "Children's lesson helper",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 11 - staff1 OFF ==="
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 11,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 11,
+      "shift_type": "afternoon",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 11,
+      "shift_type": "full_day",
+      "role": "maintenance",
+      "notes": "Hedge trimming around paddocks",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 12 - All staff working ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 12,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 12,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 12,
+      "shift_type": "morning",
+      "role": "office",
+      "notes": "Invoicing and admin",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "days_from_now": 12,
+      "shift_type": "afternoon",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "_comment": "=== DAY 13 - staff4 OFF ==="
+    },
+    {
+      "staff_username": "staff1",
+      "days_from_now": 13,
+      "shift_type": "afternoon",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "days_from_now": 13,
+      "shift_type": "morning",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "days_from_now": 13,
+      "shift_type": "full_day",
+      "role": "yard_duties",
+      "created_by_username": "admin"
+    }
   ],
   "invoices": [
     {
@@ -6736,7 +7322,7 @@
       "versions": [
         {
           "version_number": 1,
-          "html_content": "<h1>Holiday Livery Agreement</h1><h2>Nags Rest Manor Equestrian Centre</h2><h3>We'll Look After Them So You Can Relax (Probably)</h3><p>This agreement covers the temporary care of your horse while you do something that doesn't involve mucking out.</p><h3>1. Period of Stay</h3><p>Your horse will grace us with their presence from [DATE] to [DATE]. Extensions possible if we like them (and you ask nicely in advance). No surprise extensions - we need to plan stable space, not run a drop-in centre.</p><h3>2. What's Included</h3><p>Full livery care, which means:</p><ul><li>Twice-daily feeding and watering (we don't do hunger strikes)</li><li>Daily turnout with carefully selected companions (no drama queens together)</li><li>Stable management to five-star standards (okay, four-star, we're honest)</li><li>Daily health checks and neurotic photograph updates if requested</li><li>Medication administration (pills in apples, paste on tongue, the usual battle)</li><li>Emergency vet calls (we hope not, you'll hope not, your wallet hopes not)</li></ul><h3>3. What You Need to Bring</h3><p>Please provide:</p><ul><li>Vaccination certificates (no jab, no stay - we don't make the rules, actually we do)</li><li>Worming records (we're not hosting a worm party)</li><li>Written feeding and medication instructions (\"he knows what he likes\" is not a feed chart)</li><li>Emergency contact that actually answers</li><li>Insurance documents (third-party liability minimum)</li><li>Any special equipment (their own bucket if they're precious about it)</li></ul><h3>4. Payment Terms</h3><p>£250 per week, pro-rata for part weeks. Full payment required before arrival - we've been burned before, and not by the hay.</p><h3>5. Liability</h3><p>Standard terms apply. Your horse will be cared for as if they were ours, but horses gonna horse. Insurance is mandatory, optimism is optional.</p><h3>6. Communication</h3><p>We'll send daily updates unless you tell us not to. Photos available on request. Panic calls charged at therapist rates (joke, mostly).</p><p><em>Sign below and go enjoy your holiday. We've got this. Probably. Definitely. Yes.</em></p>",
+          "html_content": "<h1>Holiday Livery Agreement</h1><h2>Nags Rest Manor Equestrian Centre</h2><h3>We'll Look After Them So You Can Relax (Probably)</h3><p>This agreement covers the temporary care of your horse while you do something that doesn't involve mucking out.</p><h3>1. Period of Stay</h3><p>Your horse will grace us with their presence from [DATE] to [DATE]. Extensions possible if we like them (and you ask nicely in advance). No surprise extensions - we need to plan stable space, not run a drop-in centre.</p><h3>2. What's Included</h3><p>Full livery care, which means:</p><ul><li>Twice-daily feeding and watering (we don't do hunger strikes)</li><li>Daily turnout with carefully selected companions (no drama queens together)</li><li>Stable management to five-star standards (okay, four-star, we're honest)</li><li>Daily health checks and neurotic photograph updates if requested</li><li>Medication administration (pills in apples, paste on tongue, the usual battle)</li><li>Emergency vet calls (we hope not, you'll hope not, your wallet hopes not)</li></ul><h3>3. What You Need to Bring</h3><p>Please provide:</p><ul><li>Vaccination certificates (no jab, no stay - we don't make the rules, actually we do)</li><li>Worming records (we're not hosting a worm party)</li><li>Written feeding and medication instructions (\"he knows what he likes\" is not a feed chart)</li><li>Emergency contact that actually answers</li><li>Insurance documents (third-party liability minimum)</li><li>Any special equipment (their own bucket if they're precious about it)</li></ul><h3>4. Payment Terms</h3><p>\u00a3250 per week, pro-rata for part weeks. Full payment required before arrival - we've been burned before, and not by the hay.</p><h3>5. Liability</h3><p>Standard terms apply. Your horse will be cared for as if they were ours, but horses gonna horse. Insurance is mandatory, optimism is optional.</p><h3>6. Communication</h3><p>We'll send daily updates unless you tell us not to. Photos available on request. Panic calls charged at therapist rates (joke, mostly).</p><p><em>Sign below and go enjoy your holiday. We've got this. Probably. Definitely. Yes.</em></p>",
           "change_summary": "Initial holiday livery terms - reassuringly detailed",
           "is_current": true,
           "created_by_username": "admin",
@@ -6958,8 +7544,8 @@
       "decision_date": "2024-03-01",
       "agreement_start_date": "2024-04-01",
       "agreement_end_date": "2027-03-31",
-      "total_value": 4500.00,
-      "annual_payment": 1500.00,
+      "total_value": 4500.0,
+      "annual_payment": 1500.0,
       "scheme_provider": "Rural Payments Agency",
       "next_inspection_date": "2025-06-15",
       "notes": "SFI payment for hedgerow management. Must maintain minimum 2m width, one side cut annually on rotation."
@@ -6973,8 +7559,8 @@
       "decision_date": "2015-09-15",
       "agreement_start_date": "2015-11-01",
       "agreement_end_date": "2030-10-31",
-      "total_value": 12000.00,
-      "annual_payment": 800.00,
+      "total_value": 12000.0,
+      "annual_payment": 800.0,
       "scheme_provider": "Rural Payments Agency",
       "next_inspection_date": "2025-09-01",
       "inspection_notes": "15-year woodland creation agreement. Annual inspection checks survival rate and maintenance.",
@@ -6989,8 +7575,8 @@
       "decision_date": "2024-04-10",
       "agreement_start_date": "2024-05-01",
       "agreement_end_date": "2027-04-30",
-      "total_value": 2400.00,
-      "annual_payment": 800.00,
+      "total_value": 2400.0,
+      "annual_payment": 800.0,
       "scheme_provider": "Rural Payments Agency",
       "notes": "Payment for maintaining wildlife pond and 10m buffer zone. Great crested newt habitat."
     },
@@ -7003,8 +7589,8 @@
       "decision_date": "2014-05-15",
       "agreement_start_date": "2014-06-01",
       "agreement_end_date": "2024-05-31",
-      "total_value": 7500.00,
-      "annual_payment": 750.00,
+      "total_value": 7500.0,
+      "annual_payment": 750.0,
       "scheme_provider": "Natural England",
       "notes": "Completed 10-year agreement for grass buffer strips along watercourse. Successor scheme applied for."
     },
@@ -7017,7 +7603,7 @@
       "decision_date": "2024-11-15",
       "agreement_start_date": "2025-01-01",
       "agreement_end_date": "2025-12-31",
-      "total_value": 3200.00,
+      "total_value": 3200.0,
       "scheme_provider": "Forestry Commission",
       "notes": "Grant for removing 8 ash trees affected by dieback and replanting with diverse native species."
     }
@@ -7068,6 +7654,11 @@
       "job_title": "Chief Wheelbarrow Pilot",
       "date_of_birth": "1995-01-15",
       "start_date": "2021-03-15",
+      "hourly_rate": 12.5,
+      "national_insurance_number": "AB123456C",
+      "bank_sort_code": "20-30-40",
+      "bank_account_number": "12345678",
+      "bank_account_name": "B Muckspreader",
       "bio": "Barry has been pushing wheelbarrows uphill since before it was fashionable. He holds the yard record for most stables mucked in a single hour (please don't ask about the quality) and claims to speak fluent Horse, passable Pony, and is currently learning Shetland. His dream is to one day own a self-propelled wheelbarrow. Barry joined us after a brief career as a professional footballer, which ended when he discovered he was better at kicking muck heaps than footballs. His signature move is the 'one-handed shavings throw' and he has never once let a full barrow tip over (this is a lie).",
       "personal_email": "barry.muck@personal.example.com",
       "personal_phone": "07700 100003",
@@ -7088,6 +7679,11 @@
       "job_title": "Head Groom & Horse Spa Manager",
       "date_of_birth": "1992-12-25",
       "start_date": "2019-09-01",
+      "hourly_rate": 14.0,
+      "national_insurance_number": "CD234567D",
+      "bank_sort_code": "40-50-60",
+      "bank_account_number": "87654321",
+      "bank_account_name": "D Haystack",
       "bio": "Daisy takes grooming so seriously that horses have been known to purr. Born on Christmas Day and named after a flower, she considers herself a gift to equine wellness. Her mane plaits have won three county shows and caused two competitors to cry. Daisy maintains that there's no such thing as too much conditioner and she will die on that hill. She has a concerning collection of grooming products that would make a Kardashian jealous. Local legend has it she can detect a dirty horse from 500 metres, and she has never met a winter coat she couldn't conquer.",
       "personal_email": "daisy.hay@personal.example.com",
       "personal_phone": "07700 100004",
@@ -7108,6 +7704,11 @@
       "job_title": "Feed Room Guardian",
       "date_of_birth": "1998-06-30",
       "start_date": "2022-06-15",
+      "hourly_rate": 11.5,
+      "national_insurance_number": "EF345678E",
+      "bank_sort_code": "30-40-50",
+      "bank_account_number": "11223344",
+      "bank_account_name": "B Bucketworth",
       "bio": "Bessie guards the feed room with the intensity of a dragon protecting its hoard. She has memorised every horse's dietary requirements, allergies, preferences, and opinions (yes, they have opinions). The fact that she named her clipboard 'Frederick' and talks to it should not alarm you. Bessie joined us straight from agricultural college, where she graduated top of her class in Feed Science and bottom of her class in Social Interaction With Humans. Her spirit animal is a spreadsheet. She has nightmares about horses getting the wrong supplements and wakes up in cold sweats muttering about vitamin ratios.",
       "personal_email": "bessie.bucket@personal.example.com",
       "personal_phone": "07700 100005",
@@ -7128,6 +7729,7 @@
       "job_title": "Maintenance & Fire Prevention Specialist",
       "date_of_birth": "1990-11-05",
       "start_date": "2020-01-10",
+      "hourly_rate": 13.0,
       "bio": "Timothy is responsible for fixing everything that breaks, which at this yard is everything, constantly. His namesake incident with the hose during the Great Barn Fire Scare of 2022 is no longer spoken of directly but is alluded to in all safety briefings. Despite this, Timothy remains our go-to person for any mechanical failure, plumbing disaster, or fence that needs not so much fixing as complete reconstruction. He once rebuilt an entire stable block using nothing but baler twine, determination, and some words that made the horses blush. Timothy's personal motto is 'If it can't be fixed with duct tape, it can't be fixed.'",
       "personal_email": "tim.pitch@personal.example.com",
       "personal_phone": "07700 100006",
@@ -7153,7 +7755,11 @@
       "version": 1,
       "is_active": true,
       "required_for_induction": true,
-      "applies_to_roles": ["staff", "livery", "admin"],
+      "applies_to_roles": [
+        "staff",
+        "livery",
+        "admin"
+      ],
       "review_period_months": 12,
       "last_review_days_ago": 30,
       "next_review_days_from_now": 335
@@ -7166,7 +7772,11 @@
       "version": 1,
       "is_active": true,
       "required_for_induction": true,
-      "applies_to_roles": ["staff", "livery", "admin"],
+      "applies_to_roles": [
+        "staff",
+        "livery",
+        "admin"
+      ],
       "review_period_months": 12,
       "last_review_days_ago": 30,
       "next_review_days_from_now": 335
@@ -7179,7 +7789,11 @@
       "version": 1,
       "is_active": true,
       "required_for_induction": true,
-      "applies_to_roles": ["staff", "livery", "admin"],
+      "applies_to_roles": [
+        "staff",
+        "livery",
+        "admin"
+      ],
       "review_period_months": 12,
       "last_review_days_ago": 30,
       "next_review_days_from_now": 335
@@ -7192,7 +7806,11 @@
       "version": 1,
       "is_active": true,
       "required_for_induction": true,
-      "applies_to_roles": ["staff", "livery", "admin"],
+      "applies_to_roles": [
+        "staff",
+        "livery",
+        "admin"
+      ],
       "review_period_months": 12,
       "last_review_days_ago": 60,
       "next_review_days_from_now": 305
@@ -7205,7 +7823,11 @@
       "version": 1,
       "is_active": true,
       "required_for_induction": true,
-      "applies_to_roles": ["staff", "livery", "admin"],
+      "applies_to_roles": [
+        "staff",
+        "livery",
+        "admin"
+      ],
       "review_period_months": 12,
       "last_review_days_ago": 90,
       "next_review_days_from_now": 275
@@ -7218,7 +7840,11 @@
       "version": 1,
       "is_active": true,
       "required_for_induction": true,
-      "applies_to_roles": ["staff", "livery", "admin"],
+      "applies_to_roles": [
+        "staff",
+        "livery",
+        "admin"
+      ],
       "review_period_months": 12,
       "last_review_days_ago": 45,
       "next_review_days_from_now": 320
@@ -7231,7 +7857,11 @@
       "version": 1,
       "is_active": true,
       "required_for_induction": true,
-      "applies_to_roles": ["staff", "livery", "admin"],
+      "applies_to_roles": [
+        "staff",
+        "livery",
+        "admin"
+      ],
       "review_period_months": 12,
       "last_review_days_ago": 30,
       "next_review_days_from_now": 335
@@ -7240,11 +7870,15 @@
       "title": "New Starter Induction Checklist - Welcome To The Madness",
       "category": "other",
       "summary": "Everything new staff and livery clients need to know before being let loose",
-      "content": "NEW STARTER INDUCTION CHECKLIST\nNags Rest Manor Equestrian Centre\n\nWELCOME!\nCongratulations on joining Nags Rest Manor. You're about to discover that working with horses is 10% glamour, 30% mucking out, and 60% wondering why you didn't become an accountant. Here's what you need to know.\n\nBEFORE YOUR FIRST SHIFT/VISIT\n\n□ Read and acknowledge all risk assessments (that's why you're reading this one last)\n□ Confirm next of kin and emergency contact details\n□ Provide proof of qualifications (if applicable)\n□ Submit DBS check (staff only)\n□ Sign contract/livery agreement\n\nDAY ONE ESSENTIALS\n\n□ Tour of facilities:\n  - Where everything is (you'll still get lost for the first month)\n  - Fire exits and assembly point (by the mounting block)\n  - First aid locations (GREEN box humans, RED box horses)\n  - Loo facilities (the key is on the hook. Always return the key.)\n\n□ Meet the residents:\n  - The horses (full briefing on individual quirks provided)\n  - Lord Whiskers (yard cat, answers to nothing, underfoot constantly)\n  - The peacocks (cannot be controlled, just accepted)\n  - The geese (AVOID - see Yard Environment assessment)\n\n□ Security briefing:\n  - Gate code (changes quarterly, announced on noticeboard)\n  - Key safe location and code (for emergencies only)\n  - Last person leaving procedures (see Security Info)\n\nKEY CONTACTS\n\n□ The Baroness (Yard Manager): 07700 900100\n  - First point of contact for everything\n  - Available unless she's finally escaped to the Bahamas\n\n□ Valley Vets (Emergency): 07700 800001\n  - For any equine emergency\n  - Available 24/7\n\n□ Farrier Dave: 07700 800999\n  - For hoof emergencies only\n  - His nickname is 'Definitely Not Dodgy Dave.' Don't ask.\n\nYARD RULES (NON-NEGOTIABLE)\n\n1. Gates: Close them. Every time. Even if you're 'just popping back.'\n2. Horses: All horses in before dusk. No exceptions. The foxes get cocky.\n3. Feed: Follow the chart. Exactly. Bessie has eyes everywhere.\n4. Injuries: Report everything. Accident book. No heroics.\n5. Parking: In designated areas. The Baroness will find you if you block the hay delivery.\n\nWARNINGS FROM EXPERIENCE\n\n- Thunderbolt unties himself. Always double-check.\n- Sir Kicks-A-Lot: The name is literal.\n- The hay loft stairs are steep. Not a slide.\n- Never approach Middle Paddock without the stick.\n- Timothy is not allowed near hoses during fire drills.\n\n□ I have read and understood all of the above.\n□ I have completed all associated risk assessments.\n□ I accept that working here means accepting the occasional chaos.\n\nSigned: _________________\nDate: ___________________\nWitnessed by: ___________________\n\nWELCOME TO THE TEAM. MAY YOUR BOOTS STAY DRY AND YOUR HAY BALES LIGHT.",
+      "content": "NEW STARTER INDUCTION CHECKLIST\nNags Rest Manor Equestrian Centre\n\nWELCOME!\nCongratulations on joining Nags Rest Manor. You're about to discover that working with horses is 10% glamour, 30% mucking out, and 60% wondering why you didn't become an accountant. Here's what you need to know.\n\nBEFORE YOUR FIRST SHIFT/VISIT\n\n\u25a1 Read and acknowledge all risk assessments (that's why you're reading this one last)\n\u25a1 Confirm next of kin and emergency contact details\n\u25a1 Provide proof of qualifications (if applicable)\n\u25a1 Submit DBS check (staff only)\n\u25a1 Sign contract/livery agreement\n\nDAY ONE ESSENTIALS\n\n\u25a1 Tour of facilities:\n  - Where everything is (you'll still get lost for the first month)\n  - Fire exits and assembly point (by the mounting block)\n  - First aid locations (GREEN box humans, RED box horses)\n  - Loo facilities (the key is on the hook. Always return the key.)\n\n\u25a1 Meet the residents:\n  - The horses (full briefing on individual quirks provided)\n  - Lord Whiskers (yard cat, answers to nothing, underfoot constantly)\n  - The peacocks (cannot be controlled, just accepted)\n  - The geese (AVOID - see Yard Environment assessment)\n\n\u25a1 Security briefing:\n  - Gate code (changes quarterly, announced on noticeboard)\n  - Key safe location and code (for emergencies only)\n  - Last person leaving procedures (see Security Info)\n\nKEY CONTACTS\n\n\u25a1 The Baroness (Yard Manager): 07700 900100\n  - First point of contact for everything\n  - Available unless she's finally escaped to the Bahamas\n\n\u25a1 Valley Vets (Emergency): 07700 800001\n  - For any equine emergency\n  - Available 24/7\n\n\u25a1 Farrier Dave: 07700 800999\n  - For hoof emergencies only\n  - His nickname is 'Definitely Not Dodgy Dave.' Don't ask.\n\nYARD RULES (NON-NEGOTIABLE)\n\n1. Gates: Close them. Every time. Even if you're 'just popping back.'\n2. Horses: All horses in before dusk. No exceptions. The foxes get cocky.\n3. Feed: Follow the chart. Exactly. Bessie has eyes everywhere.\n4. Injuries: Report everything. Accident book. No heroics.\n5. Parking: In designated areas. The Baroness will find you if you block the hay delivery.\n\nWARNINGS FROM EXPERIENCE\n\n- Thunderbolt unties himself. Always double-check.\n- Sir Kicks-A-Lot: The name is literal.\n- The hay loft stairs are steep. Not a slide.\n- Never approach Middle Paddock without the stick.\n- Timothy is not allowed near hoses during fire drills.\n\n\u25a1 I have read and understood all of the above.\n\u25a1 I have completed all associated risk assessments.\n\u25a1 I accept that working here means accepting the occasional chaos.\n\nSigned: _________________\nDate: ___________________\nWitnessed by: ___________________\n\nWELCOME TO THE TEAM. MAY YOUR BOOTS STAY DRY AND YOUR HAY BALES LIGHT.",
       "version": 1,
       "is_active": true,
       "required_for_induction": true,
-      "applies_to_roles": ["staff", "livery", "admin"],
+      "applies_to_roles": [
+        "staff",
+        "livery",
+        "admin"
+      ],
       "review_period_months": 12,
       "last_review_days_ago": 15,
       "next_review_days_from_now": 350
@@ -7475,6 +8109,100 @@
       "acknowledged_days_ago": 200,
       "assessment_version": 1,
       "notes": "Frederick approved this document."
+    }
+  ],
+  "sheep_flocks": [
+    {
+      "name": "Mavis's Mob",
+      "count": 12,
+      "breed": "Herdwick",
+      "notes": "Named after Mavis, the matriarch who once escaped and was found eating the petunias in the car park. Her descendants share her rebellious spirit and excellent taste in flowers."
+    },
+    {
+      "name": "The Lawn Mowers",
+      "count": 8,
+      "breed": "Suffolk",
+      "notes": "Purchased specifically for worm control. They take their job very seriously and have been known to 'accidentally' escape into the hay barn for quality control purposes."
+    },
+    {
+      "name": "Barry's Brigade",
+      "count": 6,
+      "breed": "Texel",
+      "notes": "Named after Barry Muckspreader who found them wandering on the lane. He 'temporarily' adopted them two years ago. Nobody has the heart to tell him we know whose farm they're from."
+    }
+  ],
+  "sheep_flock_field_assignments": [
+    {
+      "flock_name": "Mavis's Mob",
+      "field_name": "Bottom Field",
+      "assigned_by_username": "admin",
+      "start_days_ago": 14,
+      "notes": "Moved here for worm control. Sheep seem happy with the slightly boggy conditions."
+    },
+    {
+      "flock_name": "The Lawn Mowers",
+      "field_name": "The Strip",
+      "assigned_by_username": "admin",
+      "start_days_ago": 7,
+      "notes": "Good narrow paddock for them to work along methodically."
+    },
+    {
+      "flock_name": "Barry's Brigade",
+      "field_name": "Mare's Meadow",
+      "assigned_by_username": "staff1",
+      "start_days_ago": 21,
+      "notes": "Barry insisted they needed the quiet paddock. They do seem calmer here."
+    }
+  ],
+  "horse_field_assignments": [
+    {
+      "horse_name": "Shadowfax",
+      "field_name": "Top Paddock",
+      "assigned_by_username": "admin",
+      "start_days_ago": 60,
+      "notes": "Premium location for our grey lord. Best grazing and shelter."
+    },
+    {
+      "horse_name": "Black Beauty",
+      "field_name": "Top Paddock",
+      "assigned_by_username": "admin",
+      "start_days_ago": 45,
+      "notes": "Shares well with Shadowfax. Both enjoy lording it over the other paddocks."
+    },
+    {
+      "horse_name": "Seabiscuit",
+      "field_name": "Sheep-Free Zone",
+      "assigned_by_username": "admin",
+      "start_days_ago": 30,
+      "notes": "Doesn't get along with sheep. Placed in our only sheep-proof paddock."
+    },
+    {
+      "horse_name": "Spirit",
+      "field_name": "Mare's Meadow",
+      "assigned_by_username": "admin",
+      "start_days_ago": 90,
+      "notes": "Prefers the quiet life. Gets nervous near the road."
+    },
+    {
+      "horse_name": "Hidalgo",
+      "field_name": "Sheep-Free Zone",
+      "assigned_by_username": "admin",
+      "start_days_ago": 25,
+      "notes": "Good companion for Seabiscuit. Both share an aversion to woolly visitors."
+    },
+    {
+      "horse_name": "Joey",
+      "field_name": null,
+      "assigned_by_username": "admin",
+      "start_days_ago": 5,
+      "notes": "On box rest - recovering from minor leg injury. Vet recommends limited movement for 2 weeks."
+    },
+    {
+      "horse_name": "Phoenix",
+      "field_name": "Recovery Paddock",
+      "assigned_by_username": "admin",
+      "start_days_ago": 3,
+      "notes": "Transitioning from box rest. Small paddock for controlled exercise."
     }
   ]
 }

@@ -620,6 +620,11 @@ class SeedStaffProfileSchema(BaseModel):
     bio: Optional[str] = None
     start_date: Optional[str] = None
     job_title: Optional[str] = None
+    hourly_rate: Optional[float] = None  # Pay rate for payroll
+    national_insurance_number: Optional[str] = None  # Format: AB123456C
+    bank_sort_code: Optional[str] = None
+    bank_account_number: Optional[str] = None
+    bank_account_name: Optional[str] = None
     personal_email: Optional[str] = None
     personal_phone: Optional[str] = None
     address_street: Optional[str] = None
@@ -692,6 +697,17 @@ class SeedTimesheetSchema(BaseModel):
     notes: Optional[str] = None
     status: str
     hours_since_submitted: Optional[int] = None
+
+
+class SeedPayrollAdjustmentSchema(BaseModel):
+    staff_username: str
+    adjustment_type: str  # oneoff, tip
+    amount: float
+    description: str
+    days_from_now: int
+    taxable: Optional[bool] = None
+    notes: Optional[str] = None
+    created_by_username: Optional[str] = None
 
 
 class SeedUnplannedAbsenceSchema(BaseModel):
@@ -807,6 +823,7 @@ SECTION_SCHEMAS = {
     # Staff & Admin
     'staff_profiles': SeedStaffProfileSchema,
     'timesheets': SeedTimesheetSchema,
+    'payroll_adjustments': SeedPayrollAdjustmentSchema,
     'unplanned_absences': SeedUnplannedAbsenceSchema,
     'ledger_entries': SeedLedgerEntrySchema,
     'compliance_items': SeedComplianceItemSchema,

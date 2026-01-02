@@ -328,13 +328,13 @@ def create_guest_booking(
         # Create new PUBLIC user account
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-        # Generate unique username from email
+        # Generate unique username from email (case-insensitive check)
         base_username = booking_data.guest_email.split('@')[0].lower()
         # Remove any non-alphanumeric characters
         base_username = ''.join(c for c in base_username if c.isalnum())
         username = base_username
         counter = 1
-        while db.query(User).filter(User.username == username).first():
+        while db.query(User).filter(func.lower(User.username) == username).first():
             username = f"{base_username}{counter}"
             counter += 1
 

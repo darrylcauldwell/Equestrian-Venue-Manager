@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime, date
 from urllib.parse import quote
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -693,11 +694,11 @@ def register_for_clinic(
 
             pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-            # Generate username from email
+            # Generate username from email (case-insensitive check)
             base_username = data.participant_email.split('@')[0].lower()
             username = base_username
             counter = 1
-            while db.query(User).filter(User.username == username).first():
+            while db.query(User).filter(func.lower(User.username) == username).first():
                 username = f"{base_username}{counter}"
                 counter += 1
 

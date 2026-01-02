@@ -37,18 +37,18 @@ const formatDateForApi = (date: Date): string => {
 };
 
 // Get default times based on shift type
-const getShiftDefaultTimes = (shiftType: string): { clockIn: string; clockOut: string } => {
+const getShiftDefaultTimes = (shiftType: string): { clockIn: string; clockOut: string; breakMinutes: number } => {
   switch (shiftType) {
     case 'morning':
-      return { clockIn: '06:00', clockOut: '14:00' };
+      return { clockIn: '07:30', clockOut: '12:30', breakMinutes: 0 };
     case 'afternoon':
-      return { clockIn: '14:00', clockOut: '22:00' };
+      return { clockIn: '12:30', clockOut: '17:30', breakMinutes: 0 };
     case 'full_day':
-      return { clockIn: '08:00', clockOut: '17:00' };
+      return { clockIn: '07:30', clockOut: '17:30', breakMinutes: 60 };
     case 'split':
-      return { clockIn: '07:00', clockOut: '19:00' };
+      return { clockIn: '07:30', clockOut: '17:30', breakMinutes: 60 };
     default:
-      return { clockIn: '09:00', clockOut: '17:00' };
+      return { clockIn: '09:00', clockOut: '17:00', breakMinutes: 30 };
   }
 };
 
@@ -172,7 +172,7 @@ export default function MyTimesheet() {
         clock_in: defaults.clockIn,
         clock_out: defaults.clockOut,
         work_type: 'yard_duties' as WorkType,
-        break_minutes: 30,
+        break_minutes: defaults.breakMinutes,
       });
     } else {
       // New entry without shift
@@ -246,19 +246,19 @@ export default function MyTimesheet() {
     }
   };
 
-  // Calculate week totals
-  const weekTotals = (() => {
-    let totalHours = 0;
-    let totalBreak = 0;
-    timesheets.forEach(ts => {
-      if (ts.clock_out) {
-        const hours = parseFloat(calculateHours(ts.clock_in, ts.clock_out, ts.break_minutes || 0));
-        if (!isNaN(hours)) totalHours += hours;
-      }
-      totalBreak += ts.break_minutes || 0;
-    });
-    return { hours: totalHours.toFixed(1), breaks: totalBreak };
-  })();
+  // Filter to only show days that need data entry (not submitted or approved)
+  const actionableDays = weekDays.filter(day => {
+    const dateStr = formatDateForApi(day);
+    const dayTimesheet = timesheets.get(dateStr);
+    const dayShift = shifts.find(s => s.date === dateStr);
+    const isPast = day < new Date(new Date().setHours(0, 0, 0, 0));
+
+    // Show if: no timesheet yet (and has shift or is past), or status is draft/rejected
+    if (!dayTimesheet) {
+      return dayShift || isPast;
+    }
+    return dayTimesheet.status === 'draft' || dayTimesheet.status === 'rejected';
+  });
 
   if (loading && !enums) {
     return <div className="ds-loading">Loading...</div>;
@@ -268,172 +268,167 @@ export default function MyTimesheet() {
     <div className="my-timesheet-page">
       <div className="page-header">
         <h1>My Timesheet</h1>
-        <p>Enter your hours based on your scheduled shifts</p>
       </div>
 
       {error && <div className="ds-alert ds-alert-error">{error}</div>}
 
-      {/* Week Navigation */}
-      <div className="week-navigation">
-        <button className="btn btn-secondary" onClick={() => navigateWeek('prev')}>
-          &larr; Previous Week
-        </button>
-        <span className="current-week">
-          Week of {weekStart.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-        </span>
-        <button className="btn btn-secondary" onClick={() => navigateWeek('next')}>
-          Next Week &rarr;
-        </button>
-      </div>
-
-      {/* Week Totals */}
-      <div className="week-totals">
-        <span>Week Total: <strong>{weekTotals.hours}h</strong></span>
-        <span>Break Total: <strong>{weekTotals.breaks} min</strong></span>
-      </div>
-
-      {/* Timesheet Matrix */}
+      {/* Timesheet Matrix - only actionable days */}
       <div className="timesheet-matrix">
-        {weekDays.map(day => {
-          const dateStr = formatDateForApi(day);
-          const dayShift = shifts.find(s => s.date === dateStr);
-          const dayTimesheet = timesheets.get(dateStr);
-          const isToday = dateStr === formatDateForApi(new Date());
-          const isEditing = editingDate === dateStr;
-          const isPast = day < new Date(new Date().setHours(0, 0, 0, 0));
-          const canEdit = dayTimesheet?.status === 'draft' || dayTimesheet?.status === 'rejected' || !dayTimesheet;
+        {actionableDays.length === 0 ? (
+          <div className="no-actions-needed">
+            <p>All timesheets for this week are submitted or approved.</p>
+          </div>
+        ) : (
+          actionableDays.map(day => {
+            const dateStr = formatDateForApi(day);
+            const dayShift = shifts.find(s => s.date === dateStr);
+            const dayTimesheet = timesheets.get(dateStr);
+            const isToday = dateStr === formatDateForApi(new Date());
+            const isEditing = editingDate === dateStr;
+            const canEdit = dayTimesheet?.status === 'draft' || dayTimesheet?.status === 'rejected' || !dayTimesheet;
 
-          return (
-            <div key={dateStr} className={`matrix-day ${isToday ? 'today' : ''} ${dayShift ? 'has-shift' : 'no-shift'}`}>
-              {/* Day Header */}
-              <div className="day-header">
-                <span className="day-name">{day.toLocaleDateString('en-GB', { weekday: 'short' })}</span>
-                <span className="day-date">{day.getDate()}</span>
+            return (
+              <div key={dateStr} className={`matrix-day ${isToday ? 'today' : ''} ${dayShift ? 'has-shift' : 'no-shift'}`}>
+                {/* Day Header */}
+                <div className="day-header">
+                  <span className="day-name">{day.toLocaleDateString('en-GB', { weekday: 'short' })}</span>
+                  <span className="day-date">{day.getDate()}</span>
+                </div>
+
+                {/* Shift Info */}
+                {dayShift ? (
+                  <div className={`shift-info shift-${dayShift.shift_type}`}>
+                    <span className="shift-type">{getEnumLabel('shift_types', dayShift.shift_type)}</span>
+                    <span className="shift-role">{getEnumLabel('shift_roles', dayShift.role)}</span>
+                  </div>
+                ) : (
+                  <div className="shift-info no-shift-scheduled">
+                    <span>No shift</span>
+                  </div>
+                )}
+
+                {/* Timesheet Entry/Display */}
+                {isEditing ? (
+                  <div className="timesheet-edit">
+                    <div className="time-inputs">
+                      <label>
+                        In
+                        <input
+                          type="time"
+                          value={editingData.clock_in || ''}
+                          onChange={e => setEditingData({ ...editingData, clock_in: e.target.value })}
+                        />
+                      </label>
+                      <label>
+                        Out
+                        <input
+                          type="time"
+                          value={editingData.clock_out || ''}
+                          onChange={e => setEditingData({ ...editingData, clock_out: e.target.value || undefined })}
+                        />
+                      </label>
+                    </div>
+                    <div className="time-inputs">
+                      <label>
+                        Break (min)
+                        <input
+                          type="number"
+                          value={editingData.break_minutes || 0}
+                          onChange={e => setEditingData({ ...editingData, break_minutes: parseInt(e.target.value) || 0 })}
+                          min="0"
+                          step="15"
+                        />
+                      </label>
+                    </div>
+                    <label>
+                      Type
+                      <select
+                        value={editingData.work_type || 'yard_duties'}
+                        onChange={e => setEditingData({ ...editingData, work_type: e.target.value as WorkType })}
+                      >
+                        {enums?.work_types.map(wt => (
+                          <option key={wt.value} value={wt.value}>{wt.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <div className="edit-actions">
+                      <button className="btn btn-sm btn-primary" onClick={handleSaveTimesheet}>Save</button>
+                      <button className="btn btn-sm btn-secondary" onClick={() => setEditingDate(null)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : dayTimesheet ? (
+                  <div className="timesheet-display">
+                    <div className="timesheet-times">
+                      <span>{formatTime(dayTimesheet.clock_in)} - {dayTimesheet.clock_out ? formatTime(dayTimesheet.clock_out) : '...'}</span>
+                    </div>
+                    <div className="timesheet-details">
+                      <span className="hours">{calculateHours(dayTimesheet.clock_in, dayTimesheet.clock_out, dayTimesheet.break_minutes)}h</span>
+                      <span className={`badge ${getStatusBadgeClass(dayTimesheet.status)}`}>
+                        {dayTimesheet.status}
+                      </span>
+                    </div>
+                    <div className="timesheet-actions">
+                      {dayTimesheet.status === 'draft' && (
+                        <>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => handleStartEditing(dateStr, dayShift, dayTimesheet)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-sm btn-primary"
+                            onClick={() => handleSubmitTimesheet(dayTimesheet.id)}
+                          >
+                            Submit
+                          </button>
+                        </>
+                      )}
+                      {dayTimesheet.status === 'rejected' && (
+                        <>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => handleStartEditing(dateStr, dayShift, dayTimesheet)}
+                          >
+                            Edit & Resubmit
+                          </button>
+                          <span className="rejection-reason" title={dayTimesheet.rejection_reason}>
+                            {dayTimesheet.rejection_reason}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="timesheet-empty">
+                    {canEdit ? (
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={() => handleStartEditing(dateStr, dayShift)}
+                      >
+                        + Add Hours
+                      </button>
+                    ) : (
+                      <span className="no-entry">No entry</span>
+                    )}
+                  </div>
+                )}
               </div>
+            );
+          })
+        )}
+      </div>
 
-              {/* Shift Info */}
-              {dayShift ? (
-                <div className={`shift-info shift-${dayShift.shift_type}`}>
-                  <span className="shift-type">{getEnumLabel('shift_types', dayShift.shift_type)}</span>
-                  <span className="shift-role">{getEnumLabel('shift_roles', dayShift.role)}</span>
-                </div>
-              ) : (
-                <div className="shift-info no-shift-scheduled">
-                  <span>No shift</span>
-                </div>
-              )}
-
-              {/* Timesheet Entry/Display */}
-              {isEditing ? (
-                <div className="timesheet-edit">
-                  <div className="time-inputs">
-                    <label>
-                      In
-                      <input
-                        type="time"
-                        value={editingData.clock_in || ''}
-                        onChange={e => setEditingData({ ...editingData, clock_in: e.target.value })}
-                      />
-                    </label>
-                    <label>
-                      Out
-                      <input
-                        type="time"
-                        value={editingData.clock_out || ''}
-                        onChange={e => setEditingData({ ...editingData, clock_out: e.target.value || undefined })}
-                      />
-                    </label>
-                  </div>
-                  <div className="time-inputs">
-                    <label>
-                      Break (min)
-                      <input
-                        type="number"
-                        value={editingData.break_minutes || 0}
-                        onChange={e => setEditingData({ ...editingData, break_minutes: parseInt(e.target.value) || 0 })}
-                        min="0"
-                        step="15"
-                      />
-                    </label>
-                  </div>
-                  <label>
-                    Type
-                    <select
-                      value={editingData.work_type || 'yard_duties'}
-                      onChange={e => setEditingData({ ...editingData, work_type: e.target.value as WorkType })}
-                    >
-                      {enums?.work_types.map(wt => (
-                        <option key={wt.value} value={wt.value}>{wt.label}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="edit-actions">
-                    <button className="btn btn-sm btn-primary" onClick={handleSaveTimesheet}>Save</button>
-                    <button className="btn btn-sm btn-secondary" onClick={() => setEditingDate(null)}>Cancel</button>
-                  </div>
-                </div>
-              ) : dayTimesheet ? (
-                <div className="timesheet-display">
-                  <div className="timesheet-times">
-                    <span>{formatTime(dayTimesheet.clock_in)} - {dayTimesheet.clock_out ? formatTime(dayTimesheet.clock_out) : '...'}</span>
-                  </div>
-                  <div className="timesheet-details">
-                    <span className="hours">{calculateHours(dayTimesheet.clock_in, dayTimesheet.clock_out, dayTimesheet.break_minutes)}h</span>
-                    <span className={`badge ${getStatusBadgeClass(dayTimesheet.status)}`}>
-                      {dayTimesheet.status}
-                    </span>
-                  </div>
-                  <div className="timesheet-actions">
-                    {dayTimesheet.status === 'draft' && (
-                      <>
-                        <button
-                          className="btn btn-sm btn-secondary"
-                          onClick={() => handleStartEditing(dateStr, dayShift, dayTimesheet)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="btn btn-sm btn-primary"
-                          onClick={() => handleSubmitTimesheet(dayTimesheet.id)}
-                        >
-                          Submit
-                        </button>
-                      </>
-                    )}
-                    {dayTimesheet.status === 'rejected' && (
-                      <>
-                        <button
-                          className="btn btn-sm btn-secondary"
-                          onClick={() => handleStartEditing(dateStr, dayShift, dayTimesheet)}
-                        >
-                          Edit & Resubmit
-                        </button>
-                        <span className="rejection-reason" title={dayTimesheet.rejection_reason}>
-                          {dayTimesheet.rejection_reason}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="timesheet-empty">
-                  {(dayShift || isPast) && canEdit ? (
-                    <button
-                      className="btn btn-sm btn-outline"
-                      onClick={() => handleStartEditing(dateStr, dayShift)}
-                    >
-                      + Add Hours
-                    </button>
-                  ) : !dayShift ? (
-                    <span className="no-entry">-</span>
-                  ) : (
-                    <span className="no-entry">No entry</span>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      {/* Footer with navigation */}
+      <div className="timesheet-footer">
+        <div className="week-navigation">
+          <button className="nav-arrow" onClick={() => navigateWeek('prev')} aria-label="Previous week">
+            ←
+          </button>
+          <button className="nav-arrow" onClick={() => navigateWeek('next')} aria-label="Next week">
+            →
+          </button>
+        </div>
       </div>
     </div>
   );
