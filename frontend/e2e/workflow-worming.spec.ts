@@ -195,7 +195,8 @@ test.describe('Admin Worming Management', () => {
       await page.locator('.ds-tab, .tab').filter({ hasText: 'Reports' }).first().click();
 
       // Should show current year section
-      await expect(page.locator('.report-card h2').filter({ hasText: '2025' })).toBeVisible();
+      const currentYear = new Date().getFullYear().toString();
+      await expect(page.locator('.report-card h2').filter({ hasText: currentYear })).toBeVisible();
     });
 
     test('shows summary statistics', async ({ page }) => {
