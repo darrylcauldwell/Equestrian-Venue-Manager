@@ -117,25 +117,28 @@ test.describe('Land Management - Field Occupancy & Sheep Flocks', () => {
 
       if (hasAddButton) {
         await addButton.click();
-        await waitForPageReady(page);
+        await page.waitForTimeout(500);
 
         // Should see a modal or form
         const modal = page.locator('.ds-modal, [role="dialog"], form');
         await expect(modal.first()).toBeVisible({ timeout: 5000 });
 
+        // Dismiss any popups that might have appeared
+        await dismissPopups(page);
+
         // Fill in flock details
-        const nameInput = page.locator('input[name="name"], input[placeholder*="name" i]').first();
+        const nameInput = page.locator('.ds-modal input[name="name"], .ds-modal input').first();
         if (await nameInput.isVisible()) {
           await nameInput.fill('Test Flock E2E');
         }
 
-        const countInput = page.locator('input[name="count"], input[type="number"]').first();
+        const countInput = page.locator('.ds-modal input[name="count"], .ds-modal input[type="number"]').first();
         if (await countInput.isVisible()) {
           await countInput.fill('12');
         }
 
-        // Submit
-        const saveButton = page.locator('button[type="submit"], button').filter({ hasText: /save|add|create/i }).first();
+        // Submit - target the button inside the modal specifically
+        const saveButton = page.locator('.ds-modal button[type="submit"], .ds-modal-footer button').filter({ hasText: /save|add|create/i }).first();
         if (await saveButton.isVisible()) {
           await saveButton.click();
           await waitForPageReady(page);
@@ -201,7 +204,7 @@ test.describe('Land Management - Field Occupancy & Sheep Flocks', () => {
 
   test.describe('Non-Admin Access', () => {
     test('livery user cannot access land management', async ({ loginAs, page }) => {
-      await loginAs('livery1');
+      await loginAs('livery');
       await dismissPopups(page);
 
       await page.goto('/book/admin/land-management');
