@@ -1,0 +1,212 @@
+.feed-notification-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal-backdrop, 1000);
+  padding: var(--space-4, 1rem);
+}
+
+.feed-notification-popup {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl, 12px);
+  max-width: 550px;
+  width: 100%;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: notificationPopupSlide 0.3s ease-out;
+}
+
+@keyframes notificationPopupSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.feed-notification-popup .popup-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-4, 1rem) var(--space-6, 1.5rem);
+  background: var(--color-info-bg, #e0f2fe);
+  border-bottom: 1px solid var(--color-info, #0ea5e9);
+}
+
+.feed-notification-popup .popup-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--color-info, #0ea5e9);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feed-notification-popup .popup-header h2 {
+  margin: 0;
+  flex: 1;
+  font-size: var(--font-size-xl, 1.25rem);
+  color: var(--color-info-text, #0c4a6e);
+}
+
+.feed-notification-popup .popup-intro {
+  padding: var(--space-4, 1rem) var(--space-6, 1.5rem) 0;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm, 0.95rem);
+}
+
+.popup-notifications {
+  padding: var(--space-4, 1rem) var(--space-6, 1.5rem);
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+}
+
+.popup-notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4, 1rem);
+  padding: var(--space-3, 0.75rem);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg, 8px);
+  border-left: 4px solid var(--color-info, #0ea5e9);
+}
+
+.notification-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 0.25rem);
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+}
+
+.notification-header .change-type {
+  font-size: var(--font-size-xs, 0.75rem);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-info, #0ea5e9);
+  letter-spacing: 0.5px;
+}
+
+.notification-header .notification-time {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+}
+
+.notification-content .horse-name {
+  color: var(--color-primary, #2a5934);
+  font-size: var(--font-size-base, 1rem);
+}
+
+.notification-content .description {
+  margin: var(--space-1, 0.25rem) 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.notification-content .changed-by {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-muted);
+}
+
+.popup-notification-item .acknowledge-btn {
+  background: var(--color-primary, #2a5934);
+  color: var(--text-inverse, white);
+  border: none;
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border-radius: var(--radius-md, 4px);
+  font-size: var(--font-size-sm, 0.875rem);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+
+.popup-notification-item .acknowledge-btn:hover:not(:disabled) {
+  background: var(--color-primary-hover, #1e4027);
+}
+
+.popup-notification-item .acknowledge-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feed-notification-popup .popup-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4, 1rem) var(--space-6, 1.5rem);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
+}
+
+.popup-footer .notification-count {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-secondary);
+}
+
+.popup-footer .acknowledge-all-btn {
+  background: var(--color-primary, #2a5934);
+  color: var(--text-inverse, white);
+  border: none;
+  padding: var(--space-3, 0.75rem) var(--space-6, 1.5rem);
+  border-radius: var(--radius-md, 4px);
+  font-weight: var(--font-weight-medium, 500);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.popup-footer .acknowledge-all-btn:hover:not(:disabled) {
+  background: var(--color-primary-hover, #1e4027);
+}
+
+.popup-footer .acknowledge-all-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .popup-notification-item {
+    flex-direction: column;
+    gap: var(--space-3, 0.75rem);
+  }
+
+  .popup-notification-item .acknowledge-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .feed-notification-popup .popup-footer {
+    flex-direction: column;
+    gap: var(--space-3, 0.75rem);
+  }
+
+  .popup-footer .acknowledge-all-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -251,3 +251,26 @@ class StaffMemberCreateResponse(BaseModel):
     profile: StaffProfileResponse
     temporary_password: str
     message: str = "Staff member created successfully"
+
+
+# ============== Hourly Rate History Schemas ==============
+
+class HourlyRateHistoryCreate(BaseModel):
+    """Schema for adding a new hourly rate."""
+    hourly_rate: float
+    effective_date: date
+    notes: Optional[str] = None
+
+
+class HourlyRateHistoryResponse(BaseModel):
+    """Response schema for hourly rate history."""
+    id: int
+    staff_id: int
+    hourly_rate: float
+    effective_date: date
+    notes: Optional[str]
+    created_by_id: int
+    created_by_name: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

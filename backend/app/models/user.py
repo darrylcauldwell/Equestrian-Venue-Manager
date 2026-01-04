@@ -43,6 +43,7 @@ class User(Base):
     staff_type = EnumColumn(StaffType, nullable=True)  # regular, casual, on_call
     annual_leave_entitlement = Column(Integer, default=23, nullable=True)  # Days per year (for regular staff)
     leaving_date = Column(Date, nullable=True)  # Date when staff member leaves (for pro-rata calculation)
+    rota_display_order = Column(Integer, nullable=True)  # Custom ordering for rota view (null = use default order)
 
     bookings = relationship("Booking", back_populates="user")
     horses = relationship("Horse", back_populates="owner")

@@ -53,7 +53,7 @@ from app.models.land_management import (
     GrantSchemeType,
     GrantStatus,
 )
-from app.models.staff_profile import StaffProfile
+from app.models.staff_profile import StaffProfile, HourlyRateHistory
 from app.models.risk_assessment import RiskAssessment, RiskAssessmentCategory, RiskAssessmentReview, RiskAssessmentAcknowledgement, ReviewTrigger
 from app.utils.auth import get_password_hash
 from app.utils.seed_validator import validate_seed_data, SeedValidationError
@@ -167,6 +167,10 @@ def export_database(db: Session) -> Tuple[Dict[str, Any], Dict[str, int]]:
     # Staff Profiles
     data["staff_profiles"] = export_models(db, StaffProfile)
     entity_counts["staff_profiles"] = len(data["staff_profiles"])
+
+    # Hourly Rate History
+    data["hourly_rate_history"] = export_models(db, HourlyRateHistory)
+    entity_counts["hourly_rate_history"] = len(data["hourly_rate_history"])
 
     # Livery Packages
     data["livery_packages"] = export_models(db, LiveryPackage)
@@ -589,6 +593,10 @@ def import_database(
         if "staff_profiles" in data:
             counts["staff_profiles"] = _import_staff_profiles(db, data["staff_profiles"], user_map, user_id_map, log)
 
+        # 2c. Hourly Rate History (depends on users/staff profiles)
+        if "hourly_rate_history" in data:
+            counts["hourly_rate_history"] = _import_hourly_rate_history(db, data["hourly_rate_history"], user_map, user_id_map, log)
+
         # 3. Livery Packages (before horses)
         if "livery_packages" in data:
             package_map, counts["livery_packages"] = _import_livery_packages(db, data["livery_packages"], log)
@@ -977,6 +985,68 @@ def _import_staff_profiles(db: Session, profiles_data: List[Dict], user_map: Dic
         db.add(profile)
         count += 1
         log(f"  Created staff profile for user {user_id}")
+
+    db.flush()
+    return count
+
+
+def _import_hourly_rate_history(db: Session, history_data: List[Dict], user_map: Dict, user_id_map: Dict, log: Callable) -> int:
+    """Import hourly rate history."""
+    log("Importing hourly rate history...")
+    count = 0
+
+    for entry_data in history_data:
+        # Resolve staff user by ID or username
+        old_staff_id = entry_data.get("staff_id")
+        staff_id = None
+
+        # First try to map old_id -> new_id (backup format)
+        if old_staff_id and old_staff_id in user_id_map:
+            staff_id = user_id_map[old_staff_id]
+        # Fall back to username lookup (seed format)
+        elif "staff_username" in entry_data:
+            staff_id = user_map.get(entry_data["staff_username"])
+
+        if not staff_id:
+            log(f"  Warning: Staff user not found for rate history entry, skipping")
+            continue
+
+        # Resolve created_by user
+        old_created_by_id = entry_data.get("created_by_id")
+        created_by_id = None
+
+        if old_created_by_id and old_created_by_id in user_id_map:
+            created_by_id = user_id_map[old_created_by_id]
+        elif "created_by_username" in entry_data:
+            created_by_id = user_map.get(entry_data["created_by_username"])
+
+        if not created_by_id:
+            # Default to admin if not found
+            created_by_id = user_map.get("admin")
+
+        # Parse effective_date
+        effective_date = entry_data.get("effective_date")
+        if effective_date and isinstance(effective_date, str):
+            effective_date = datetime.fromisoformat(effective_date.replace('Z', '+00:00')).date()
+
+        # Parse created_at if present
+        created_at = entry_data.get("created_at")
+        if created_at and isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+        else:
+            created_at = datetime.utcnow()
+
+        history_entry = HourlyRateHistory(
+            staff_id=staff_id,
+            hourly_rate=entry_data.get("hourly_rate"),
+            effective_date=effective_date,
+            notes=entry_data.get("notes"),
+            created_by_id=created_by_id,
+            created_at=created_at,
+        )
+        db.add(history_entry)
+        count += 1
+        log(f"  Created rate history entry for staff {staff_id}: £{entry_data.get('hourly_rate')} effective {effective_date}")
 
     db.flush()
     return count

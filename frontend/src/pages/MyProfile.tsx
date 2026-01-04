@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { staffProfilesApi } from '../services/api';
 import { useRequestState } from '../hooks';
 import { FormGroup, FormRow, Input, Textarea } from '../components/ui';
-import type { StaffProfile, StaffProfileSelfUpdate } from '../types';
+import type { StaffProfile, StaffProfileSelfUpdate, HourlyRateHistory } from '../types';
 import './MyProfile.css';
 
 export function MyProfile() {
@@ -13,6 +13,11 @@ export function MyProfile() {
   const { loading: isLoading, error, setError, setLoading } = useRequestState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Rate history
+  const [rateHistory, setRateHistory] = useState<HourlyRateHistory[]>([]);
+  const [showRateHistory, setShowRateHistory] = useState(false);
+  const [rateHistoryLoading, setRateHistoryLoading] = useState(false);
 
   const resetForm = (data: StaffProfile) => {
     setFormData({
@@ -47,6 +52,20 @@ export function MyProfile() {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
+
+  const loadRateHistory = async () => {
+    setRateHistoryLoading(true);
+    try {
+      const history = await staffProfilesApi.getMyRateHistory();
+      setRateHistory(history);
+      setShowRateHistory(true);
+    } catch {
+      // Non-critical - just show empty state
+      setRateHistory([]);
+    } finally {
+      setRateHistoryLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -323,6 +342,68 @@ export function MyProfile() {
               </div>
             </div>
           </div>
+
+          {/* Payroll Information Card (if hourly_rate exists) */}
+          {profile.hourly_rate && (
+            <div className="ds-card">
+              <div className="ds-card-header">
+                <h2>Payroll Information</h2>
+              </div>
+              <div className="ds-card-body">
+                <div className="profile-grid">
+                  <div className="profile-field">
+                    <span className="profile-label">Current Hourly Rate</span>
+                    <span className="profile-value" style={{ fontSize: 'var(--font-size-xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-primary)' }}>
+                      £{profile.hourly_rate.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="profile-field">
+                    <span className="profile-label">Rate History</span>
+                    <span className="profile-value">
+                      <button
+                        className="ds-btn ds-btn-secondary ds-btn-sm"
+                        onClick={() => showRateHistory ? setShowRateHistory(false) : loadRateHistory()}
+                        disabled={rateHistoryLoading}
+                      >
+                        {rateHistoryLoading ? 'Loading...' : showRateHistory ? 'Hide History' : 'View History'}
+                      </button>
+                    </span>
+                  </div>
+                </div>
+
+                {showRateHistory && (
+                  <div style={{ marginTop: 'var(--space-4)' }}>
+                    {rateHistory.length > 0 ? (
+                      <div className="ds-table-wrapper">
+                        <table className="ds-table ds-table-sm">
+                          <thead>
+                            <tr>
+                              <th>Effective Date</th>
+                              <th>Hourly Rate</th>
+                              <th>Notes</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rateHistory.map((entry) => (
+                              <tr key={entry.id}>
+                                <td>{new Date(entry.effective_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                                <td>£{entry.hourly_rate.toFixed(2)}</td>
+                                <td>{entry.notes || '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: 'var(--font-size-sm)' }}>
+                        No rate history available.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Work Contact Card */}
           <div className="ds-card">

@@ -10,6 +10,7 @@ import type {
   StaffMilestonesResponse,
   StaffMemberCreate,
   ContractTemplateSummary,
+  HourlyRateHistory,
 } from '../../types';
 import {
   PageActions,
@@ -97,6 +98,16 @@ export function AdminStaffProfiles() {
   const [employmentContracts, setEmploymentContracts] = useState<ContractTemplateSummary[]>([]);
   const [selectedContractId, setSelectedContractId] = useState<number | null>(null);
 
+  // Rate history
+  const [rateHistory, setRateHistory] = useState<HourlyRateHistory[]>([]);
+  const [showRateHistory, setShowRateHistory] = useState(false);
+  const [rateHistoryLoading, setRateHistoryLoading] = useState(false);
+  const [newRateForm, setNewRateForm] = useState({
+    hourly_rate: '',
+    effective_date: new Date().toISOString().split('T')[0],
+    notes: '',
+  });
+
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<StaffProfileSummary | null>(null);
 
@@ -177,8 +188,63 @@ export function AdminStaffProfiles() {
         p45_pay_to_date_previous: fullProfile.p45_pay_to_date_previous,
       });
       setAdminNotes(fullProfile.notes || '');
+      // Reset rate history state when opening edit modal
+      setRateHistory([]);
+      setShowRateHistory(false);
+      setNewRateForm({
+        hourly_rate: '',
+        effective_date: new Date().toISOString().split('T')[0],
+        notes: '',
+      });
     } catch {
       setError('Failed to load profile details');
+    }
+  };
+
+  const loadRateHistory = async (userId: number) => {
+    setRateHistoryLoading(true);
+    try {
+      const history = await staffProfilesApi.getRateHistory(userId);
+      setRateHistory(history);
+      setShowRateHistory(true);
+    } catch {
+      setError('Failed to load rate history');
+    } finally {
+      setRateHistoryLoading(false);
+    }
+  };
+
+  const handleAddRate = async () => {
+    if (!profileModal.editingId || !newRateForm.hourly_rate) return;
+
+    setIsSubmitting(true);
+    try {
+      await staffProfilesApi.addRate(profileModal.editingId, {
+        hourly_rate: parseFloat(newRateForm.hourly_rate),
+        effective_date: newRateForm.effective_date,
+        notes: newRateForm.notes || undefined,
+      });
+      // Reload rate history
+      const history = await staffProfilesApi.getRateHistory(profileModal.editingId);
+      setRateHistory(history);
+      // Update the current rate in the form if effective date is today or past
+      const today = new Date().toISOString().split('T')[0];
+      if (newRateForm.effective_date <= today) {
+        profileModal.setFormData({
+          ...profileModal.formData,
+          hourly_rate: parseFloat(newRateForm.hourly_rate),
+        });
+      }
+      // Reset the new rate form
+      setNewRateForm({
+        hourly_rate: '',
+        effective_date: new Date().toISOString().split('T')[0],
+        notes: '',
+      });
+    } catch {
+      setError('Failed to add rate');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -699,20 +765,100 @@ export function AdminStaffProfiles() {
           </FormRow>
 
           <h4 className="form-section-title">Payroll Information</h4>
+
+          {/* Hourly Rate with History */}
+          <div className="rate-management-section">
+            <FormRow>
+              <FormGroup label="Current Hourly Rate (£)">
+                <div className="rate-display">
+                  <span className="current-rate">
+                    £{((profileModal.formData as { hourly_rate?: number }).hourly_rate || 0).toFixed(2)}
+                  </span>
+                  <button
+                    type="button"
+                    className="ds-btn ds-btn-secondary ds-btn-sm"
+                    onClick={() => profileModal.editingId && loadRateHistory(profileModal.editingId)}
+                    disabled={rateHistoryLoading}
+                  >
+                    {rateHistoryLoading ? 'Loading...' : showRateHistory ? 'Hide History' : 'Manage Rates'}
+                  </button>
+                </div>
+              </FormGroup>
+            </FormRow>
+
+            {showRateHistory && (
+              <div className="rate-history-panel">
+                <h5>Add New Rate</h5>
+                <FormRow>
+                  <FormGroup label="Hourly Rate (£)">
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={newRateForm.hourly_rate}
+                      onChange={(e) => setNewRateForm({ ...newRateForm, hourly_rate: e.target.value })}
+                      placeholder="e.g., 12.50"
+                    />
+                  </FormGroup>
+                  <FormGroup label="Effective Date">
+                    <Input
+                      type="date"
+                      value={newRateForm.effective_date}
+                      onChange={(e) => setNewRateForm({ ...newRateForm, effective_date: e.target.value })}
+                    />
+                  </FormGroup>
+                </FormRow>
+                <FormGroup label="Notes (optional)">
+                  <Input
+                    value={newRateForm.notes}
+                    onChange={(e) => setNewRateForm({ ...newRateForm, notes: e.target.value })}
+                    placeholder="e.g., Annual review increase"
+                  />
+                </FormGroup>
+                <button
+                  type="button"
+                  className="ds-btn ds-btn-primary ds-btn-sm"
+                  onClick={handleAddRate}
+                  disabled={isSubmitting || !newRateForm.hourly_rate}
+                >
+                  {isSubmitting ? 'Adding...' : 'Add Rate'}
+                </button>
+
+                {rateHistory.length > 0 && (
+                  <>
+                    <h5 style={{ marginTop: 'var(--space-4)' }}>Rate History</h5>
+                    <div className="ds-table-wrapper">
+                      <table className="ds-table ds-table-sm">
+                        <thead>
+                          <tr>
+                            <th>Effective Date</th>
+                            <th>Hourly Rate</th>
+                            <th>Notes</th>
+                            <th>Changed By</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rateHistory.map((entry) => (
+                            <tr key={entry.id}>
+                              <td>{new Date(entry.effective_date).toLocaleDateString('en-GB')}</td>
+                              <td>£{entry.hourly_rate.toFixed(2)}</td>
+                              <td>{entry.notes || '-'}</td>
+                              <td>{entry.created_by_name}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+                {rateHistory.length === 0 && (
+                  <p className="empty-state-text">No rate history recorded yet.</p>
+                )}
+              </div>
+            )}
+          </div>
+
           <FormRow>
-            <FormGroup label="Hourly Rate (£)">
-              <Input
-                type="number"
-                min={0}
-                step={0.01}
-                value={(profileModal.formData as { hourly_rate?: number }).hourly_rate || ''}
-                onChange={(e) => profileModal.setFormData({
-                  ...profileModal.formData,
-                  hourly_rate: e.target.value ? parseFloat(e.target.value) : undefined
-                })}
-                placeholder="e.g., 12.50"
-              />
-            </FormGroup>
             <FormGroup label="National Insurance Number">
               <Input
                 value={(profileModal.formData as { national_insurance_number?: string }).national_insurance_number || ''}

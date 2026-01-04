@@ -1,7 +1,7 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import date, datetime
 from pydantic import BaseModel, ConfigDict
-from app.models.feed import FeedTime, SupplyStatus, AdditionStatus
+from app.models.feed import FeedTime, SupplyStatus, AdditionStatus, FeedChangeType
 
 
 # Feed Requirement Schemas
@@ -131,5 +131,48 @@ class FeedSummary(BaseModel):
     pending_additions: List[FeedAdditionResponse]
     unresolved_alerts: List[FeedSupplyAlertResponse]
     rehab_medications: List[RehabFeedMedication] = []  # Feed-based medications from active rehab programs
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Feed Change Notification Schemas
+class AcknowledgementDetail(BaseModel):
+    """Detail of a single user's acknowledgement."""
+    user_id: int
+    user_name: str
+    acknowledged_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FeedChangeNotificationResponse(BaseModel):
+    """Response schema for pending feed notifications."""
+    id: int
+    change_type: FeedChangeType
+    horse_id: int
+    horse_name: str
+    description: str
+    details: Optional[Any] = None
+    created_by_id: int
+    created_by_name: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FeedNotificationHistoryResponse(BaseModel):
+    """Response schema for notification history (admin view)."""
+    id: int
+    change_type: FeedChangeType
+    horse_id: int
+    horse_name: str
+    description: str
+    details: Optional[Any] = None
+    created_by_id: int
+    created_by_name: str
+    created_at: datetime
+    total_staff: int
+    acknowledged_count: int
+    acknowledgements: List[AcknowledgementDetail]
 
     model_config = ConfigDict(from_attributes=True)

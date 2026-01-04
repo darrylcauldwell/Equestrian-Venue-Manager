@@ -1,7 +1,8 @@
 import pytest
 from datetime import date, timedelta
+from decimal import Decimal
 
-from app.models.staff_profile import StaffProfile
+from app.models.staff_profile import StaffProfile, HourlyRateHistory
 
 
 class TestStaffProfilesAdmin:
@@ -382,3 +383,224 @@ class TestStaffProfileQualifications:
         data = response.json()
         assert "BHS Stage 2" in data["qualifications"]
         assert "Forklift License" in data["qualifications"]
+
+
+class TestHourlyRateHistory:
+    """Tests for hourly rate history tracking."""
+
+    def test_get_rate_history_admin(self, client, auth_headers_admin, db, staff_user, admin_user):
+        """Admin can get rate history for a staff member."""
+        # Create a profile
+        profile = StaffProfile(
+            user_id=staff_user.id,
+            job_title="Groom",
+            hourly_rate=Decimal("12.50")
+        )
+        db.add(profile)
+        db.commit()
+
+        # Add some rate history entries
+        history1 = HourlyRateHistory(
+            staff_id=staff_user.id,
+            hourly_rate=Decimal("10.00"),
+            effective_date=date.today() - timedelta(days=365),
+            notes="Initial rate",
+            created_by_id=admin_user.id
+        )
+        history2 = HourlyRateHistory(
+            staff_id=staff_user.id,
+            hourly_rate=Decimal("12.50"),
+            effective_date=date.today() - timedelta(days=30),
+            notes="Annual review increase",
+            created_by_id=admin_user.id
+        )
+        db.add(history1)
+        db.add(history2)
+        db.commit()
+
+        response = client.get(
+            f"/api/staff-profiles/{staff_user.id}/rate-history",
+            headers=auth_headers_admin
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        # Should be ordered by effective_date desc
+        assert data[0]["hourly_rate"] == 12.50
+        assert data[1]["hourly_rate"] == 10.00
+
+    def test_get_rate_history_non_admin_forbidden(self, client, auth_headers_livery, db, staff_user):
+        """Non-admin users cannot access rate history."""
+        response = client.get(
+            f"/api/staff-profiles/{staff_user.id}/rate-history",
+            headers=auth_headers_livery
+        )
+        assert response.status_code == 403
+
+    def test_add_rate_history_admin(self, client, auth_headers_admin, db, staff_user):
+        """Admin can add a new rate to history."""
+        # Create a profile
+        profile = StaffProfile(
+            user_id=staff_user.id,
+            job_title="Groom",
+            hourly_rate=Decimal("10.00")
+        )
+        db.add(profile)
+        db.commit()
+
+        response = client.post(
+            f"/api/staff-profiles/{staff_user.id}/rate-history",
+            json={
+                "hourly_rate": 12.50,
+                "effective_date": date.today().isoformat(),
+                "notes": "Pay increase"
+            },
+            headers=auth_headers_admin
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["hourly_rate"] == 12.50
+        assert data["notes"] == "Pay increase"
+
+        # Verify the current rate on profile was updated (effective date is today)
+        db.refresh(profile)
+        assert float(profile.hourly_rate) == 12.50
+
+    def test_add_future_rate_does_not_update_current(self, client, auth_headers_admin, db, staff_user):
+        """Adding a rate with future effective date doesn't update current rate."""
+        # Create a profile with current rate
+        profile = StaffProfile(
+            user_id=staff_user.id,
+            job_title="Groom",
+            hourly_rate=Decimal("10.00")
+        )
+        db.add(profile)
+        db.commit()
+
+        future_date = (date.today() + timedelta(days=30)).isoformat()
+        response = client.post(
+            f"/api/staff-profiles/{staff_user.id}/rate-history",
+            json={
+                "hourly_rate": 15.00,
+                "effective_date": future_date,
+                "notes": "Scheduled increase"
+            },
+            headers=auth_headers_admin
+        )
+        assert response.status_code == 201
+
+        # Current rate should NOT have changed
+        db.refresh(profile)
+        assert float(profile.hourly_rate) == 10.00
+
+    def test_add_rate_non_admin_forbidden(self, client, auth_headers_livery, db, staff_user):
+        """Non-admin users cannot add rate history."""
+        response = client.post(
+            f"/api/staff-profiles/{staff_user.id}/rate-history",
+            json={
+                "hourly_rate": 12.50,
+                "effective_date": date.today().isoformat()
+            },
+            headers=auth_headers_livery
+        )
+        assert response.status_code == 403
+
+    def test_rate_history_user_not_found(self, client, auth_headers_admin):
+        """Returns 404 for non-existent user."""
+        response = client.get(
+            "/api/staff-profiles/99999/rate-history",
+            headers=auth_headers_admin
+        )
+        assert response.status_code == 404
+
+    def test_add_rate_user_not_found(self, client, auth_headers_admin):
+        """Returns 404 when adding rate for non-existent user."""
+        response = client.post(
+            "/api/staff-profiles/99999/rate-history",
+            json={
+                "hourly_rate": 12.50,
+                "effective_date": date.today().isoformat()
+            },
+            headers=auth_headers_admin
+        )
+        assert response.status_code == 404
+
+
+class TestMyRateHistory:
+    """Tests for staff self-service rate history access."""
+
+    def test_staff_can_view_own_rate_history(self, client, auth_headers_staff, db, staff_user, admin_user):
+        """Staff user can view their own rate history (read-only)."""
+        # Create a profile
+        profile = StaffProfile(
+            user_id=staff_user.id,
+            job_title="Groom",
+            hourly_rate=Decimal("12.50")
+        )
+        db.add(profile)
+        db.commit()
+
+        # Add some rate history entries
+        history1 = HourlyRateHistory(
+            staff_id=staff_user.id,
+            hourly_rate=Decimal("10.00"),
+            effective_date=date.today() - timedelta(days=365),
+            notes="Initial rate",
+            created_by_id=admin_user.id
+        )
+        history2 = HourlyRateHistory(
+            staff_id=staff_user.id,
+            hourly_rate=Decimal("12.50"),
+            effective_date=date.today() - timedelta(days=30),
+            notes="Annual review increase",
+            created_by_id=admin_user.id
+        )
+        db.add(history1)
+        db.add(history2)
+        db.commit()
+
+        response = client.get(
+            "/api/staff-profiles/me/rate-history",
+            headers=auth_headers_staff
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        # Should be ordered by effective_date desc
+        assert data[0]["hourly_rate"] == 12.50
+        assert data[1]["hourly_rate"] == 10.00
+
+    def test_my_rate_history_no_profile_returns_404(self, client, auth_headers_staff):
+        """Returns 404 if staff user has no profile."""
+        response = client.get(
+            "/api/staff-profiles/me/rate-history",
+            headers=auth_headers_staff
+        )
+        assert response.status_code == 404
+
+    def test_my_rate_history_empty_returns_empty_list(self, client, auth_headers_staff, db, staff_user):
+        """Returns empty list if no rate history exists."""
+        # Create a profile without rate history
+        profile = StaffProfile(
+            user_id=staff_user.id,
+            job_title="Groom",
+            hourly_rate=Decimal("12.50")
+        )
+        db.add(profile)
+        db.commit()
+
+        response = client.get(
+            "/api/staff-profiles/me/rate-history",
+            headers=auth_headers_staff
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 0
+
+    def test_livery_cannot_access_rate_history(self, client, auth_headers_livery):
+        """Livery users cannot access rate history endpoint."""
+        response = client.get(
+            "/api/staff-profiles/me/rate-history",
+            headers=auth_headers_livery
+        )
+        assert response.status_code == 403

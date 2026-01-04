@@ -57,6 +57,9 @@ import type {
   CreateFeedAddition,
   CreateFeedAlert,
   AdditionStatus,
+  FeedChangeNotification,
+  FeedNotificationHistory,
+  FeedChangeType,
   Service,
   ServiceRequest,
   ServiceCategory,
@@ -266,6 +269,9 @@ import type {
   SheepFlockWithHistory,
   SheepFlockFieldAssignment,
   SheepFlockFieldAssignmentCreate,
+  DayStatus,
+  CreateDayStatus,
+  DayStatusListResponse,
 } from '../types';
 
 // Re-export factory utilities for use in other files
@@ -738,8 +744,10 @@ export interface AdminUserCreateResponse {
 }
 
 export const usersApi = {
-  list: async (): Promise<User[]> => {
-    const response = await api.get('/users/');
+  list: async (includeInactive: boolean = false): Promise<User[]> => {
+    const response = await api.get('/users/', {
+      params: { include_inactive: includeInactive },
+    });
     return response.data;
   },
 
@@ -767,6 +775,11 @@ export const usersApi = {
 
   update: async (userId: number, data: AdminUserUpdate): Promise<User> => {
     const response = await api.put(`/users/${userId}`, data);
+    return response.data;
+  },
+
+  updateStaffOrder: async (orders: { user_id: number; order: number }[]): Promise<{ success: boolean; updated: number }> => {
+    const response = await api.put('/users/staff-order', { orders });
     return response.data;
   },
 };
@@ -1101,6 +1114,33 @@ export const feedApi = {
   // All feed schedules (for admin)
   getAllSchedules: async (): Promise<FeedSummary[]> => {
     const response = await api.get('/horses/schedule/all');
+    return response.data;
+  },
+};
+
+export const feedNotificationsApi = {
+  // Get pending (unacknowledged) notifications for current user
+  getPending: async (): Promise<FeedChangeNotification[]> => {
+    const response = await api.get('/feed-notifications/pending');
+    return response.data;
+  },
+
+  // Acknowledge a notification
+  acknowledge: async (notificationId: number): Promise<{ message: string; acknowledged_at: string }> => {
+    const response = await api.post(`/feed-notifications/${notificationId}/acknowledge`);
+    return response.data;
+  },
+
+  // Get notification history (admin only)
+  getHistory: async (params?: {
+    horse_id?: number;
+    start_date?: string;
+    end_date?: string;
+    change_type?: FeedChangeType;
+    limit?: number;
+    offset?: number;
+  }): Promise<FeedNotificationHistory[]> => {
+    const response = await api.get('/feed-notifications/history', { params });
     return response.data;
   },
 };
@@ -1639,6 +1679,35 @@ export const staffApi = {
   updateSickLeave: async (recordId: number, data: UpdateSickLeave): Promise<SickLeaveRecord> => {
     const response = await api.put(`/staff/absences/${recordId}`, data);
     return response.data;
+  },
+
+  // ============== Day Status (Unavailable/Absent) ==============
+  listDayStatuses: async (
+    staffId?: number,
+    startDate?: string,
+    endDate?: string
+  ): Promise<DayStatusListResponse> => {
+    const params: Record<string, string> = {};
+    if (staffId) params.staff_id = staffId.toString();
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    const response = await api.get('/staff/day-statuses', { params });
+    return response.data;
+  },
+
+  createDayStatus: async (data: CreateDayStatus): Promise<DayStatus> => {
+    const response = await api.post('/staff/day-statuses', data);
+    return response.data;
+  },
+
+  deleteDayStatus: async (statusId: number): Promise<void> => {
+    await api.delete(`/staff/day-statuses/${statusId}`);
+  },
+
+  deleteDayStatusByStaffDate: async (staffId: number, date: string): Promise<void> => {
+    await api.delete('/staff/day-statuses/by-staff-date', {
+      params: { staff_id: staffId, date }
+    });
   },
 
   // ============== Payroll ==============
@@ -3737,6 +3806,8 @@ import type {
   StaffMilestonesResponse,
   StaffMemberCreate,
   StaffMemberCreateResponse,
+  HourlyRateHistory,
+  CreateHourlyRateHistory,
 } from '../types';
 
 export const staffProfilesApi = {
@@ -3800,6 +3871,24 @@ export const staffProfilesApi = {
   // Update my profile (staff/admin - limited fields)
   updateMyProfile: async (data: StaffProfileSelfUpdate): Promise<StaffProfile> => {
     const response = await api.put('/staff-profiles/me', data);
+    return response.data;
+  },
+
+  // Get my rate history (staff - read-only)
+  getMyRateHistory: async (): Promise<HourlyRateHistory[]> => {
+    const response = await api.get('/staff-profiles/me/rate-history');
+    return response.data;
+  },
+
+  // Get hourly rate history for a staff member (admin only)
+  getRateHistory: async (userId: number): Promise<HourlyRateHistory[]> => {
+    const response = await api.get(`/staff-profiles/${userId}/rate-history`);
+    return response.data;
+  },
+
+  // Add a new hourly rate for a staff member (admin only)
+  addRate: async (userId: number, data: CreateHourlyRateHistory): Promise<HourlyRateHistory> => {
+    const response = await api.post(`/staff-profiles/${userId}/rate-history`, data);
     return response.data;
   },
 };

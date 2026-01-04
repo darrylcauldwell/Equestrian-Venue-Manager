@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 from app.models.user import UserRole
 from app.utils.validators import validate_uk_phone
@@ -49,6 +49,7 @@ class UserResponse(BaseModel):
     must_change_password: bool = False
     is_active: bool = True
     created_at: datetime
+    rota_display_order: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -113,3 +114,14 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     user_id: Optional[int] = None
     token_type: Optional[str] = None
+
+
+class StaffOrderUpdate(BaseModel):
+    """Single staff member order update"""
+    user_id: int
+    order: int
+
+
+class StaffOrderUpdateRequest(BaseModel):
+    """Request to update multiple staff display orders"""
+    orders: List[StaffOrderUpdate]

@@ -32,6 +32,7 @@ const Noticeboard = lazy(() => import('./pages/Noticeboard').then(m => ({ defaul
 const ProfessionalDirectory = lazy(() => import('./pages/ProfessionalDirectory'));
 const YardTasks = lazy(() => import('./pages/YardTasks'));
 const FeedDuties = lazy(() => import('./pages/FeedDuties'));
+const FeedNotificationHistory = lazy(() => import('./pages/FeedNotificationHistory'));
 const TurnoutRequests = lazy(() => import('./pages/TurnoutRequests').then(m => ({ default: m.TurnoutRequests })));
 const TurnoutBoard = lazy(() => import('./pages/TurnoutBoard'));
 const StaffManagement = lazy(() => import('./pages/StaffManagement'));
@@ -205,6 +206,7 @@ function App() {
           <Route path="livery-packages" element={<ProtectedRoute requireAdmin><AdminLiveryPackages /></ProtectedRoute>} />
           <Route path="holiday-livery" element={<ProtectedRoute requireAdmin><AdminHolidayLiveryRequests /></ProtectedRoute>} />
           <Route path="feed-schedule" element={<ProtectedRoute requireAdmin><FeedDuties /></ProtectedRoute>} />
+          <Route path="feed-notifications" element={<ProtectedRoute requireAdmin><FeedNotificationHistory /></ProtectedRoute>} />
           <Route path="worming" element={<ProtectedRoute requireAdmin><AdminWorming /></ProtectedRoute>} />
           <Route path="services" element={<ProtectedRoute requireAdmin><AdminServices /></ProtectedRoute>} />
           <Route path="service-requests" element={<ProtectedRoute requireAdmin><AdminServiceRequests /></ProtectedRoute>} />

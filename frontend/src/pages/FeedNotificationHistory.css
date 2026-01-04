@@ -1,0 +1,284 @@
+.feed-notification-history-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--space-6, 1.5rem);
+}
+
+.feed-notification-history-page .page-header {
+  margin-bottom: var(--space-6, 1.5rem);
+}
+
+.feed-notification-history-page .page-header h1 {
+  margin: 0 0 var(--space-2, 0.5rem) 0;
+  color: var(--text-primary);
+}
+
+.feed-notification-history-page .page-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.filters-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4, 1rem);
+  align-items: flex-end;
+  margin-bottom: var(--space-6, 1.5rem);
+  padding: var(--space-4, 1rem);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg, 8px);
+}
+
+.filters-section .ds-form-group {
+  flex: 1;
+  min-width: 150px;
+  margin-bottom: 0;
+}
+
+.filters-section .ds-form-group label {
+  display: block;
+  margin-bottom: var(--space-1, 0.25rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-secondary);
+}
+
+.clear-filters-btn {
+  flex-shrink: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-12, 3rem);
+  color: var(--text-secondary);
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+.notification-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg, 8px);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.notification-card.expanded {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.notification-summary {
+  padding: var(--space-4, 1rem);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-summary:hover {
+  background: var(--bg-card-hover);
+}
+
+.notification-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  margin-bottom: var(--space-2, 0.5rem);
+  flex-wrap: wrap;
+}
+
+.change-type-badge {
+  display: inline-block;
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  border-radius: var(--radius-md, 4px);
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: var(--font-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.change-type-badge.badge-success {
+  background: var(--color-success-bg, #dcfce7);
+  color: var(--color-success-text, #166534);
+}
+
+.change-type-badge.badge-info {
+  background: var(--color-info-bg, #e0f2fe);
+  color: var(--color-info-text, #0c4a6e);
+}
+
+.change-type-badge.badge-warning {
+  background: var(--color-warning-bg, #fef3c7);
+  color: var(--color-warning-text, #92400e);
+}
+
+.change-type-badge.badge-danger {
+  background: var(--color-danger-bg, #fee2e2);
+  color: var(--color-danger, #dc2626);
+}
+
+.notification-main .horse-name {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-primary, #2a5934);
+}
+
+.notification-main .notification-time {
+  margin-left: auto;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-muted);
+}
+
+.notification-description {
+  margin: 0 0 var(--space-3, 0.75rem) 0;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.notification-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 1rem);
+  flex-wrap: wrap;
+}
+
+.notification-footer .changed-by {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-muted);
+}
+
+.acknowledgement-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  margin-left: auto;
+}
+
+.ack-progress {
+  width: 100px;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+}
+
+.ack-progress-bar {
+  height: 100%;
+  background: var(--color-success, #22c55e);
+  border-radius: var(--radius-full, 9999px);
+  transition: width 0.3s ease;
+}
+
+.ack-count {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.expand-icon {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.acknowledgement-details {
+  padding: var(--space-4, 1rem);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
+}
+
+.acknowledgement-details h4 {
+  margin: 0 0 var(--space-3, 0.75rem) 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.acknowledgement-details .no-staff {
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.ack-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+}
+
+.ack-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  background: var(--bg-card);
+  border-radius: var(--radius-md, 4px);
+}
+
+.ack-list li.acknowledged {
+  border-left: 3px solid var(--color-success, #22c55e);
+}
+
+.ack-list li.pending {
+  border-left: 3px solid var(--color-warning, #f59e0b);
+}
+
+.ack-list .staff-name {
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--text-primary);
+}
+
+.ack-list .ack-time {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-success, #22c55e);
+}
+
+.ack-list .pending-badge {
+  display: inline-block;
+  padding: var(--space-1, 0.25rem) var(--space-2, 0.5rem);
+  background: var(--color-warning-bg, #fef3c7);
+  color: var(--color-warning-text, #92400e);
+  border-radius: var(--radius-md, 4px);
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+@media (max-width: 768px) {
+  .filters-section {
+    flex-direction: column;
+    gap: var(--space-3, 0.75rem);
+  }
+
+  .filters-section .ds-form-group {
+    width: 100%;
+  }
+
+  .clear-filters-btn {
+    width: 100%;
+  }
+
+  .notification-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notification-main .notification-time {
+    margin-left: 0;
+  }
+
+  .notification-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .acknowledgement-status {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .ack-progress {
+    flex: 1;
+  }
+}

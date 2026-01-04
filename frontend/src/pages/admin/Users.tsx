@@ -54,7 +54,8 @@ export function AdminUsers() {
 
   const loadUsers = useCallback(async () => {
     try {
-      const data = await usersApi.list();
+      // Include inactive users so admins can manage them
+      const data = await usersApi.list(true);
       setUsers(data);
     } catch {
       setError('Failed to load users');

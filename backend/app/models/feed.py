@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Text, Boolean
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Text, Boolean, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base, EnumColumn
 
@@ -84,3 +84,48 @@ class FeedSupplyAlert(Base):
     horse = relationship("Horse", back_populates="feed_alerts")
     created_by = relationship("User", foreign_keys=[created_by_id])
     resolved_by = relationship("User", foreign_keys=[resolved_by_id])
+
+
+class FeedChangeType(str, enum.Enum):
+    """Types of feed changes that trigger notifications."""
+    REQUIREMENT_CREATED = "requirement_created"
+    REQUIREMENT_UPDATED = "requirement_updated"
+    REQUIREMENT_DELETED = "requirement_deleted"
+    ADDITION_CREATED = "addition_created"
+    ADDITION_UPDATED = "addition_updated"
+    ADDITION_DELETED = "addition_deleted"
+    SUPPLY_ALERT = "supply_alert"
+
+
+class FeedChangeNotification(Base):
+    """Records feed changes that need staff acknowledgement."""
+    __tablename__ = "feed_change_notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    change_type = EnumColumn(FeedChangeType, nullable=False)
+    horse_id = Column(Integer, ForeignKey("horses.id", ondelete="CASCADE"), nullable=False)
+    description = Column(Text, nullable=False)  # Human-readable change description
+    details = Column(JSON, nullable=True)  # Store before/after values for audit
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    horse = relationship("Horse")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    acknowledgements = relationship("FeedChangeAcknowledgement", back_populates="notification", cascade="all, delete-orphan")
+
+
+class FeedChangeAcknowledgement(Base):
+    """Records staff acknowledgement of feed changes."""
+    __tablename__ = "feed_change_acknowledgements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    notification_id = Column(Integer, ForeignKey("feed_change_notifications.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    acknowledged_at = Column(DateTime, default=datetime.utcnow)
+
+    notification = relationship("FeedChangeNotification", back_populates="acknowledgements")
+    user = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint('notification_id', 'user_id', name='uq_notification_user'),
+    )

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User, UserRole
-from app.schemas.user import UserResponse, UserUpdate, AdminUserCreate, AdminUserCreateResponse, AdminUserUpdate
+from app.schemas.user import UserResponse, UserUpdate, AdminUserCreate, AdminUserCreateResponse, AdminUserUpdate, StaffOrderUpdateRequest
 from app.utils.auth import get_current_user, get_password_hash, require_admin
 from app.utils.crud import get_or_404
 
@@ -61,11 +61,39 @@ def update_current_user(
 
 @router.get("/", response_model=List[UserResponse])
 def list_users(
+    include_inactive: bool = False,
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
-    users = db.query(User).all()
-    return users
+    """List users, filtered by active status and ordered by rota_display_order."""
+    query = db.query(User)
+    if not include_inactive:
+        query = query.filter(User.is_active == True)
+    # Order by rota_display_order (nulls last), then by name
+    query = query.order_by(
+        User.rota_display_order.asc().nullslast(),
+        User.name.asc()
+    )
+    return query.all()
+
+
+@router.put("/staff-order")
+def update_staff_order(
+    request: StaffOrderUpdateRequest,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Update display order for multiple staff members at once.
+
+    NOTE: This route MUST be defined before any /{user_id} routes to avoid
+    FastAPI matching 'staff-order' as a user_id parameter.
+    """
+    for order_update in request.orders:
+        user = db.query(User).filter(User.id == order_update.user_id).first()
+        if user:
+            user.rota_display_order = order_update.order
+    db.commit()
+    return {"success": True, "updated": len(request.orders)}
 
 
 @router.post("/create", response_model=AdminUserCreateResponse)

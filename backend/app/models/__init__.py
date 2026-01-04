@@ -156,7 +156,7 @@ from app.models.land_management import (
     SuggestionType,
     SuggestionPriority,
 )
-from app.models.staff_profile import StaffProfile
+from app.models.staff_profile import StaffProfile, HourlyRateHistory
 from app.models.risk_assessment import (
     RiskAssessment,
     RiskAssessmentReview,
@@ -293,6 +293,7 @@ __all__ = [
     "SuggestionPriority",
     # Staff Profile
     "StaffProfile",
+    "HourlyRateHistory",
     # Risk Assessment
     "RiskAssessment",
     "RiskAssessmentReview",

@@ -67,3 +67,20 @@ class StaffProfile(Base):
 
     # Relationships
     user = relationship("User", back_populates="staff_profile")
+
+
+class HourlyRateHistory(Base):
+    """Tracks historical hourly rate changes for staff members."""
+    __tablename__ = "hourly_rate_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    staff_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    hourly_rate = Column(Numeric(10, 2), nullable=False)
+    effective_date = Column(Date, nullable=False)
+    notes = Column(Text, nullable=True)  # Reason for change
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    staff = relationship("User", foreign_keys=[staff_id], backref="rate_history")
+    created_by = relationship("User", foreign_keys=[created_by_id])

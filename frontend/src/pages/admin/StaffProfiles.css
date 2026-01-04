@@ -115,6 +115,49 @@
   color: var(--text-secondary);
 }
 
+/* Rate Management Section */
+.rate-management-section {
+  margin-bottom: var(--space-4);
+}
+
+.rate-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.current-rate {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+
+.rate-history-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.rate-history-panel h5 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.rate-history-panel .ds-table-wrapper {
+  margin-top: var(--space-3);
+}
+
+.empty-state-text {
+  color: var(--text-muted);
+  font-style: italic;
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-sm);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .milestones-list {
@@ -127,5 +170,11 @@
 
   .action-buttons .ds-btn {
     width: 100%;
+  }
+
+  .rate-display {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
   }
 }

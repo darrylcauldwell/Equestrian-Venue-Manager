@@ -7746,6 +7746,106 @@
       "notes": "Keep away from hoses during any fire-related drill. Otherwise indispensable."
     }
   ],
+  "hourly_rate_history": [
+    {
+      "staff_username": "staff1",
+      "hourly_rate": 9.50,
+      "effective_date": "2021-03-15",
+      "notes": "Starting rate",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff1",
+      "hourly_rate": 10.50,
+      "effective_date": "2022-04-01",
+      "notes": "Annual review - 1 year service",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff1",
+      "hourly_rate": 11.50,
+      "effective_date": "2023-04-01",
+      "notes": "Annual review - good performance",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff1",
+      "hourly_rate": 12.50,
+      "effective_date": "2024-04-01",
+      "notes": "Annual review - promotion to senior wheelbarrow pilot",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "hourly_rate": 11.00,
+      "effective_date": "2019-09-01",
+      "notes": "Starting rate",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "hourly_rate": 12.00,
+      "effective_date": "2020-09-01",
+      "notes": "Annual review",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "hourly_rate": 13.00,
+      "effective_date": "2022-01-01",
+      "notes": "Promotion to Head Groom",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff2",
+      "hourly_rate": 14.00,
+      "effective_date": "2024-01-01",
+      "notes": "Annual review - excellent performance",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "hourly_rate": 10.00,
+      "effective_date": "2022-06-15",
+      "notes": "Starting rate - graduate",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "hourly_rate": 10.75,
+      "effective_date": "2023-04-01",
+      "notes": "National minimum wage increase",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff3",
+      "hourly_rate": 11.50,
+      "effective_date": "2024-04-01",
+      "notes": "Annual review - passed probation",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "hourly_rate": 12.00,
+      "effective_date": "2020-01-10",
+      "notes": "Starting rate - experienced tradesman",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "hourly_rate": 12.50,
+      "effective_date": "2021-04-01",
+      "notes": "Annual review",
+      "created_by_username": "admin"
+    },
+    {
+      "staff_username": "staff4",
+      "hourly_rate": 13.00,
+      "effective_date": "2023-04-01",
+      "notes": "Annual review - additional electrical qualifications",
+      "created_by_username": "admin"
+    }
+  ],
   "risk_assessments": [
     {
       "title": "General Workplace Hazards - A Survival Guide",

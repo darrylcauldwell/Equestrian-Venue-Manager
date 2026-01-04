@@ -50,6 +50,11 @@ class LeaveStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
+class DayStatusType(str, enum.Enum):
+    UNAVAILABLE = "unavailable"  # Not working/not scheduled
+    ABSENT = "absent"  # Off for the day (sick, gift day, etc.)
+
+
 class Shift(Base):
     """Scheduled work shifts for staff members."""
     __tablename__ = "shifts"
@@ -68,6 +73,25 @@ class Shift(Base):
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    staff = relationship("User", foreign_keys=[staff_id])
+    created_by = relationship("User", foreign_keys=[created_by_id])
+
+
+class StaffDayStatus(Base):
+    """Day status for staff (unavailable/absent) set by admin."""
+    __tablename__ = "staff_day_statuses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    staff_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    date = Column(Date, nullable=False)
+    status_type = EnumColumn(DayStatusType, nullable=False)
+    notes = Column(Text, nullable=True)  # Optional reason/note
+
+    # Who set this status
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
     staff = relationship("User", foreign_keys=[staff_id])

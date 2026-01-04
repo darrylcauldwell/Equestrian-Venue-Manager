@@ -24,6 +24,8 @@ import type {
   AllStaffLeaveSummary,
   PayrollSummaryResponse,
   PayrollAdjustmentCreate,
+  DayStatus,
+  DayStatusType,
 } from '../types';
 import { useModalForm } from '../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Select, Textarea } from '../components/ui';
@@ -104,7 +106,6 @@ export default function StaffManagement() {
   const [shiftsView, setShiftsView] = useState<ShiftsViewType>('calendar');
   const [weekStart, setWeekStart] = useState<Date>(() => getWeekStart(new Date()));
   const weekDays = getWeekDays(weekStart);
-  const [selectedRole, setSelectedRole] = useState<ShiftRole>('yard_duties');
 
   // Timesheets state
   const [timesheets, setTimesheets] = useState<TimesheetsListResponse | null>(null);
@@ -120,6 +121,11 @@ export default function StaffManagement() {
   // Calendar leave indicators - for showing holidays/absences in shift calendar
   const [calendarHolidays, setCalendarHolidays] = useState<HolidayRequest[]>([]);
   const [calendarAbsences, setCalendarAbsences] = useState<SickLeaveRecord[]>([]);
+  const [calendarDayStatuses, setCalendarDayStatuses] = useState<DayStatus[]>([]);
+
+  // Selected assignment type - can be a shift role OR a day status
+  // Special values prefixed with 'status_' are for day statuses
+  const [selectedAssignment, setSelectedAssignment] = useState<string>('yard_duties');
 
   // Leave summary state
   const [leaveSummary, setLeaveSummary] = useState<AllStaffLeaveSummary | null>(null);
@@ -186,17 +192,20 @@ export default function StaffManagement() {
       setLoading(true);
       switch (activeTab) {
         case 'shifts': {
-          // Load shifts, approved holidays, and absences for calendar view
-          const [shiftsData, holidaysData, absencesData] = await Promise.all([
+          // Load shifts, approved holidays, absences, and day statuses for calendar view
+          const [shiftsData, holidaysData, absencesData, dayStatusesData] = await Promise.all([
             staffApi.listShifts(),
             staffApi.listHolidays(),
             staffApi.listSickLeave(),
+            staffApi.listDayStatuses(),
           ]);
           setShifts(shiftsData);
           // Store approved holidays for calendar indicators
           setCalendarHolidays(holidaysData.approved || []);
           // Store absences (those without actual_return are still off)
           setCalendarAbsences(absencesData.records || []);
+          // Store day statuses (unavailable/day off)
+          setCalendarDayStatuses(dayStatusesData.statuses || []);
           break;
         }
         case 'timesheets': {
@@ -333,16 +342,43 @@ export default function StaffManagement() {
     });
   };
 
-  // Get leave status for a cell (holiday, absence, or none)
-  const getLeaveStatus = (staffId: number, date: Date): 'holiday' | 'absence' | null => {
+  // Check if staff member has a day status on a specific date
+  const getDayStatusForDate = (staffId: number, date: Date): DayStatus | undefined => {
+    const dateStr = formatDateForApi(date);
+    return calendarDayStatuses.find(ds =>
+      ds.staff_id === staffId &&
+      ds.date === dateStr
+    );
+  };
+
+  // Get leave status for a cell (holiday, absence, day status, or none)
+  const getLeaveStatus = (staffId: number, date: Date): 'holiday' | 'absence' | 'unavailable' | 'day_off' | null => {
     if (getHolidayForDate(staffId, date)) return 'holiday';
     if (getAbsenceForDate(staffId, date)) return 'absence';
+    const dayStatus = getDayStatusForDate(staffId, date);
+    if (dayStatus) {
+      return dayStatus.status_type === 'unavailable' ? 'unavailable' : 'day_off';
+    }
     return null;
   };
 
-  // Handle clicking a cell in the calendar
+  // Check if selected assignment is a day status
+  const isStatusAssignment = selectedAssignment.startsWith('status_');
+  const selectedDayStatusType: DayStatusType | null = isStatusAssignment
+    ? (selectedAssignment === 'status_unavailable' ? 'unavailable' : 'absent')
+    : null;
+  // Get selected role (only valid when not a status assignment)
+  const selectedRole: ShiftRole = isStatusAssignment ? 'yard_duties' : selectedAssignment as ShiftRole;
+
+  // Handle clicking a cell in the calendar (for shifts)
   const handleCellClick = async (staffId: number, date: Date, period: 'morning' | 'afternoon') => {
     if (!isManager || loading) return;
+
+    // If a day status is selected, handle day status instead of shift
+    if (isStatusAssignment) {
+      await handleDayStatusClick(staffId, date);
+      return;
+    }
 
     const dateStr = formatDateForApi(date);
     const existingShift = shifts?.shifts.find(s =>
@@ -416,6 +452,56 @@ export default function StaffManagement() {
     }
   };
 
+  // Handle clicking a cell for day status (whole day, not AM/PM)
+  const handleDayStatusClick = async (staffId: number, date: Date) => {
+    if (!isManager || loading || !selectedDayStatusType) return;
+
+    const dateStr = formatDateForApi(date);
+    const existingStatus = getDayStatusForDate(staffId, date);
+
+    setError('');
+    setLoading(true);
+
+    try {
+      if (existingStatus) {
+        // If clicking same status type, remove it
+        if (existingStatus.status_type === selectedDayStatusType) {
+          await staffApi.deleteDayStatus(existingStatus.id);
+        } else {
+          // Different status type - delete old and create new
+          await staffApi.deleteDayStatus(existingStatus.id);
+          await staffApi.createDayStatus({
+            staff_id: staffId,
+            date: dateStr,
+            status_type: selectedDayStatusType,
+          });
+        }
+      } else {
+        // No existing status - create new one
+        await staffApi.createDayStatus({
+          staff_id: staffId,
+          date: dateStr,
+          status_type: selectedDayStatusType,
+        });
+      }
+      await loadTabData();
+    } catch (err: unknown) {
+      console.error('Failed to update day status:', err);
+      let errorMessage = 'Failed to update day status';
+      if (err && typeof err === 'object') {
+        const axiosErr = err as { response?: { data?: { detail?: string }; status?: number }; message?: string };
+        if (axiosErr.response?.data?.detail) {
+          errorMessage = axiosErr.response.data.detail;
+        } else if (axiosErr.message) {
+          errorMessage = axiosErr.message;
+        }
+      }
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Navigation for week
   const goToPreviousWeek = () => {
     const newStart = new Date(weekStart);
@@ -431,6 +517,47 @@ export default function StaffManagement() {
 
   const goToCurrentWeek = () => {
     setWeekStart(getWeekStart(new Date()));
+  };
+
+  // Staff reorder handlers
+  const moveStaffUp = async (staffId: number) => {
+    const index = staffList.findIndex(s => s.id === staffId);
+    if (index <= 0) return; // Already at top
+
+    // Swap positions in local state
+    const newList = [...staffList];
+    [newList[index - 1], newList[index]] = [newList[index], newList[index - 1]];
+    setStaffList(newList);
+
+    // Persist the new order
+    const orders = newList.map((s, i) => ({ user_id: s.id, order: i }));
+    try {
+      await usersApi.updateStaffOrder(orders);
+    } catch {
+      setError('Failed to update staff order');
+      // Reload to revert on failure
+      loadInitialData();
+    }
+  };
+
+  const moveStaffDown = async (staffId: number) => {
+    const index = staffList.findIndex(s => s.id === staffId);
+    if (index < 0 || index >= staffList.length - 1) return; // Already at bottom
+
+    // Swap positions in local state
+    const newList = [...staffList];
+    [newList[index], newList[index + 1]] = [newList[index + 1], newList[index]];
+    setStaffList(newList);
+
+    // Persist the new order
+    const orders = newList.map((s, i) => ({ user_id: s.id, order: i }));
+    try {
+      await usersApi.updateStaffOrder(orders);
+    } catch {
+      setError('Failed to update staff order');
+      // Reload to revert on failure
+      loadInitialData();
+    }
   };
 
   // Timesheet handlers
@@ -623,8 +750,9 @@ export default function StaffManagement() {
           setShiftsView={setShiftsView}
           weekStart={weekStart}
           weekDays={weekDays}
+          selectedAssignment={selectedAssignment}
+          setSelectedAssignment={setSelectedAssignment}
           selectedRole={selectedRole}
-          setSelectedRole={setSelectedRole}
           isManager={isManager}
           loading={loading}
           onOpenModal={() => shiftModal.open()}
@@ -637,9 +765,12 @@ export default function StaffManagement() {
           getLeaveStatus={getLeaveStatus}
           getHolidayForDate={getHolidayForDate}
           getAbsenceForDate={getAbsenceForDate}
+          getDayStatusForDate={getDayStatusForDate}
           getRoleAbbrev={getRoleAbbrev}
           getRoleColorClass={getRoleColorClass}
           formatDate={formatDate}
+          moveStaffUp={moveStaffUp}
+          moveStaffDown={moveStaffDown}
         />
       )}
 
@@ -1073,8 +1204,9 @@ interface ShiftsTabProps {
   setShiftsView: (view: ShiftsViewType) => void;
   weekStart: Date;
   weekDays: Date[];
+  selectedAssignment: string;
+  setSelectedAssignment: (assignment: string) => void;
   selectedRole: ShiftRole;
-  setSelectedRole: (role: ShiftRole) => void;
   isManager: boolean;
   loading: boolean;
   onOpenModal: () => void;
@@ -1084,12 +1216,15 @@ interface ShiftsTabProps {
   goToNextWeek: () => void;
   goToCurrentWeek: () => void;
   getShiftForCell: (staffId: number, date: Date, period: 'morning' | 'afternoon') => ShiftsListResponse['shifts'][0] | undefined;
-  getLeaveStatus: (staffId: number, date: Date) => 'holiday' | 'absence' | null;
+  getLeaveStatus: (staffId: number, date: Date) => 'holiday' | 'absence' | 'unavailable' | 'day_off' | null;
   getHolidayForDate: (staffId: number, date: Date) => HolidayRequest | undefined;
   getAbsenceForDate: (staffId: number, date: Date) => SickLeaveRecord | undefined;
+  getDayStatusForDate: (staffId: number, date: Date) => DayStatus | undefined;
   getRoleAbbrev: (role: string) => string;
   getRoleColorClass: (role: string) => string;
   formatDate: (dateStr: string) => string;
+  moveStaffUp: (staffId: number) => void;
+  moveStaffDown: (staffId: number) => void;
 }
 
 function ShiftsTab({
@@ -1100,8 +1235,9 @@ function ShiftsTab({
   setShiftsView,
   weekStart,
   weekDays,
+  selectedAssignment,
+  setSelectedAssignment,
   selectedRole,
-  setSelectedRole,
   isManager,
   loading,
   onOpenModal,
@@ -1114,10 +1250,17 @@ function ShiftsTab({
   getLeaveStatus,
   getHolidayForDate,
   getAbsenceForDate,
+  getDayStatusForDate,
   getRoleAbbrev,
   getRoleColorClass,
   formatDate,
+  moveStaffUp,
+  moveStaffDown,
 }: ShiftsTabProps) {
+  // Check if selected assignment is a day status
+  const isStatusAssignment = selectedAssignment.startsWith('status_');
+  const statusLabel = selectedAssignment === 'status_unavailable' ? 'Unavailable' : 'Day Off';
+
   return (
     <div className="shifts-view">
       <div className="shifts-toolbar">
@@ -1162,14 +1305,20 @@ function ShiftsTab({
             </div>
             {isManager && (
               <div className="role-selector">
-                <label>Assign role:</label>
+                <label>Assign:</label>
                 <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as ShiftRole)}
+                  value={selectedAssignment}
+                  onChange={(e) => setSelectedAssignment(e.target.value)}
                 >
-                  {enums?.shift_roles.map((r) => (
-                    <option key={r.value} value={r.value}>{r.label}</option>
-                  ))}
+                  <optgroup label="Shift Roles">
+                    {enums?.shift_roles.map((r) => (
+                      <option key={r.value} value={r.value}>{r.label}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Day Status">
+                    <option value="status_unavailable">Unavailable</option>
+                    <option value="status_day_off">Day Off</option>
+                  </optgroup>
                 </select>
               </div>
             )}
@@ -1211,9 +1360,31 @@ function ShiftsTab({
                     <td colSpan={15} className="empty">No staff members found</td>
                   </tr>
                 ) : (
-                  staffList.map((staff) => (
+                  staffList.map((staff, staffIndex) => (
                     <tr key={staff.id}>
-                      <td className="staff-name">{staff.name}</td>
+                      <td className="staff-name">
+                        {isManager && (
+                          <span className="staff-reorder-btns">
+                            <button
+                              className="reorder-btn"
+                              onClick={() => moveStaffUp(staff.id)}
+                              disabled={staffIndex === 0}
+                              title="Move up"
+                            >
+                              &#9650;
+                            </button>
+                            <button
+                              className="reorder-btn"
+                              onClick={() => moveStaffDown(staff.id)}
+                              disabled={staffIndex === staffList.length - 1}
+                              title="Move down"
+                            >
+                              &#9660;
+                            </button>
+                          </span>
+                        )}
+                        {staff.name}
+                      </td>
                       {weekDays.map((day, dayIdx) => {
                         const morningShift = getShiftForCell(staff.id, day, 'morning');
                         const afternoonShift = getShiftForCell(staff.id, day, 'afternoon');
@@ -1221,13 +1392,21 @@ function ShiftsTab({
                         const holidayInfo = getHolidayForDate(staff.id, day);
                         const absenceInfo = getAbsenceForDate(staff.id, day);
 
+                        // Get day status info if exists
+                        const dayStatusInfo = getDayStatusForDate(staff.id, day);
+
                         // Build cell classes including leave status
                         const getCellClass = (hasShift: boolean, shiftRole?: string) => {
                           let classes = 'rota-cell';
                           if (leaveStatus === 'holiday') classes += ' on-holiday';
                           else if (leaveStatus === 'absence') classes += ' on-absence';
+                          else if (leaveStatus === 'unavailable') classes += ' on-unavailable';
+                          else if (leaveStatus === 'day_off') classes += ' on-day-off';
                           if (hasShift && shiftRole) classes += ` shift-active ${getRoleColorClass(shiftRole)}`;
-                          if (isManager && !leaveStatus) classes += ' clickable';
+                          // Allow clicking in status mode even if there's a leave status (to toggle day statuses)
+                          if (isManager && (isStatusAssignment || !leaveStatus || leaveStatus === 'unavailable' || leaveStatus === 'day_off')) {
+                            classes += ' clickable';
+                          }
                           return classes;
                         };
 
@@ -1240,30 +1419,51 @@ function ShiftsTab({
                           if (leaveStatus === 'absence') {
                             return `Absent${absenceInfo?.expected_return ? ` - Expected back ${absenceInfo.expected_return}` : ''}`;
                           }
+                          if (leaveStatus === 'unavailable') {
+                            return `Unavailable${dayStatusInfo?.notes ? `: ${dayStatusInfo.notes}` : ''} - Click to remove`;
+                          }
+                          if (leaveStatus === 'day_off') {
+                            return `Day Off${dayStatusInfo?.notes ? `: ${dayStatusInfo.notes}` : ''} - Click to remove`;
+                          }
+                          if (isStatusAssignment) {
+                            return `Click to set ${statusLabel}`;
+                          }
                           if (shift) {
                             return `${enums?.shift_roles.find(r => r.value === shift.role)?.label || shift.role} - Click to remove`;
                           }
                           return `Click to add ${enums?.shift_roles.find(r => r.value === selectedRole)?.label || selectedRole}`;
                         };
 
+                        // Check if cell should be clickable
+                        const isCellClickable = (isManager && !loading && (
+                          isStatusAssignment ||
+                          !leaveStatus ||
+                          leaveStatus === 'unavailable' ||
+                          leaveStatus === 'day_off'
+                        ));
+
                         return (
                           <React.Fragment key={dayIdx}>
                             <td
                               className={getCellClass(!!morningShift, morningShift?.role)}
-                              onClick={() => !leaveStatus && !loading && onCellClick(staff.id, day, 'morning')}
+                              onClick={() => isCellClickable && onCellClick(staff.id, day, 'morning')}
                               title={getCellTitle(morningShift)}
                             >
                               {leaveStatus === 'holiday' && !morningShift && <span className="leave-marker">H</span>}
                               {leaveStatus === 'absence' && !morningShift && <span className="leave-marker absence">A</span>}
+                              {leaveStatus === 'unavailable' && !morningShift && <span className="leave-marker unavailable">U</span>}
+                              {leaveStatus === 'day_off' && !morningShift && <span className="leave-marker day-off">O</span>}
                               {morningShift && <span className="shift-marker">{getRoleAbbrev(morningShift.role)}</span>}
                             </td>
                             <td
                               className={getCellClass(!!afternoonShift, afternoonShift?.role)}
-                              onClick={() => !leaveStatus && !loading && onCellClick(staff.id, day, 'afternoon')}
+                              onClick={() => isCellClickable && onCellClick(staff.id, day, 'afternoon')}
                               title={getCellTitle(afternoonShift)}
                             >
                               {leaveStatus === 'holiday' && !afternoonShift && <span className="leave-marker">H</span>}
                               {leaveStatus === 'absence' && !afternoonShift && <span className="leave-marker absence">A</span>}
+                              {leaveStatus === 'unavailable' && !afternoonShift && <span className="leave-marker unavailable">U</span>}
+                              {leaveStatus === 'day_off' && !afternoonShift && <span className="leave-marker day-off">O</span>}
                               {afternoonShift && <span className="shift-marker">{getRoleAbbrev(afternoonShift.role)}</span>}
                             </td>
                           </React.Fragment>
@@ -1283,8 +1483,14 @@ function ShiftsTab({
             <span className="legend-item"><span className="legend-box role-events"></span> E = Events</span>
             <span className="legend-item"><span className="legend-box role-teaching"></span> T = Teaching</span>
             <span className="legend-item"><span className="legend-box on-holiday"></span> H = Holiday</span>
-            <span className="legend-item"><span className="legend-box on-absence"></span> A = Absent</span>
-            {isManager && <span className="legend-hint">Select role above, then click cells to assign</span>}
+            <span className="legend-item"><span className="legend-box on-absence"></span> A = Sick/Absent</span>
+            <span className="legend-item"><span className="legend-box on-unavailable"></span> U = Unavailable</span>
+            <span className="legend-item"><span className="legend-box on-day-off"></span> O = Day Off</span>
+            {isManager && (
+              <span className="legend-hint">
+                Select option above, then click cells to assign
+              </span>
+            )}
           </div>
         </div>
       )}

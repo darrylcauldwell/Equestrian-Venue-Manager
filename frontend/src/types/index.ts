@@ -89,6 +89,7 @@ export interface User extends AddressFields {
   must_change_password: boolean;
   is_active: boolean;
   created_at: string;
+  rota_display_order?: number;
 }
 
 // UserUpdate uses AddressFields + specific updatable fields
@@ -970,6 +971,49 @@ export interface CreateFeedAlert {
   notes?: string;
 }
 
+// Feed Change Notifications
+export type FeedChangeType =
+  | 'requirement_created'
+  | 'requirement_updated'
+  | 'requirement_deleted'
+  | 'addition_created'
+  | 'addition_updated'
+  | 'addition_deleted'
+  | 'supply_alert';
+
+export interface FeedChangeNotification {
+  id: number;
+  change_type: FeedChangeType;
+  horse_id: number;
+  horse_name: string;
+  description: string;
+  details?: Record<string, unknown>;
+  created_by_id: number;
+  created_by_name: string;
+  created_at: string;
+}
+
+export interface AcknowledgementDetail {
+  user_id: number;
+  user_name: string;
+  acknowledged_at: string | null;
+}
+
+export interface FeedNotificationHistory {
+  id: number;
+  change_type: FeedChangeType;
+  horse_id: number;
+  horse_name: string;
+  description: string;
+  details?: Record<string, unknown>;
+  created_by_id: number;
+  created_by_name: string;
+  created_at: string;
+  total_staff: number;
+  acknowledged_count: number;
+  acknowledgements: AcknowledgementDetail[];
+}
+
 // Service Management
 export type ServiceCategory = 'exercise' | 'schooling' | 'grooming' | 'third_party' | 'rehab';
 export type RequestStatus = 'pending' | 'quoted' | 'approved' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
@@ -1527,6 +1571,32 @@ export interface StaffManagementEnums {
   timesheet_statuses: EnumOption[];
   leave_types: EnumOption[];
   leave_statuses: EnumOption[];
+  day_status_types: EnumOption[];
+}
+
+// Day Status (Unavailable/Absent)
+export type DayStatusType = 'unavailable' | 'absent';
+
+export interface DayStatus {
+  id: number;
+  staff_id: number;
+  date: string;
+  status_type: DayStatusType;
+  notes?: string;
+  created_by_id: number;
+  created_at: string;
+  staff_name?: string;
+}
+
+export interface CreateDayStatus {
+  staff_id: number;
+  date: string;
+  status_type: DayStatusType;
+  notes?: string;
+}
+
+export interface DayStatusListResponse {
+  statuses: DayStatus[];
 }
 
 // Staff Leave Summary
@@ -4195,6 +4265,25 @@ export interface StaffMemberCreateResponse {
   profile: StaffProfile;
   temporary_password: string;
   message: string;
+}
+
+// ============== Hourly Rate History Types ==============
+
+export interface HourlyRateHistory {
+  id: number;
+  staff_id: number;
+  hourly_rate: number;
+  effective_date: string;
+  notes?: string;
+  created_by_id: number;
+  created_by_name: string;
+  created_at: string;
+}
+
+export interface CreateHourlyRateHistory {
+  hourly_rate: number;
+  effective_date: string;
+  notes?: string;
 }
 
 // ============== Risk Assessment Types ==============

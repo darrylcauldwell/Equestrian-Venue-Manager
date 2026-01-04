@@ -5,6 +5,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useFeatureFlags } from '../contexts/FeatureFlagsContext';
 import { uploadsApi } from '../services/api';
 import { FeedAlertPopup } from './FeedAlertPopup';
+import { FeedNotificationPopup } from './FeedNotificationPopup';
 import { QuoteAlertPopup } from './QuoteAlertPopup';
 import { VaccinationAlertPopup } from './VaccinationAlertPopup';
 import { FloodAlertPopup } from './FloodAlertPopup';
@@ -332,6 +333,7 @@ export function Layout() {
               <Link to="/book/admin/care-plans">Care Plans</Link>
               <Link to="/book/admin/livery-packages">Livery Packages</Link>
               <Link to="/book/admin/feed-schedule">Feed Schedule</Link>
+              <Link to="/book/admin/feed-notifications">Feed Change History</Link>
               <Link to="/book/admin/worming">Worm Counts</Link>
               <Link to="/book/admin/services">Service Catalog</Link>
               <Link to="/book/my-horses">My Horses</Link>
@@ -461,6 +463,9 @@ export function Layout() {
 
       {/* Feed alert notification popup for livery users */}
       <FeedAlertPopup />
+
+      {/* Feed change notification popup for yard staff */}
+      <FeedNotificationPopup />
 
       {/* Quote notification popup for livery users */}
       <QuoteAlertPopup />

@@ -10,7 +10,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.models.staff_profile import StaffProfile
+from app.models.staff_profile import StaffProfile, HourlyRateHistory
 from app.models.user import User, UserRole, StaffType
 from app.schemas.staff_profile import (
     StaffProfileCreate,
@@ -25,6 +25,8 @@ from app.schemas.staff_profile import (
     StaffMilestonesResponse,
     StaffMemberCreate,
     StaffMemberCreateResponse,
+    HourlyRateHistoryCreate,
+    HourlyRateHistoryResponse,
 )
 from app.utils.auth import get_current_user, require_admin, has_staff_access, get_password_hash
 
@@ -422,6 +424,53 @@ def update_my_profile(
     return StaffProfileSelfResponse(**enrich_profile(profile, include_notes=False))
 
 
+@router.get("/me/rate-history", response_model=List[HourlyRateHistoryResponse])
+def get_my_rate_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get the current user's hourly rate history (read-only)."""
+    # User must have staff access
+    if not has_staff_access(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Staff access required"
+        )
+
+    # Verify they have a staff profile
+    profile = db.query(StaffProfile).filter(
+        StaffProfile.user_id == current_user.id
+    ).first()
+
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="You don't have a staff profile yet"
+        )
+
+    # Get rate history for this user
+    history = db.query(HourlyRateHistory).filter(
+        HourlyRateHistory.staff_id == current_user.id
+    ).order_by(HourlyRateHistory.effective_date.desc()).all()
+
+    # Enrich with created_by names
+    result = []
+    for entry in history:
+        created_by = db.query(User).filter(User.id == entry.created_by_id).first()
+        result.append(HourlyRateHistoryResponse(
+            id=entry.id,
+            staff_id=entry.staff_id,
+            hourly_rate=float(entry.hourly_rate),
+            effective_date=entry.effective_date,
+            notes=entry.notes,
+            created_by_id=entry.created_by_id,
+            created_by_name=created_by.name if created_by else "Unknown",
+            created_at=entry.created_at,
+        ))
+
+    return result
+
+
 # ============================================================================
 # Parameterized routes (must be after /me, /summaries, /milestones, etc.)
 # ============================================================================
@@ -513,7 +562,7 @@ def delete_staff_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Delete a staff profile (admin only)."""
+    """Delete a staff profile and deactivate the user (admin only)."""
     profile = db.query(StaffProfile).filter(
         StaffProfile.user_id == user_id
     ).first()
@@ -524,5 +573,116 @@ def delete_staff_profile(
             detail="Staff profile not found"
         )
 
+    # Also mark the user as inactive so they don't appear in rota/timesheets
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        user.is_active = False
+        user.is_yard_staff = False  # Remove staff access
+
     db.delete(profile)
     db.commit()
+
+
+# ============================================================================
+# Hourly Rate History endpoints
+# ============================================================================
+
+@router.get("/{user_id}/rate-history", response_model=List[HourlyRateHistoryResponse])
+def get_rate_history(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Get hourly rate history for a staff member (admin only)."""
+    # Check user exists
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    history = db.query(HourlyRateHistory).filter(
+        HourlyRateHistory.staff_id == user_id
+    ).order_by(HourlyRateHistory.effective_date.desc()).all()
+
+    # Enrich with created_by name
+    result = []
+    for entry in history:
+        created_by = db.query(User).filter(User.id == entry.created_by_id).first()
+        result.append(HourlyRateHistoryResponse(
+            id=entry.id,
+            staff_id=entry.staff_id,
+            hourly_rate=float(entry.hourly_rate),
+            effective_date=entry.effective_date,
+            notes=entry.notes,
+            created_by_id=entry.created_by_id,
+            created_by_name=created_by.name if created_by else "Unknown",
+            created_at=entry.created_at
+        ))
+
+    return result
+
+
+@router.post("/{user_id}/rate-history", response_model=HourlyRateHistoryResponse, status_code=status.HTTP_201_CREATED)
+def add_rate_history(
+    user_id: int,
+    data: HourlyRateHistoryCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Add a new hourly rate for a staff member (admin only).
+
+    If the effective date is today or in the past, the current hourly_rate
+    on the staff profile will also be updated.
+    """
+    # Check user exists and has staff access
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Create the history entry
+    entry = HourlyRateHistory(
+        staff_id=user_id,
+        hourly_rate=data.hourly_rate,
+        effective_date=data.effective_date,
+        notes=data.notes,
+        created_by_id=current_user.id,
+        created_at=datetime.utcnow()
+    )
+    db.add(entry)
+
+    # If effective date is today or in the past, update the current rate
+    today = date.today()
+    if data.effective_date <= today:
+        profile = db.query(StaffProfile).filter(
+            StaffProfile.user_id == user_id
+        ).first()
+        if profile:
+            # Only update if this is the most recent effective rate
+            latest_rate = db.query(HourlyRateHistory).filter(
+                HourlyRateHistory.staff_id == user_id,
+                HourlyRateHistory.effective_date <= today
+            ).order_by(HourlyRateHistory.effective_date.desc()).first()
+
+            # If no existing rate or new rate is more recent
+            if not latest_rate or data.effective_date >= latest_rate.effective_date:
+                profile.hourly_rate = data.hourly_rate
+                profile.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(entry)
+
+    return HourlyRateHistoryResponse(
+        id=entry.id,
+        staff_id=entry.staff_id,
+        hourly_rate=float(entry.hourly_rate),
+        effective_date=entry.effective_date,
+        notes=entry.notes,
+        created_by_id=entry.created_by_id,
+        created_by_name=current_user.name,
+        created_at=entry.created_at
+    )

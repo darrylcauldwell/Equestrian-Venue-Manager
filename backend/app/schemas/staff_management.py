@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Optional, List
 from pydantic import BaseModel, ConfigDict
 
-from app.models.staff_management import ShiftType, ShiftRole, WorkType, TimesheetStatus, LeaveType, LeaveStatus
+from app.models.staff_management import ShiftType, ShiftRole, WorkType, TimesheetStatus, LeaveType, LeaveStatus, DayStatusType
 
 
 # ============== Shift Schemas ==============
@@ -324,6 +324,7 @@ class StaffManagementEnums(BaseModel):
     leave_types: List[EnumInfo]
     leave_statuses: List[EnumInfo]
     staff_types: List[EnumInfo]
+    day_status_types: List[EnumInfo]
 
 
 # ============== Staff Thanks Schemas ==============
@@ -368,3 +369,32 @@ class TipPaymentIntentResponse(BaseModel):
     thanks_id: int
     client_secret: str
     amount: float
+
+
+# ============== Day Status Schemas ==============
+
+class DayStatusCreate(BaseModel):
+    """Create a day status (unavailable/absent) for a staff member."""
+    staff_id: int
+    date: date
+    status_type: DayStatusType
+    notes: Optional[str] = None
+
+
+class DayStatusResponse(BaseModel):
+    """Day status response."""
+    id: int
+    staff_id: int
+    date: date
+    status_type: DayStatusType
+    notes: Optional[str] = None
+    created_by_id: int
+    created_at: datetime
+    staff_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DayStatusListResponse(BaseModel):
+    """List of day statuses."""
+    statuses: List[DayStatusResponse]

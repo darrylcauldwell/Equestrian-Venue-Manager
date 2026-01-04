@@ -11,6 +11,8 @@ from app.models.feed import (
     FeedAddition,
     FeedSupplyAlert,
     AdditionStatus,
+    FeedChangeType,
+    FeedChangeNotification,
 )
 from app.models.user import User, UserRole
 from app.utils.auth import has_staff_access
@@ -32,6 +34,25 @@ from app.utils.auth import get_current_user
 from app.services.health_task_generator import HealthTaskGenerator
 
 router = APIRouter()
+
+
+def create_feed_notification(
+    db: Session,
+    change_type: FeedChangeType,
+    horse_id: int,
+    description: str,
+    created_by_id: int,
+    details: dict = None
+):
+    """Helper function to create a feed change notification."""
+    notification = FeedChangeNotification(
+        change_type=change_type,
+        horse_id=horse_id,
+        description=description,
+        details=details,
+        created_by_id=created_by_id,
+    )
+    db.add(notification)
 
 
 def get_horse_with_access(
@@ -171,15 +192,53 @@ def update_feed_requirement(
         FeedRequirement.horse_id == horse_id
     ).first()
 
+    is_new = feed_req is None
     if not feed_req:
         feed_req = FeedRequirement(horse_id=horse_id)
         db.add(feed_req)
+
+    # Capture old values for notification details
+    old_values = {}
+    if not is_new:
+        old_values = {
+            'morning_feed': feed_req.morning_feed,
+            'evening_feed': feed_req.evening_feed,
+            'supplements': feed_req.supplements,
+            'special_instructions': feed_req.special_instructions,
+            'supply_status': feed_req.supply_status.value if feed_req.supply_status else None,
+        }
 
     update_data = data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(feed_req, field, value)
 
     feed_req.updated_by_id = current_user.id
+
+    # Create notification for feed requirement change
+    change_type = FeedChangeType.REQUIREMENT_CREATED if is_new else FeedChangeType.REQUIREMENT_UPDATED
+    changes = []
+    if 'morning_feed' in update_data:
+        changes.append('morning feed')
+    if 'evening_feed' in update_data:
+        changes.append('evening feed')
+    if 'supplements' in update_data:
+        changes.append('supplements')
+    if 'special_instructions' in update_data:
+        changes.append('special instructions')
+    if 'supply_status' in update_data:
+        changes.append('supply status')
+
+    if changes:
+        description = f"Feed requirements updated for {horse.name}: {', '.join(changes)}"
+        create_feed_notification(
+            db=db,
+            change_type=change_type,
+            horse_id=horse_id,
+            description=description,
+            created_by_id=current_user.id,
+            details={'old_values': old_values, 'new_values': update_data}
+        )
+
     db.commit()
     db.refresh(feed_req)
     return feed_req
@@ -243,6 +302,25 @@ def create_feed_addition(
         **data.model_dump()
     )
     db.add(addition)
+
+    # Create notification for feed addition
+    description = f"New feed addition for {horse.name}: {data.name} ({data.dosage})"
+    create_feed_notification(
+        db=db,
+        change_type=FeedChangeType.ADDITION_CREATED,
+        horse_id=horse_id,
+        description=description,
+        created_by_id=current_user.id,
+        details={
+            'name': data.name,
+            'dosage': data.dosage,
+            'feed_time': data.feed_time.value,
+            'start_date': str(data.start_date),
+            'end_date': str(data.end_date) if data.end_date else None,
+            'reason': data.reason,
+        }
+    )
+
     db.commit()
     db.refresh(addition)
 
@@ -281,6 +359,14 @@ def update_feed_addition(
     if addition.requested_by_id != current_user.id and current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
 
+    # Capture old values for notification
+    old_values = {
+        'name': addition.name,
+        'dosage': addition.dosage,
+        'feed_time': addition.feed_time.value if addition.feed_time else None,
+        'status': addition.status.value if addition.status else None,
+    }
+
     update_data = data.model_dump(exclude_unset=True)
 
     # Track if we're approving this addition
@@ -298,6 +384,17 @@ def update_feed_addition(
 
     for field, value in update_data.items():
         setattr(addition, field, value)
+
+    # Create notification for feed addition update
+    description = f"Feed addition updated for {horse.name}: {addition.name}"
+    create_feed_notification(
+        db=db,
+        change_type=FeedChangeType.ADDITION_UPDATED,
+        horse_id=horse_id,
+        description=description,
+        created_by_id=current_user.id,
+        details={'old_values': old_values, 'new_values': update_data}
+    )
 
     db.commit()
     db.refresh(addition)
@@ -334,6 +431,17 @@ def delete_feed_addition(
     # Only owner or admin can delete
     if addition.requested_by_id != current_user.id and current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+
+    # Create notification for feed addition deletion
+    description = f"Feed addition removed for {horse.name}: {addition.name}"
+    create_feed_notification(
+        db=db,
+        change_type=FeedChangeType.ADDITION_DELETED,
+        horse_id=horse_id,
+        description=description,
+        created_by_id=current_user.id,
+        details={'name': addition.name, 'dosage': addition.dosage}
+    )
 
     db.delete(addition)
     db.commit()
@@ -391,6 +499,18 @@ def create_feed_alert(
         **data.model_dump()
     )
     db.add(alert)
+
+    # Create notification for supply alert
+    description = f"Feed supply alert for {horse.name}: {data.item}"
+    create_feed_notification(
+        db=db,
+        change_type=FeedChangeType.SUPPLY_ALERT,
+        horse_id=horse_id,
+        description=description,
+        created_by_id=current_user.id,
+        details={'item': data.item, 'notes': data.notes}
+    )
+
     db.commit()
     db.refresh(alert)
 

@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 from calendar import monthrange
 from app.database import get_db
 from app.models.staff_management import (
-    Shift, Timesheet, HolidayRequest, UnplannedAbsence, PayrollAdjustment, StaffThanks,
-    ShiftType, ShiftRole, WorkType, TimesheetStatus, LeaveType, LeaveStatus, PayrollAdjustmentType
+    Shift, Timesheet, HolidayRequest, UnplannedAbsence, PayrollAdjustment, StaffThanks, StaffDayStatus,
+    ShiftType, ShiftRole, WorkType, TimesheetStatus, LeaveType, LeaveStatus, PayrollAdjustmentType, DayStatusType
 )
-from app.models.staff_profile import StaffProfile
+from app.models.staff_profile import StaffProfile, HourlyRateHistory
 from app.models.user import User, UserRole, StaffType
 from app.models.settings import SiteSettings
 from app.utils.auth import has_staff_access
@@ -28,7 +28,8 @@ from app.schemas.staff_management import (
     StaffLeaveSummary, AllStaffLeaveSummary,
     PayrollAdjustmentCreate, PayrollAdjustmentResponse, PayrollAdjustmentListResponse,
     PayrollAdjustmentSummary, StaffPayrollPeriod, PayrollSummaryResponse,
-    StaffThanksCreate, StaffThanksResponse, StaffThanksListResponse, StaffThanksUnreadCount
+    StaffThanksCreate, StaffThanksResponse, StaffThanksListResponse, StaffThanksUnreadCount,
+    DayStatusCreate, DayStatusResponse, DayStatusListResponse
 )
 from app.utils.auth import get_current_user
 
@@ -86,6 +87,11 @@ STAFF_TYPE_LABELS = {
     StaffType.ON_CALL: "On-Call Only",
 }
 
+DAY_STATUS_LABELS = {
+    DayStatusType.UNAVAILABLE: "Unavailable",
+    DayStatusType.ABSENT: "Day Off",  # Ad-hoc day off from manager
+}
+
 
 def require_staff(current_user: User):
     """Require user to have yard staff access (admin or is_yard_staff flag)."""
@@ -118,6 +124,28 @@ def calculate_hours(clock_in, clock_out, break_minutes: int = 0) -> float:
         dt_out += timedelta(days=1)
     total_minutes = (dt_out - dt_in).total_seconds() / 60 - break_minutes
     return round(total_minutes / 60, 2)
+
+
+def get_rate_for_date(db: Session, staff_id: int, work_date: date) -> float:
+    """Get the hourly rate that was effective on a given date.
+
+    Looks up the rate history to find the most recent rate that was
+    effective on or before the work date.
+    """
+    rate_entry = db.query(HourlyRateHistory).filter(
+        HourlyRateHistory.staff_id == staff_id,
+        HourlyRateHistory.effective_date <= work_date
+    ).order_by(HourlyRateHistory.effective_date.desc()).first()
+
+    if rate_entry:
+        return float(rate_entry.hourly_rate)
+
+    # Fallback to current profile rate if no history exists
+    profile = db.query(StaffProfile).filter(StaffProfile.user_id == staff_id).first()
+    if profile and profile.hourly_rate:
+        return float(profile.hourly_rate)
+
+    return 0.0
 
 
 def enrich_shift(shift: Shift) -> dict:
@@ -249,6 +277,10 @@ def get_enums():
         staff_types=[
             EnumInfo(value=t.value, label=STAFF_TYPE_LABELS.get(t, t.value.title()))
             for t in StaffType
+        ],
+        day_status_types=[
+            EnumInfo(value=d.value, label=DAY_STATUS_LABELS.get(d, d.value.title()))
+            for d in DayStatusType
         ],
     )
 
@@ -967,6 +999,127 @@ def calculate_prorata_entitlement(
     return round(prorata, 1)  # Round to 1 decimal for half-days
 
 
+# ============== Day Status Endpoints (Unavailable/Absent) ==============
+
+def enrich_day_status(status: StaffDayStatus) -> dict:
+    """Add staff name to day status for response."""
+    data = {
+        "id": status.id,
+        "staff_id": status.staff_id,
+        "date": status.date,
+        "status_type": status.status_type,
+        "notes": status.notes,
+        "created_by_id": status.created_by_id,
+        "created_at": status.created_at,
+        "staff_name": status.staff.name if status.staff else None,
+    }
+    return data
+
+
+@router.get("/day-statuses", response_model=DayStatusListResponse)
+def list_day_statuses(
+    staff_id: Optional[int] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """List day statuses (unavailable/absent) with optional filters."""
+    require_staff(current_user)
+
+    query = db.query(StaffDayStatus).options(joinedload(StaffDayStatus.staff))
+
+    if staff_id:
+        query = query.filter(StaffDayStatus.staff_id == staff_id)
+    if start_date:
+        query = query.filter(StaffDayStatus.date >= start_date)
+    if end_date:
+        query = query.filter(StaffDayStatus.date <= end_date)
+
+    statuses = query.order_by(StaffDayStatus.date.desc()).all()
+
+    return DayStatusListResponse(
+        statuses=[DayStatusResponse(**enrich_day_status(s)) for s in statuses]
+    )
+
+
+@router.post("/day-statuses", response_model=DayStatusResponse, status_code=status.HTTP_201_CREATED)
+def create_day_status(
+    data: DayStatusCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a day status (unavailable/absent) for a staff member. Admin only."""
+    require_manager(current_user)
+
+    # Check if status already exists for this staff/date
+    existing = db.query(StaffDayStatus).filter(
+        StaffDayStatus.staff_id == data.staff_id,
+        StaffDayStatus.date == data.date
+    ).first()
+
+    if existing:
+        # Update existing instead of creating duplicate
+        existing.status_type = data.status_type
+        existing.notes = data.notes
+        db.commit()
+        db.refresh(existing)
+        return DayStatusResponse(**enrich_day_status(existing))
+
+    day_status = StaffDayStatus(
+        staff_id=data.staff_id,
+        date=data.date,
+        status_type=data.status_type,
+        notes=data.notes,
+        created_by_id=current_user.id,
+    )
+    db.add(day_status)
+    db.commit()
+    db.refresh(day_status)
+
+    return DayStatusResponse(**enrich_day_status(day_status))
+
+
+@router.delete("/day-statuses/{status_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_day_status(
+    status_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a day status. Admin only."""
+    require_manager(current_user)
+
+    day_status = db.query(StaffDayStatus).filter(StaffDayStatus.id == status_id).first()
+    if not day_status:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Day status not found"
+        )
+
+    db.delete(day_status)
+    db.commit()
+
+
+@router.delete("/day-statuses/by-staff-date", status_code=status.HTTP_204_NO_CONTENT)
+def delete_day_status_by_staff_date(
+    staff_id: int,
+    date: date,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a day status by staff ID and date. Admin only."""
+    require_manager(current_user)
+
+    day_status = db.query(StaffDayStatus).filter(
+        StaffDayStatus.staff_id == staff_id,
+        StaffDayStatus.date == date
+    ).first()
+
+    if day_status:
+        db.delete(day_status)
+        db.commit()
+
+
 @router.get("/leave-summary", response_model=AllStaffLeaveSummary)
 def get_all_staff_leave_summary(
     year: Optional[int] = None,
@@ -1148,12 +1301,12 @@ def get_payroll_summary(
     total_pay_amount = 0.0
 
     for user in staff_users:
-        # Get staff profile for hourly rate
+        # Get staff profile for current hourly rate (for display)
         profile = db.query(StaffProfile).filter(StaffProfile.user_id == user.id).first()
-        hourly_rate = float(profile.hourly_rate) if profile and profile.hourly_rate else 0.0
+        current_hourly_rate = float(profile.hourly_rate) if profile and profile.hourly_rate else 0.0
         staff_type = user.staff_type.value if user.staff_type else None
 
-        # Calculate approved hours
+        # Calculate approved hours and base pay (using rate effective on each timesheet date)
         timesheets = db.query(Timesheet).filter(
             Timesheet.staff_id == user.id,
             Timesheet.status == TimesheetStatus.APPROVED,
@@ -1162,13 +1315,16 @@ def get_payroll_summary(
         ).all()
 
         approved_hours = 0.0
+        base_pay = 0.0
         for ts in timesheets:
             if ts.clock_out:
                 hours = calculate_hours(ts.clock_in, ts.clock_out, ts.break_minutes)
+                # Use the rate effective on the timesheet date
+                rate_for_date = get_rate_for_date(db, user.id, ts.date)
                 approved_hours += hours
+                base_pay += hours * rate_for_date
 
         timesheet_count = len(timesheets)
-        base_pay = approved_hours * hourly_rate
 
         # Get adjustments for this period
         adjustments = db.query(PayrollAdjustment).filter(
@@ -1197,7 +1353,7 @@ def get_payroll_summary(
             staff_id=user.id,
             staff_name=user.name,
             staff_type=staff_type,
-            hourly_rate=hourly_rate,
+            hourly_rate=current_hourly_rate,
             approved_hours=approved_hours,
             timesheet_count=timesheet_count,
             base_pay=base_pay,
