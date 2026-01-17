@@ -258,18 +258,24 @@ test.describe('Insurance Claims Workflow', () => {
 
     test('livery can see generate statement button', async ({ page }) => {
       await safeGoto(page, '/book/services');
+      await dismissPopups(page);
 
       // Click Insurance Claims tab
       const insuranceTab = page.locator('.ds-tab, .tab').filter({ hasText: /insurance.*claims/i });
       if (await insuranceTab.isVisible()) {
         await insuranceTab.click();
-        await page.waitForLoadState('domcontentloaded');
+        await waitForPageReady(page);
+        await dismissPopups(page);
 
-        // Generate statement button should be visible if there are claims
+        // Wait for loading to complete - either claims table or no-claims message should appear
         const generateBtn = page.locator('button').filter({ hasText: /download.*insurance.*statement|generate.*statement/i });
         const noClaims = page.locator('.no-claims');
+        const claimsTable = page.locator('.claims-table');
 
-        // Either button or no-claims message should be visible
+        // Wait for content to load (either table with button, or no-claims message)
+        await expect(generateBtn.or(noClaims).or(claimsTable)).toBeVisible({ timeout: 15000 });
+
+        // Now verify the appropriate element is visible
         if (await generateBtn.isVisible()) {
           await expect(generateBtn).toBeVisible();
         } else {
