@@ -1,7 +1,7 @@
 from datetime import datetime, date, time
 from decimal import Decimal
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.models.staff_management import ShiftType, ShiftRole, WorkType, TimesheetStatus, LeaveType, LeaveStatus, DayStatusType
 
@@ -239,11 +239,19 @@ class PayrollAdjustmentCreate(BaseModel):
     """Create a payroll adjustment (one-off or tip)."""
     staff_id: int
     adjustment_type: str  # oneoff, tip
-    amount: float
+    amount: Decimal
     description: str
     payment_date: date
     taxable: bool = True  # Tips are tax-free (False)
     notes: Optional[str] = None
+
+    @field_validator('amount', mode='before')
+    @classmethod
+    def round_amount(cls, v):
+        """Round to 2 decimal places to avoid floating point precision issues."""
+        if v is None:
+            return v
+        return Decimal(str(v)).quantize(Decimal('0.01'))
 
 
 class PayrollAdjustmentResponse(BaseModel):
@@ -333,7 +341,15 @@ class StaffThanksCreate(BaseModel):
     """Create a thank you message to staff, optionally with a tip."""
     staff_id: int
     message: str
-    tip_amount: Optional[float] = None  # Optional tip in GBP
+    tip_amount: Optional[Decimal] = None  # Optional tip in GBP
+
+    @field_validator('tip_amount', mode='before')
+    @classmethod
+    def round_tip_amount(cls, v):
+        """Round to 2 decimal places to avoid floating point precision issues."""
+        if v is None:
+            return v
+        return Decimal(str(v)).quantize(Decimal('0.01'))
 
 
 class StaffThanksResponse(BaseModel):
