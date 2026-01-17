@@ -214,12 +214,21 @@ export function AdminStaffProfiles() {
     }
   };
 
+  const toggleRateHistory = (userId: number) => {
+    if (showRateHistory) {
+      setShowRateHistory(false);
+    } else {
+      loadRateHistory(userId);
+    }
+  };
+
   const handleAddRate = async () => {
     if (!profileModal.editingId || !newRateForm.hourly_rate) return;
 
     setIsSubmitting(true);
     try {
-      await staffProfilesApi.addRate(profileModal.editingId, {
+      // Use the response to get the actual saved rate (ensures precision is correct)
+      const savedRate = await staffProfilesApi.addRate(profileModal.editingId, {
         hourly_rate: parseFloat(newRateForm.hourly_rate),
         effective_date: newRateForm.effective_date,
         notes: newRateForm.notes || undefined,
@@ -230,9 +239,10 @@ export function AdminStaffProfiles() {
       // Update the current rate in the form if effective date is today or past
       const today = new Date().toISOString().split('T')[0];
       if (newRateForm.effective_date <= today) {
+        // Use the rate from the server response for accuracy
         profileModal.setFormData({
           ...profileModal.formData,
-          hourly_rate: parseFloat(newRateForm.hourly_rate),
+          hourly_rate: savedRate.hourly_rate,
         });
       }
       // Reset the new rate form
@@ -777,7 +787,7 @@ export function AdminStaffProfiles() {
                   <button
                     type="button"
                     className="ds-btn ds-btn-secondary ds-btn-sm"
-                    onClick={() => profileModal.editingId && loadRateHistory(profileModal.editingId)}
+                    onClick={() => profileModal.editingId && toggleRateHistory(profileModal.editingId)}
                     disabled={rateHistoryLoading}
                   >
                     {rateHistoryLoading ? 'Loading...' : showRateHistory ? 'Hide History' : 'Manage Rates'}

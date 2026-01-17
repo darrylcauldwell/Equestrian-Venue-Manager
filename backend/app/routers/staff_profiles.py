@@ -662,16 +662,10 @@ def add_rate_history(
             StaffProfile.user_id == user_id
         ).first()
         if profile:
-            # Only update if this is the most recent effective rate
-            latest_rate = db.query(HourlyRateHistory).filter(
-                HourlyRateHistory.staff_id == user_id,
-                HourlyRateHistory.effective_date <= today
-            ).order_by(HourlyRateHistory.effective_date.desc()).first()
-
-            # If no existing rate or new rate is more recent
-            if not latest_rate or data.effective_date >= latest_rate.effective_date:
-                profile.hourly_rate = data.hourly_rate
-                profile.updated_at = datetime.utcnow()
+            # Always update current rate when adding a rate for today or past
+            # This ensures the most recently added rate becomes the current rate
+            profile.hourly_rate = data.hourly_rate
+            profile.updated_at = datetime.utcnow()
 
     db.commit()
     db.refresh(entry)

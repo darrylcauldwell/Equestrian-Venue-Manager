@@ -1,6 +1,7 @@
 from datetime import datetime, date
+from decimal import Decimal
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 # ============== Staff Profile Schemas ==============
@@ -257,9 +258,17 @@ class StaffMemberCreateResponse(BaseModel):
 
 class HourlyRateHistoryCreate(BaseModel):
     """Schema for adding a new hourly rate."""
-    hourly_rate: float
+    hourly_rate: Decimal
     effective_date: date
     notes: Optional[str] = None
+
+    @field_validator('hourly_rate', mode='before')
+    @classmethod
+    def round_hourly_rate(cls, v):
+        """Round to 2 decimal places to avoid floating point precision issues."""
+        if v is None:
+            return v
+        return Decimal(str(v)).quantize(Decimal('0.01'))
 
 
 class HourlyRateHistoryResponse(BaseModel):
