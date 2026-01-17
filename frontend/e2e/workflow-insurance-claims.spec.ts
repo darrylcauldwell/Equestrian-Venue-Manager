@@ -273,7 +273,8 @@ test.describe('Insurance Claims Workflow', () => {
         const claimsTable = page.locator('.claims-table');
 
         // Wait for content to load (either table with button, or no-claims message)
-        await expect(generateBtn.or(noClaims).or(claimsTable)).toBeVisible({ timeout: 15000 });
+        // Use .first() since multiple elements may match when claims exist (table + button)
+        await expect(generateBtn.or(noClaims).or(claimsTable).first()).toBeVisible({ timeout: 15000 });
 
         // Now verify the appropriate element is visible
         if (await generateBtn.isVisible()) {
