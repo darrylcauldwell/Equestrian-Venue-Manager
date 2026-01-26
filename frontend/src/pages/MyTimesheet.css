@@ -425,3 +425,101 @@
     height: 36px;
   }
 }
+
+/* Submitted Hours Section */
+.submitted-section {
+  margin-top: var(--space-6);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.submitted-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease;
+}
+
+.submitted-section-header:hover {
+  background: var(--bg-card-hover);
+}
+
+.submitted-section-toggle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  width: 1rem;
+}
+
+.submitted-section-title {
+  font-weight: var(--font-weight-medium);
+  flex: 1;
+}
+
+.submitted-section-total {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.submitted-section-content {
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-color);
+}
+
+.submitted-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.submitted-table th,
+.submitted-table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.submitted-table th {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+}
+
+.submitted-table td {
+  color: var(--text-primary);
+}
+
+.submitted-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsive: Stack on mobile */
+@media (max-width: 480px) {
+  .submitted-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .submitted-table th,
+  .submitted-table td {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .submitted-section-header {
+    flex-wrap: wrap;
+  }
+
+  .submitted-section-total {
+    width: 100%;
+    margin-top: var(--space-2);
+    padding-left: calc(1rem + var(--space-3));
+  }
+}

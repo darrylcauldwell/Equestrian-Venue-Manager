@@ -73,6 +73,9 @@ export default function MyTimesheet() {
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<Partial<CreateTimesheet>>({});
 
+  // Submitted section collapsed state
+  const [submittedExpanded, setSubmittedExpanded] = useState(false);
+
   const loadWeekData = useCallback(async () => {
     try {
       const startDate = formatDateForApi(weekStart);
@@ -260,6 +263,18 @@ export default function MyTimesheet() {
     return dayTimesheet.status === 'draft' || dayTimesheet.status === 'rejected';
   });
 
+  // Get submitted and approved timesheets for the week (read-only display)
+  const submittedTimesheets = Array.from(timesheets.values())
+    .filter(ts => ts.status === 'submitted' || ts.status === 'approved')
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Calculate total hours for submitted entries
+  const submittedTotalHours = submittedTimesheets.reduce((sum, ts) => {
+    if (!ts.clock_out) return sum;
+    const hours = parseFloat(calculateHours(ts.clock_in, ts.clock_out, ts.break_minutes));
+    return isNaN(hours) ? sum : sum + hours;
+  }, 0);
+
   if (loading && !enums) {
     return <div className="ds-loading">Loading...</div>;
   }
@@ -418,6 +433,60 @@ export default function MyTimesheet() {
           })
         )}
       </div>
+
+      {/* Submitted Hours Section */}
+      {submittedTimesheets.length > 0 && (
+        <div className="submitted-section">
+          <button
+            className="submitted-section-header"
+            onClick={() => setSubmittedExpanded(!submittedExpanded)}
+            aria-expanded={submittedExpanded}
+          >
+            <span className="submitted-section-toggle">
+              {submittedExpanded ? '▼' : '▶'}
+            </span>
+            <span className="submitted-section-title">
+              Submitted Hours This Week
+            </span>
+            <span className="submitted-section-total">
+              {submittedTotalHours.toFixed(1)} hrs
+            </span>
+          </button>
+
+          {submittedExpanded && (
+            <div className="submitted-section-content">
+              <table className="submitted-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Clock In</th>
+                    <th>Clock Out</th>
+                    <th>Break</th>
+                    <th>Hours</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {submittedTimesheets.map(ts => (
+                    <tr key={ts.id}>
+                      <td>{new Date(ts.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</td>
+                      <td>{ts.clock_in}</td>
+                      <td>{ts.clock_out || '-'}</td>
+                      <td>{ts.break_minutes}m</td>
+                      <td>{calculateHours(ts.clock_in, ts.clock_out, ts.break_minutes)}</td>
+                      <td>
+                        <span className={`ds-badge ds-badge-${ts.status === 'approved' ? 'success' : 'warning'}`}>
+                          {ts.status === 'approved' ? 'Approved' : 'Pending'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Footer with navigation */}
       <div className="timesheet-footer">
