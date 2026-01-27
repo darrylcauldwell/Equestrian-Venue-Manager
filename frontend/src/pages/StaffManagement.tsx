@@ -2252,7 +2252,7 @@ function PayrollTab({
 
           <div className="payroll-summary-cards">
             <div className="summary-card">
-              <div className="summary-value">{payrollSummary.total_approved_hours.toFixed(1)}</div>
+              <div className="summary-value">{payrollSummary.total_approved_hours.toFixed(2)}</div>
               <div className="summary-label">Total Hours</div>
             </div>
             <div className="summary-card">
@@ -2290,7 +2290,7 @@ function PayrollTab({
                     <td><strong>{s.staff_name}</strong></td>
                     <td>{s.staff_type || '-'}</td>
                     <td>{formatCurrency(s.hourly_rate || 0)}</td>
-                    <td>{s.approved_hours.toFixed(1)}</td>
+                    <td>{s.approved_hours.toFixed(2)}</td>
                     <td>{formatCurrency(s.base_pay)}</td>
                     <td>{formatCurrency(s.adjustments.oneoff_total)}</td>
                     <td>{formatCurrency(s.taxable_pay)}</td>
@@ -2308,7 +2308,7 @@ function PayrollTab({
                 <tfoot>
                   <tr>
                     <td colSpan={3}><strong>Totals</strong></td>
-                    <td><strong>{payrollSummary.total_approved_hours.toFixed(1)}</strong></td>
+                    <td><strong>{payrollSummary.total_approved_hours.toFixed(2)}</strong></td>
                     <td><strong>{formatCurrency(payrollSummary.total_base_pay)}</strong></td>
                     <td colSpan={3}><strong>{formatCurrency(payrollSummary.total_adjustments)}</strong></td>
                     <td><strong>{formatCurrency(payrollSummary.total_pay)}</strong></td>
