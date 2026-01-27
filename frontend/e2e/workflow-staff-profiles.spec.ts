@@ -12,13 +12,13 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('admin can view staff profiles page', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
       await expect(page.locator('h1, h2, h3').first()).toBeVisible();
     });
 
     test('admin can see staff profiles list or empty state', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
       await dismissPopups(page);
       // Page shows a table with staff profiles or empty message
@@ -27,14 +27,14 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('admin can see create profile button', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
       await expect(createBtn.first()).toBeVisible();
     });
 
     test('admin can open create profile modal', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
       await createBtn.first().click();
@@ -42,7 +42,7 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('create profile form has user select', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
       await createBtn.first().click();
@@ -57,7 +57,7 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('admin can close create profile modal', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
 
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
@@ -102,7 +102,7 @@ test.describe('Staff Profiles Workflow', () => {
         await page.waitForTimeout(300);
       }
 
-      const profilesLink = page.locator('a[href*="staff-profiles"]').first();
+      const profilesLink = page.locator('a[href*="tab=profiles"]').first();
       await expect(profilesLink).toBeVisible({ timeout: 5000 });
     });
 
@@ -180,7 +180,7 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('create profile modal has expected form sections', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
 
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
@@ -200,7 +200,7 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('profile form has job title field', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
 
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
@@ -215,7 +215,7 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('profile form has bio textarea', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
 
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
@@ -230,7 +230,7 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('profile form has employment type field', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
 
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
@@ -245,7 +245,7 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('profile form has annual leave entitlement field', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
 
       const createBtn = page.locator('button').filter({ hasText: /create|add profile|new profile/i });
@@ -266,12 +266,12 @@ test.describe('Staff Profiles Workflow', () => {
     });
 
     test('admin can see milestones section if present', async ({ page }) => {
-      await page.goto('/book/admin/staff-profiles');
+      await page.goto('/book/admin/staff?tab=profiles');
       await waitForPageReady(page);
 
       // Milestones banner may or may not be visible depending on data
-      // Just verify the page loads correctly
-      const pageContent = page.locator('.staff-profiles-page, .admin-page, main').first();
+      // Just verify the page loads correctly (now embedded within Staff Management tab)
+      const pageContent = page.locator('.staff-profiles-embedded, .admin-page, main').first();
       await expect(pageContent).toBeVisible();
     });
   });
@@ -280,12 +280,12 @@ test.describe('Staff Profiles Workflow', () => {
 test.describe('Staff Profile Access Control', () => {
   test('livery user cannot access admin staff profiles', async ({ loginAs, page }) => {
     await loginAs('livery');
-    await page.goto('/book/admin/staff-profiles');
+    await page.goto('/book/admin/staff?tab=profiles');
     await waitForPageReady(page);
 
     // Should either redirect or show forbidden
     const url = page.url();
-    const isRedirected = !url.includes('staff-profiles');
+    const isRedirected = !url.includes('/admin/staff');
     const hasForbidden = await page.locator('text=/forbidden|not authorized|access denied/i').isVisible().catch(() => false);
 
     expect(isRedirected || hasForbidden).toBeTruthy();
@@ -293,11 +293,11 @@ test.describe('Staff Profile Access Control', () => {
 
   test('coach user cannot access admin staff profiles', async ({ loginAs, page }) => {
     await loginAs('coach');
-    await page.goto('/book/admin/staff-profiles');
+    await page.goto('/book/admin/staff?tab=profiles');
     await waitForPageReady(page);
 
     const url = page.url();
-    const isRedirected = !url.includes('staff-profiles');
+    const isRedirected = !url.includes('/admin/staff');
     const hasForbidden = await page.locator('text=/forbidden|not authorized|access denied/i').isVisible().catch(() => false);
 
     expect(isRedirected || hasForbidden).toBeTruthy();
@@ -347,7 +347,7 @@ test.describe('Staff Milestones Popup', () => {
 
     const popup = page.locator('.milestones-popup-overlay');
     if (await popup.isVisible({ timeout: 1000 })) {
-      const profilesLink = popup.locator('a[href*="staff-profiles"]');
+      const profilesLink = popup.locator('a[href*="tab=profiles"]');
       await expect(profilesLink).toBeVisible();
     }
     // If no popup, test passes
@@ -360,7 +360,7 @@ test.describe('Hourly Rate History Management', () => {
   });
 
   test('admin can see manage rates button in profile edit modal', async ({ page }) => {
-    await page.goto('/book/admin/staff-profiles');
+    await page.goto('/book/admin/staff?tab=profiles');
     await waitForPageReady(page);
     await dismissPopups(page);
 
@@ -380,7 +380,7 @@ test.describe('Hourly Rate History Management', () => {
   });
 
   test('clicking manage rates shows rate history panel', async ({ page }) => {
-    await page.goto('/book/admin/staff-profiles');
+    await page.goto('/book/admin/staff?tab=profiles');
     await waitForPageReady(page);
     await dismissPopups(page);
 
@@ -410,7 +410,7 @@ test.describe('Hourly Rate History Management', () => {
   });
 
   test('rate history panel has effective date input', async ({ page }) => {
-    await page.goto('/book/admin/staff-profiles');
+    await page.goto('/book/admin/staff?tab=profiles');
     await waitForPageReady(page);
     await dismissPopups(page);
 
@@ -445,7 +445,7 @@ test.describe('Hourly Rate History Management', () => {
   });
 
   test('current rate is displayed prominently', async ({ page }) => {
-    await page.goto('/book/admin/staff-profiles');
+    await page.goto('/book/admin/staff?tab=profiles');
     await waitForPageReady(page);
     await dismissPopups(page);
 
