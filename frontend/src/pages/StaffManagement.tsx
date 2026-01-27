@@ -1666,6 +1666,26 @@ function HolidaysTab({
   onCancel,
   formatDate,
 }: HolidaysTabProps) {
+  // Check if two date ranges overlap
+  const datesOverlap = (start1: string, end1: string, start2: string, end2: string): boolean => {
+    return start1 <= end2 && end1 >= start2;
+  };
+
+  // Calculate overlap count for each approved holiday
+  const getOverlapCount = (holiday: HolidayRequest): number => {
+    if (!holidays?.approved) return 0;
+    return holidays.approved.filter(
+      h => h.id !== holiday.id && datesOverlap(holiday.start_date, holiday.end_date, h.start_date, h.end_date)
+    ).length;
+  };
+
+  // Get CSS class based on overlap count
+  const getOverlapClass = (overlapCount: number): string => {
+    if (overlapCount >= 2) return 'overlap-danger';
+    if (overlapCount === 1) return 'overlap-warning';
+    return '';
+  };
+
   return (
     <div className="holidays-view">
       <div className="tab-actions">
@@ -1734,22 +1754,33 @@ function HolidaysTab({
             </tr>
           </thead>
           <tbody>
-            {holidays?.approved.map((h) => (
-              <tr key={h.id}>
-                {isManager && <td>{h.staff_name}</td>}
-                <td>{formatDate(h.start_date)} - {formatDate(h.end_date)}</td>
-                <td>{h.days_requested}</td>
-                <td>{enums?.leave_types.find(t => t.value === h.leave_type)?.label || h.leave_type}</td>
-                <td>{h.approved_by_name || '-'}</td>
-                {isManager && (
-                  <td className="action-buttons">
-                    <button className="btn-danger btn-sm" onClick={() => onCancel(h.id)}>
-                      Cancel
-                    </button>
+            {holidays?.approved.map((h) => {
+              const overlapCount = getOverlapCount(h);
+              const overlapClass = getOverlapClass(overlapCount);
+              return (
+                <tr key={h.id} className={overlapClass}>
+                  {isManager && <td>{h.staff_name}</td>}
+                  <td>
+                    {formatDate(h.start_date)} - {formatDate(h.end_date)}
+                    {overlapCount > 0 && (
+                      <span className={`overlap-indicator ${overlapCount >= 2 ? 'danger' : 'warning'}`}>
+                        {overlapCount + 1} off
+                      </span>
+                    )}
                   </td>
-                )}
-              </tr>
-            ))}
+                  <td>{h.days_requested}</td>
+                  <td>{enums?.leave_types.find(t => t.value === h.leave_type)?.label || h.leave_type}</td>
+                  <td>{h.approved_by_name || '-'}</td>
+                  {isManager && (
+                    <td className="action-buttons">
+                      <button className="btn-danger btn-sm" onClick={() => onCancel(h.id)}>
+                        Cancel
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
             {holidays?.approved.length === 0 && (
               <tr><td colSpan={isManager ? 6 : 4} className="empty">No approved holidays</td></tr>
             )}

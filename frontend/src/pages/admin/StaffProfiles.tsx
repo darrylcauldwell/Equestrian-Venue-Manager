@@ -111,6 +111,9 @@ export function AdminStaffProfiles() {
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<StaffProfileSummary | null>(null);
 
+  // Filter
+  const [selectedStaffId, setSelectedStaffId] = useState<number | ''>('');
+
   const loadProfiles = useCallback(async () => {
     try {
       const data = await staffProfilesApi.getSummaries();
@@ -391,6 +394,11 @@ export function AdminStaffProfiles() {
     return `${years} year${years === 1 ? '' : 's'}`;
   };
 
+  // Filter profiles based on selection
+  const filteredProfiles = selectedStaffId === ''
+    ? profiles
+    : profiles.filter(p => p.user_id === selectedStaffId);
+
   if (isLoading) {
     return (
       <div className="admin-page">
@@ -459,6 +467,25 @@ export function AdminStaffProfiles() {
         </div>
       )}
 
+      {/* Staff Filter */}
+      <div className="ds-form-group" style={{ marginBottom: 'var(--space-4)', maxWidth: '300px' }}>
+        <label>Filter by Staff Member</label>
+        <select
+          className="ds-select"
+          value={selectedStaffId}
+          onChange={(e) => setSelectedStaffId(e.target.value ? parseInt(e.target.value) : '')}
+        >
+          <option value="">All Staff</option>
+          {[...profiles]
+            .sort((a, b) => a.user_name.localeCompare(b.user_name))
+            .map(p => (
+              <option key={p.user_id} value={p.user_id}>
+                {p.user_name}
+              </option>
+            ))}
+        </select>
+      </div>
+
       {/* Profiles Table */}
       <div className="ds-table-wrapper">
         <table className="ds-table ds-table-responsive">
@@ -474,12 +501,14 @@ export function AdminStaffProfiles() {
             </tr>
           </thead>
           <tbody>
-            {profiles.length === 0 ? (
+            {filteredProfiles.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center">No staff profiles found</td>
+                <td colSpan={7} className="text-center">
+                  {selectedStaffId === '' ? 'No staff profiles found' : 'No matching staff member'}
+                </td>
               </tr>
             ) : (
-              profiles.map(profile => (
+              filteredProfiles.map(profile => (
                 <tr key={profile.id}>
                   <td>
                     <strong>{profile.user_name}</strong>
