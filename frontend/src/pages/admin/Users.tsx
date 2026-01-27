@@ -262,7 +262,7 @@ export function AdminUsers() {
           <button className="ds-btn ds-btn-primary" onClick={() => setShowForm(true)}>
             + Add User
           </button>
-          <Link to="/book/admin/staff-profiles" className="ds-btn ds-btn-secondary">
+          <Link to="/book/admin/staff?tab=profiles" className="ds-btn ds-btn-secondary">
             Create Staff Member
           </Link>
         </div>
@@ -320,7 +320,7 @@ export function AdminUsers() {
                   <option value="admin">Admin (Full access)</option>
                 </select>
                 <small className="field-hint">
-                  To create staff users, use <Link to="/book/admin/staff-profiles">Staff Profiles</Link>
+                  To create staff users, use <Link to="/book/admin/staff?tab=profiles">Staff Profiles</Link>
                 </small>
               </div>
             </div>

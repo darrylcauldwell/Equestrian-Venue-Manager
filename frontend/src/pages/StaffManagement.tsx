@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { staffApi, usersApi } from '../services/api';
+
+// Lazy load StaffProfiles to avoid massive bundle
+const StaffProfiles = lazy(() => import('./admin/StaffProfiles'));
 import type {
   CreateShift,
   ShiftsListResponse,
@@ -31,7 +34,7 @@ import { useModalForm } from '../hooks';
 import { Modal, ConfirmModal, FormGroup, FormRow, Input, Select, Textarea } from '../components/ui';
 import './StaffManagement.css';
 
-type TabType = 'shifts' | 'timesheets' | 'holidays' | 'sick' | 'leave' | 'payroll';
+type TabType = 'shifts' | 'timesheets' | 'holidays' | 'sick' | 'leave' | 'payroll' | 'profiles';
 type ShiftsViewType = 'list' | 'calendar';
 
 // Helper to get start of week (Monday)
@@ -74,7 +77,7 @@ export default function StaffManagement() {
   // Read initial tab from URL or default to 'shifts'
   const getInitialTab = (): TabType => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['shifts', 'timesheets', 'holidays', 'sick', 'leave', 'payroll'].includes(tabParam)) {
+    if (tabParam && ['shifts', 'timesheets', 'holidays', 'sick', 'leave', 'payroll', 'profiles'].includes(tabParam)) {
       return tabParam as TabType;
     }
     return 'shifts';
@@ -91,7 +94,7 @@ export default function StaffManagement() {
   // React to URL changes (e.g., navigation from menu links)
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['shifts', 'timesheets', 'holidays', 'sick', 'leave', 'payroll'].includes(tabParam)) {
+    if (tabParam && ['shifts', 'timesheets', 'holidays', 'sick', 'leave', 'payroll', 'profiles'].includes(tabParam)) {
       setActiveTab(tabParam as TabType);
     }
   }, [searchParams]);
@@ -117,6 +120,7 @@ export default function StaffManagement() {
   // Sick leave state
   const [sickLeave, setSickLeave] = useState<SickLeaveListResponse | null>(null);
   const [absenceStaffFilter, setAbsenceStaffFilter] = useState<number>(0); // 0 = all staff
+  const [timesheetStaffFilter, setTimesheetStaffFilter] = useState<number>(0); // 0 = all staff
 
   // Calendar leave indicators - for showing holidays/absences in shift calendar
   const [calendarHolidays, setCalendarHolidays] = useState<HolidayRequest[]>([]);
@@ -738,6 +742,14 @@ export default function StaffManagement() {
             Payroll
           </button>
         )}
+        {isManager && (
+          <button
+            className={`ds-tab ${activeTab === 'profiles' ? 'active' : ''}`}
+            onClick={() => handleTabChange('profiles')}
+          >
+            Staff Profiles
+          </button>
+        )}
       </div>
 
       {/* Shifts Tab */}
@@ -781,6 +793,9 @@ export default function StaffManagement() {
           enums={enums}
           user={user}
           isManager={isManager}
+          staffList={staffList}
+          timesheetStaffFilter={timesheetStaffFilter}
+          setTimesheetStaffFilter={setTimesheetStaffFilter}
           onOpenModal={() => timesheetModal.open()}
           onSubmit={handleSubmitTimesheet}
           onApprove={handleApproveTimesheet}
@@ -845,6 +860,13 @@ export default function StaffManagement() {
           staffList={staffList}
           loadTabData={loadTabData}
         />
+      )}
+
+      {/* Staff Profiles Tab (Admin only) */}
+      {activeTab === 'profiles' && isManager && (
+        <Suspense fallback={<div className="ds-loading"><div className="ds-spinner"></div><span>Loading staff profiles...</span></div>}>
+          <StaffProfiles embedded />
+        </Suspense>
       )}
 
       {/* Create Shift Modal */}
@@ -1542,6 +1564,9 @@ interface TimesheetsTabProps {
   enums: StaffManagementEnums | null;
   user: User | null;
   isManager: boolean;
+  staffList: User[];
+  timesheetStaffFilter: number;
+  setTimesheetStaffFilter: (id: number) => void;
   onOpenModal: () => void;
   onSubmit: (id: number) => void;
   onApprove: (id: number) => void;
@@ -1556,6 +1581,9 @@ function TimesheetsTab({
   enums,
   user,
   isManager,
+  staffList,
+  timesheetStaffFilter,
+  setTimesheetStaffFilter,
   onOpenModal,
   onSubmit,
   onApprove,
@@ -1564,9 +1592,29 @@ function TimesheetsTab({
   formatTime,
   getStatusClass,
 }: TimesheetsTabProps) {
+  // Filter timesheets based on staff selection
+  const filteredTimesheets = timesheets?.timesheets.filter(
+    ts => timesheetStaffFilter === 0 || ts.staff_id === timesheetStaffFilter
+  ) || [];
+
   return (
     <div className="timesheets-view">
       <div className="tab-actions">
+        {isManager && (
+          <div className="filter-group">
+            <label>Filter by Staff:</label>
+            <select
+              value={timesheetStaffFilter}
+              onChange={(e) => setTimesheetStaffFilter(parseInt(e.target.value))}
+              className="staff-filter"
+            >
+              <option value={0}>All Staff</option>
+              {staffList.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <button className="ds-btn ds-btn-primary" onClick={onOpenModal}>
           Log Hours
         </button>
@@ -1588,7 +1636,7 @@ function TimesheetsTab({
             </tr>
           </thead>
           <tbody>
-            {timesheets?.timesheets.map((ts) => (
+            {filteredTimesheets.map((ts) => (
               <tr key={ts.id}>
                 <td>{formatDate(ts.date)}</td>
                 {isManager && <td>{ts.staff_name}</td>}
@@ -1633,7 +1681,7 @@ function TimesheetsTab({
                 </td>
               </tr>
             ))}
-            {timesheets?.timesheets.length === 0 && (
+            {filteredTimesheets.length === 0 && (
               <tr><td colSpan={isManager ? 11 : 9} className="empty">No timesheets</td></tr>
             )}
           </tbody>

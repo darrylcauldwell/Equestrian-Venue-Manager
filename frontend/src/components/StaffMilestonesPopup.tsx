@@ -109,7 +109,7 @@ export function StaffMilestonesPopup() {
 
         <div className="popup-footer">
           <Link
-            to="/book/admin/staff-profiles"
+            to="/book/admin/staff?tab=profiles"
             className="view-profiles-btn"
             onClick={handleDismiss}
           >

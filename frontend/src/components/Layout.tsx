@@ -307,7 +307,7 @@ export function Layout() {
               isOpen={openDropdowns.has('venue-staff')}
               onToggle={() => toggleDropdown('venue-staff')}
             >
-              <Link to="/book/admin/staff-profiles">Staff Profiles</Link>
+              <Link to="/book/admin/staff?tab=profiles">Staff Profiles</Link>
               <Link to="/book/admin/staff">Staff Management</Link>
             </NavSubDropdown>
 

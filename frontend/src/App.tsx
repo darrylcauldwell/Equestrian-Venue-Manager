@@ -77,7 +77,6 @@ const AdminRequests = lazy(() => import('./pages/admin/Requests'));
 const AdminWorming = lazy(() => import('./pages/admin/Worming').then(m => ({ default: m.AdminWorming })));
 const AdminContractTemplates = lazy(() => import('./pages/admin/ContractTemplates').then(m => ({ default: m.AdminContractTemplates })));
 const AdminContractSignatures = lazy(() => import('./pages/admin/ContractSignatures').then(m => ({ default: m.AdminContractSignatures })));
-const AdminStaffProfiles = lazy(() => import('./pages/admin/StaffProfiles').then(m => ({ default: m.AdminStaffProfiles })));
 const AdminLeaveOverview = lazy(() => import('./pages/admin/LeaveOverview'));
 const AdminRiskAssessments = lazy(() => import('./pages/admin/RiskAssessments').then(m => ({ default: m.AdminRiskAssessments })));
 const MyRiskAssessments = lazy(() => import('./pages/MyRiskAssessments').then(m => ({ default: m.MyRiskAssessments })));
@@ -225,8 +224,8 @@ function App() {
           {/* Contracts Section */}
           <Route path="contracts" element={<ProtectedRoute requireAdmin><AdminContractTemplates /></ProtectedRoute>} />
           <Route path="contract-signatures" element={<ProtectedRoute requireAdmin><AdminContractSignatures /></ProtectedRoute>} />
-          {/* Staff Section */}
-          <Route path="staff-profiles" element={<ProtectedRoute requireAdmin><AdminStaffProfiles /></ProtectedRoute>} />
+          {/* Staff Section - staff-profiles redirects to staff tab */}
+          <Route path="staff-profiles" element={<Navigate to="/book/admin/staff?tab=profiles" replace />} />
           <Route path="risk-assessments" element={<ProtectedRoute requireAdmin><AdminRiskAssessments /></ProtectedRoute>} />
           {/* System Section */}
           <Route path="compliance" element={<ProtectedRoute requireAdmin><AdminCompliance /></ProtectedRoute>} />

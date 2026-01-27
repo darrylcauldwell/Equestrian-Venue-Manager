@@ -76,7 +76,11 @@ const emptyStaffMemberForm: StaffMemberCreate = {
   student_loan_plan: '',
 };
 
-export function AdminStaffProfiles() {
+interface StaffProfilesProps {
+  embedded?: boolean;
+}
+
+export function AdminStaffProfiles({ embedded = false }: StaffProfilesProps) {
   const [profiles, setProfiles] = useState<StaffProfileSummary[]>([]);
   const [selectedProfile, setSelectedProfile] = useState<StaffProfile | null>(null);
   const [milestones, setMilestones] = useState<StaffMilestonesResponse | null>(null);
@@ -401,7 +405,7 @@ export function AdminStaffProfiles() {
 
   if (isLoading) {
     return (
-      <div className="admin-page">
+      <div className={embedded ? '' : 'admin-page'}>
         <div className="ds-loading">
           <div className="ds-spinner"></div>
           <span>Loading staff profiles...</span>
@@ -411,16 +415,29 @@ export function AdminStaffProfiles() {
   }
 
   return (
-    <div className="admin-page">
-      <PageActions>
-        <h1>Staff Profiles</h1>
-        <button
-          className="ds-btn ds-btn-primary"
-          onClick={() => setShowCreateStaffMember(true)}
-        >
-          Create Staff Member
-        </button>
-      </PageActions>
+    <div className={embedded ? 'staff-profiles-embedded' : 'admin-page'}>
+      {!embedded && (
+        <PageActions>
+          <h1>Staff Profiles</h1>
+          <button
+            className="ds-btn ds-btn-primary"
+            onClick={() => setShowCreateStaffMember(true)}
+          >
+            Create Staff Member
+          </button>
+        </PageActions>
+      )}
+
+      {embedded && (
+        <div className="tab-actions">
+          <button
+            className="ds-btn ds-btn-primary"
+            onClick={() => setShowCreateStaffMember(true)}
+          >
+            Create Staff Member
+          </button>
+        </div>
+      )}
 
       {error && <div className="ds-alert ds-alert-error">{error}</div>}
 
