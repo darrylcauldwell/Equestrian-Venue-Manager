@@ -298,7 +298,7 @@ def create_staff_member(
 
     # Create the user with staff role and yard staff flag
     user = User(
-        username=data.username,
+        username=data.username.lower(),
         email=data.email,
         name=data.name,
         phone=data.phone,

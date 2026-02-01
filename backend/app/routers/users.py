@@ -132,7 +132,7 @@ def admin_create_user(
     temp_password = generate_temporary_password()
 
     user = User(
-        username=user_data.username,
+        username=user_data.username.lower(),
         email=user_data.email,
         name=user_data.name,
         phone=user_data.phone,
@@ -156,6 +156,16 @@ def admin_update_user(
 ):
     """Admin updates a user's details including livery package assignment"""
     user = get_or_404(db, User, user_id, "User not found")
+
+    if user_data.username is not None and user_data.username != user.username:
+        # Check username uniqueness (case-insensitive)
+        existing = db.query(User).filter(
+            func.lower(User.username) == func.lower(user_data.username),
+            User.id != user_id
+        ).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken")
+        user.username = user_data.username.lower()
 
     if user_data.name is not None:
         user.name = user_data.name

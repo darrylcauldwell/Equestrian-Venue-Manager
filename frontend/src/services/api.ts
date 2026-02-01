@@ -723,6 +723,7 @@ export interface AdminUserCreate {
 }
 
 export interface AdminUserUpdate {
+  username?: string;
   email?: string;
   name?: string;
   phone?: string;

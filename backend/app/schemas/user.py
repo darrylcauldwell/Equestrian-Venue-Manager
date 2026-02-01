@@ -75,6 +75,7 @@ class AdminUserCreate(BaseModel):
 
 class AdminUserUpdate(BaseModel):
     """Schema for admin updating users"""
+    username: Optional[str] = None
     email: Optional[EmailStr] = None
     name: Optional[str] = None
     phone: Optional[str] = None

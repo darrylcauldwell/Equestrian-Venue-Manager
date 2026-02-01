@@ -39,7 +39,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
             )
 
     user = User(
-        username=user_data.username,
+        username=user_data.username.lower(),
         email=user_data.email,
         name=user_data.name,
         phone=user_data.phone,

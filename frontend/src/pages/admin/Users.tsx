@@ -10,6 +10,7 @@ import { PageActions } from '../../components/admin';
 import './Admin.css';
 
 interface EditUserData {
+  username: string;
   email: string;
   name: string;
   phone: string;
@@ -42,6 +43,7 @@ export function AdminUsers() {
   // Edit user state
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editData, setEditData] = useState<EditUserData>({
+    username: '',
     email: '',
     name: '',
     phone: '',
@@ -171,6 +173,7 @@ export function AdminUsers() {
   const handleEditClick = (user: User) => {
     setEditingUser(user);
     setEditData({
+      username: user.username,
       email: user.email || '',
       name: user.name,
       phone: user.phone || '',
@@ -186,6 +189,7 @@ export function AdminUsers() {
   const handleEditCancel = () => {
     setEditingUser(null);
     setEditData({
+      username: '',
       email: '',
       name: '',
       phone: '',
@@ -224,6 +228,7 @@ export function AdminUsers() {
 
     try {
       await usersApi.update(editingUser.id, {
+        username: editData.username,
         email: editData.email || undefined,
         name: editData.name,
         phone: editData.phone || undefined,
@@ -393,8 +398,20 @@ export function AdminUsers() {
           <form onSubmit={handleEditSave} className="admin-form">
             <h2>Edit User: {editingUser.username}</h2>
             <p className="form-description">
-              Update user details. Username and role cannot be changed here.
+              Update user details. Role cannot be changed here.
             </p>
+
+            <div className="ds-form-group">
+              <label htmlFor="edit-username">Username *</label>
+              <input
+                id="edit-username"
+                type="text"
+                value={editData.username}
+                onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                placeholder="e.g., jsmith"
+                required
+              />
+            </div>
 
             <div className="ds-form-group">
               <label htmlFor="edit-name">Full Name *</label>
