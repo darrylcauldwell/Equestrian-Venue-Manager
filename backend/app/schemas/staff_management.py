@@ -298,21 +298,25 @@ class StaffPayrollPeriod(BaseModel):
     approved_hours: float
     timesheet_count: int
     base_pay: float  # approved_hours * hourly_rate
+    holiday_days: float = 0.0  # Days of approved annual leave in period
+    holiday_hours: float = 0.0  # holiday_days * 8
+    holiday_pay: float = 0.0  # holiday_hours * hourly_rate
     adjustments: PayrollAdjustmentSummary
-    total_pay: float  # base_pay + all adjustments
-    taxable_pay: float  # base_pay + taxable adjustments
+    total_pay: float  # base_pay + holiday_pay + all adjustments
+    taxable_pay: float  # base_pay + holiday_pay + taxable adjustments
     non_taxable_pay: float  # tips
 
 
 class PayrollSummaryResponse(BaseModel):
     """Payroll summary for all staff in a period - admin only."""
-    period_type: str  # "week" or "month"
     period_start: date
     period_end: date
-    period_label: str  # e.g., "Week 1, Jan 2025" or "January 2025"
+    period_label: str  # e.g., "1 Jan 2025 - 31 Jan 2025"
     staff_summaries: List[StaffPayrollPeriod]
     total_approved_hours: float
     total_base_pay: float
+    total_holiday_hours: float = 0.0
+    total_holiday_pay: float = 0.0
     total_adjustments: float
     total_pay: float
 

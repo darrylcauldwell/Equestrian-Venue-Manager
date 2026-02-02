@@ -1543,6 +1543,7 @@ export interface CreateSickLeave {
 }
 
 export interface UpdateSickLeave {
+  reason?: string;
   expected_return?: string;
   actual_return?: string;
   notes?: string;
@@ -1669,6 +1670,9 @@ export interface StaffPayrollPeriod {
   approved_hours: number;
   timesheet_count: number;
   base_pay: number;
+  holiday_days: number;
+  holiday_hours: number;
+  holiday_pay: number;
   adjustments: PayrollAdjustmentSummary;
   total_pay: number;
   taxable_pay: number;
@@ -1676,15 +1680,39 @@ export interface StaffPayrollPeriod {
 }
 
 export interface PayrollSummaryResponse {
-  period_type: string;
   period_start: string;
   period_end: string;
   period_label: string;
   staff_summaries: StaffPayrollPeriod[];
   total_approved_hours: number;
   total_base_pay: number;
+  total_holiday_hours: number;
+  total_holiday_pay: number;
   total_adjustments: number;
   total_pay: number;
+}
+
+// Payslip Types
+export type PayslipDocumentType = 'payslip' | 'annual_summary';
+
+export interface PayslipRecord {
+  id: number;
+  staff_id: number;
+  document_type: PayslipDocumentType;
+  year: number;
+  month: number;
+  pdf_filename: string;
+  original_filename: string | null;
+  notes: string | null;
+  uploaded_by_id: number;
+  created_at: string;
+  staff_name?: string;
+  uploaded_by_name?: string;
+}
+
+export interface PayslipListResponse {
+  payslips: PayslipRecord[];
+  total: number;
 }
 
 // Staff Thanks (appreciation messages with optional tips)

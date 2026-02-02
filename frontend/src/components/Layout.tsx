@@ -197,6 +197,9 @@ export function Layout() {
             <FeatureLink feature="staff_management">
               <Link to="/book/my-thanks">My Thanks</Link>
             </FeatureLink>
+            <FeatureLink feature="staff_management">
+              <Link to="/book/my-payslips">My Payslips</Link>
+            </FeatureLink>
             <FeatureLink feature="contract_management">
               <Link to="/book/my-contracts">My Contracts</Link>
             </FeatureLink>

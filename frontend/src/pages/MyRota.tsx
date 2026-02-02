@@ -148,7 +148,7 @@ export default function MyRota() {
       if (a.date === dateStr) return true;
       if (a.date <= dateStr) {
         if (a.actual_return && dateStr >= a.actual_return) return false;
-        if (a.expected_return && dateStr <= a.expected_return) return true;
+        if (a.expected_return && dateStr < a.expected_return) return true;
         if (!a.expected_return && !a.actual_return && a.date === dateStr) return true;
       }
       return false;

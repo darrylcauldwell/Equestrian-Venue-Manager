@@ -27,6 +27,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - backend_uploads:/app/uploads
     networks:
       - evm-network
     labels:
@@ -84,6 +86,7 @@ services:
 volumes:
   postgres_data:
   letsencrypt:
+  backend_uploads:
 
 networks:
   evm-network:

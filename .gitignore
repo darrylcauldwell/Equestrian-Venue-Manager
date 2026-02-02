@@ -192,10 +192,13 @@ backend/htmlcov/
 backend/coverage.xml
 backend/.coverage
 
-# Local uploads (keep example logo)
+# Local uploads (keep example logo and directory structure)
 backend/uploads/*
 !backend/uploads/.gitkeep
 !backend/uploads/logo_*.png
+!backend/uploads/payslips/
+backend/uploads/payslips/*
+!backend/uploads/payslips/.gitkeep
 
 # Database
 *.db

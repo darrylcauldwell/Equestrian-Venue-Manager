@@ -175,7 +175,7 @@ export default function AdminLeaveOverview() {
       absences.records.forEach(a => {
         if (a.date === dateStr) {
           absent.push(a);
-        } else if (a.date <= dateStr && a.expected_return && a.expected_return >= dateStr && !a.actual_return) {
+        } else if (a.date <= dateStr && a.expected_return && a.expected_return > dateStr && !a.actual_return) {
           absent.push(a);
         }
       });

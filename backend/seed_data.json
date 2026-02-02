@@ -8304,5 +8304,168 @@
       "start_days_ago": 3,
       "notes": "Transitioning from box rest. Small paddock for controlled exercise."
     }
+  ],
+
+  "payslips": [
+    {
+      "staff_username": "staff1",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 10,
+      "pdf_filename": "demo_staff1_2025_10.pdf",
+      "original_filename": "staff1_october_2025.pdf",
+      "notes": "October payslip"
+    },
+    {
+      "staff_username": "staff1",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 11,
+      "pdf_filename": "demo_staff1_2025_11.pdf",
+      "original_filename": "staff1_november_2025.pdf",
+      "notes": "November payslip"
+    },
+    {
+      "staff_username": "staff1",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 12,
+      "pdf_filename": "demo_staff1_2025_12.pdf",
+      "original_filename": "staff1_december_2025.pdf",
+      "notes": "December payslip"
+    },
+    {
+      "staff_username": "staff1",
+      "uploaded_by_username": "admin",
+      "document_type": "annual_summary",
+      "year": 2025,
+      "month": 0,
+      "pdf_filename": "demo_staff1_2025_p60.pdf",
+      "original_filename": "staff1_p60_2025.pdf",
+      "notes": "Annual P60 summary"
+    },
+    {
+      "staff_username": "staff2",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 10,
+      "pdf_filename": "demo_staff2_2025_10.pdf",
+      "original_filename": "staff2_october_2025.pdf",
+      "notes": "October payslip"
+    },
+    {
+      "staff_username": "staff2",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 11,
+      "pdf_filename": "demo_staff2_2025_11.pdf",
+      "original_filename": "staff2_november_2025.pdf",
+      "notes": "November payslip"
+    },
+    {
+      "staff_username": "staff2",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 12,
+      "pdf_filename": "demo_staff2_2025_12.pdf",
+      "original_filename": "staff2_december_2025.pdf",
+      "notes": "December payslip"
+    },
+    {
+      "staff_username": "staff2",
+      "uploaded_by_username": "admin",
+      "document_type": "annual_summary",
+      "year": 2025,
+      "month": 0,
+      "pdf_filename": "demo_staff2_2025_p60.pdf",
+      "original_filename": "staff2_p60_2025.pdf",
+      "notes": "Annual P60 summary"
+    },
+    {
+      "staff_username": "staff3",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 10,
+      "pdf_filename": "demo_staff3_2025_10.pdf",
+      "original_filename": "staff3_october_2025.pdf",
+      "notes": "October payslip"
+    },
+    {
+      "staff_username": "staff3",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 11,
+      "pdf_filename": "demo_staff3_2025_11.pdf",
+      "original_filename": "staff3_november_2025.pdf",
+      "notes": "November payslip"
+    },
+    {
+      "staff_username": "staff3",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 12,
+      "pdf_filename": "demo_staff3_2025_12.pdf",
+      "original_filename": "staff3_december_2025.pdf",
+      "notes": "December payslip"
+    },
+    {
+      "staff_username": "staff3",
+      "uploaded_by_username": "admin",
+      "document_type": "annual_summary",
+      "year": 2025,
+      "month": 0,
+      "pdf_filename": "demo_staff3_2025_p60.pdf",
+      "original_filename": "staff3_p60_2025.pdf",
+      "notes": "Annual P60 summary"
+    },
+    {
+      "staff_username": "staff4",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 10,
+      "pdf_filename": "demo_staff4_2025_10.pdf",
+      "original_filename": "staff4_october_2025.pdf",
+      "notes": "October payslip"
+    },
+    {
+      "staff_username": "staff4",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 11,
+      "pdf_filename": "demo_staff4_2025_11.pdf",
+      "original_filename": "staff4_november_2025.pdf",
+      "notes": "November payslip"
+    },
+    {
+      "staff_username": "staff4",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 12,
+      "pdf_filename": "demo_staff4_2025_12.pdf",
+      "original_filename": "staff4_december_2025.pdf",
+      "notes": "December payslip"
+    },
+    {
+      "staff_username": "staff4",
+      "uploaded_by_username": "admin",
+      "document_type": "annual_summary",
+      "year": 2025,
+      "month": 0,
+      "pdf_filename": "demo_staff4_2025_p60.pdf",
+      "original_filename": "staff4_p60_2025.pdf",
+      "notes": "Annual P60 summary"
+    }
   ]
 }

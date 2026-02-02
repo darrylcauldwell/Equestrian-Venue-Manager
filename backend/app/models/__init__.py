@@ -157,6 +157,7 @@ from app.models.land_management import (
     SuggestionPriority,
 )
 from app.models.staff_profile import StaffProfile, HourlyRateHistory
+from app.models.payslip import Payslip, PayslipDocumentType
 from app.models.risk_assessment import (
     RiskAssessment,
     RiskAssessmentReview,
@@ -294,6 +295,9 @@ __all__ = [
     # Staff Profile
     "StaffProfile",
     "HourlyRateHistory",
+    # Payslips
+    "Payslip",
+    "PayslipDocumentType",
     # Risk Assessment
     "RiskAssessment",
     "RiskAssessmentReview",

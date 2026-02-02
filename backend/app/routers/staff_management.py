@@ -4,7 +4,7 @@ from datetime import datetime, date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 logger = logging.getLogger(__name__)
 
@@ -115,10 +115,10 @@ def calculate_hours(clock_in, clock_out, break_minutes: int = 0) -> float:
     """Calculate total hours worked."""
     if not clock_out:
         return 0.0
-    # Convert times to datetime for calculation
+    # Convert times to datetime for calculation, truncating seconds
     base_date = date.today()
-    dt_in = datetime.combine(base_date, clock_in)
-    dt_out = datetime.combine(base_date, clock_out)
+    dt_in = datetime.combine(base_date, clock_in.replace(second=0, microsecond=0))
+    dt_out = datetime.combine(base_date, clock_out.replace(second=0, microsecond=0))
     # Handle overnight shifts
     if dt_out < dt_in:
         dt_out += timedelta(days=1)
@@ -170,7 +170,9 @@ def enrich_timesheet(timesheet: Timesheet) -> dict:
     # Calculate lunch duration if both times are set
     lunch_minutes = 0
     if timesheet.lunch_start and timesheet.lunch_end:
-        lunch_dt = datetime.combine(date.today(), timesheet.lunch_end) - datetime.combine(date.today(), timesheet.lunch_start)
+        lunch_start = timesheet.lunch_start.replace(second=0, microsecond=0)
+        lunch_end = timesheet.lunch_end.replace(second=0, microsecond=0)
+        lunch_dt = datetime.combine(date.today(), lunch_end) - datetime.combine(date.today(), lunch_start)
         lunch_minutes = int(lunch_dt.total_seconds() / 60)
 
     total_break = timesheet.break_minutes + lunch_minutes
@@ -311,10 +313,15 @@ def get_manager_dashboard(
         HolidayRequest.end_date >= today
     ).count()
 
-    # Staff with unplanned absence today (no actual return date yet)
+    # Staff with unplanned absence today (no actual return date yet,
+    # and expected return hasn't passed)
     staff_absent = db.query(UnplannedAbsence).filter(
         UnplannedAbsence.date <= today,
-        UnplannedAbsence.actual_return.is_(None)
+        UnplannedAbsence.actual_return.is_(None),
+        or_(
+            UnplannedAbsence.expected_return.is_(None),
+            UnplannedAbsence.expected_return > today
+        )
     ).count()
 
     shifts_today = db.query(Shift).filter(Shift.date == today).count()
@@ -934,6 +941,23 @@ def update_unplanned_absence(
     return enrich_unplanned_absence(record)
 
 
+@router.delete("/absences/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_unplanned_absence(
+    record_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete an unplanned absence record (admin only)."""
+    require_manager(current_user)
+
+    record = db.query(UnplannedAbsence).filter(UnplannedAbsence.id == record_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Unplanned absence record not found")
+
+    db.delete(record)
+    db.commit()
+
+
 # ============== Staff Leave Summary (viewable by all staff) ==============
 
 def get_leave_year_dates(year: int, start_month: int) -> tuple:
@@ -1255,38 +1279,30 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 
 @router.get("/payroll-summary", response_model=PayrollSummaryResponse)
 def get_payroll_summary(
-    period_type: str = "month",  # "week" or "month"
-    year: Optional[int] = None,
-    month: Optional[int] = None,
-    week: Optional[int] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    """Get payroll summary for a period (admin only).
+    """Get payroll summary for a date range (admin only).
 
     Shows approved hours, hourly rates, adjustments, and calculated pay for all staff.
     """
     today = date.today()
-    year = year or today.year
-    month = month or today.month
 
-    # Calculate period date range
-    if period_type == "week":
-        if week:
-            # Get the Monday of the specified ISO week
-            jan4 = date(year, 1, 4)
-            start_of_year = jan4 - timedelta(days=jan4.weekday())
-            period_start = start_of_year + timedelta(weeks=week - 1)
-        else:
-            # Current week
-            period_start = today - timedelta(days=today.weekday())
-        period_end = period_start + timedelta(days=6)
-        period_label = f"Week {period_start.isocalendar()[1]}, {period_start.strftime('%b %Y')}"
-    else:  # month
-        period_start = date(year, month, 1)
-        _, last_day = monthrange(year, month)
-        period_end = date(year, month, last_day)
-        period_label = period_start.strftime("%B %Y")
+    # Default to current month if not provided
+    if not start_date:
+        start_date = date(today.year, today.month, 1)
+    if not end_date:
+        _, last_day = monthrange(today.year, today.month)
+        end_date = date(today.year, today.month, last_day)
+
+    if end_date < start_date:
+        raise HTTPException(status_code=400, detail="end_date must be on or after start_date")
+
+    period_start = start_date
+    period_end = end_date
+    period_label = f"{period_start.strftime('%-d %b %Y')} - {period_end.strftime('%-d %b %Y')}"
 
     # Get all staff users
     staff_users = db.query(User).filter(
@@ -1297,6 +1313,8 @@ def get_payroll_summary(
     staff_summaries = []
     total_hours = 0.0
     total_base_pay = 0.0
+    total_holiday_hours = 0.0
+    total_holiday_pay = 0.0
     total_adjustments_amount = 0.0
     total_pay_amount = 0.0
 
@@ -1345,8 +1363,33 @@ def get_payroll_summary(
             non_taxable_adjustments=non_taxable_adj
         )
 
-        staff_total_pay = base_pay + oneoff_total + tips_total
-        taxable_pay = base_pay + taxable_adj
+        # Calculate approved annual leave (holiday) pay for this period
+        holidays = db.query(HolidayRequest).filter(
+            HolidayRequest.staff_id == user.id,
+            HolidayRequest.leave_type == LeaveType.ANNUAL,
+            HolidayRequest.status == LeaveStatus.APPROVED,
+            HolidayRequest.start_date <= period_end,
+            HolidayRequest.end_date >= period_start
+        ).all()
+
+        holiday_days = 0.0
+        for h in holidays:
+            if h.start_date >= period_start and h.end_date <= period_end:
+                # Fully within period
+                holiday_days += float(h.days_requested)
+            else:
+                # Partially overlapping - pro-rate
+                total_calendar_days = (h.end_date - h.start_date).days + 1
+                overlap_start = max(h.start_date, period_start)
+                overlap_end = min(h.end_date, period_end)
+                overlap_days = (overlap_end - overlap_start).days + 1
+                holiday_days += float(h.days_requested) * (overlap_days / total_calendar_days)
+
+        holiday_hours = round(holiday_days * 8, 2)
+        holiday_pay = round(holiday_hours * current_hourly_rate, 2)
+
+        staff_total_pay = base_pay + oneoff_total + tips_total + holiday_pay
+        taxable_pay = base_pay + taxable_adj + holiday_pay
         non_taxable_pay = non_taxable_adj
 
         staff_summaries.append(StaffPayrollPeriod(
@@ -1357,6 +1400,9 @@ def get_payroll_summary(
             approved_hours=approved_hours,
             timesheet_count=timesheet_count,
             base_pay=base_pay,
+            holiday_days=holiday_days,
+            holiday_hours=holiday_hours,
+            holiday_pay=holiday_pay,
             adjustments=adjustment_summary,
             total_pay=staff_total_pay,
             taxable_pay=taxable_pay,
@@ -1365,17 +1411,20 @@ def get_payroll_summary(
 
         total_hours += approved_hours
         total_base_pay += base_pay
+        total_holiday_hours += holiday_hours
+        total_holiday_pay += holiday_pay
         total_adjustments_amount += oneoff_total + tips_total
         total_pay_amount += staff_total_pay
 
     return PayrollSummaryResponse(
-        period_type=period_type,
         period_start=period_start,
         period_end=period_end,
         period_label=period_label,
         staff_summaries=staff_summaries,
         total_approved_hours=total_hours,
         total_base_pay=total_base_pay,
+        total_holiday_hours=total_holiday_hours,
+        total_holiday_pay=total_holiday_pay,
         total_adjustments=total_adjustments_amount,
         total_pay=total_pay_amount
     )

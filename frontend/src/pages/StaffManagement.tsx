@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { staffApi, usersApi } from '../services/api';
+import { staffApi, usersApi, payslipApi } from '../services/api';
 
 // Lazy load StaffProfiles to avoid massive bundle
 const StaffProfiles = lazy(() => import('./admin/StaffProfiles'));
@@ -15,6 +15,7 @@ import type {
   HolidayRequestsListResponse,
   HolidayRequest,
   CreateSickLeave,
+  UpdateSickLeave,
   SickLeaveListResponse,
   SickLeaveRecord,
   StaffManagementEnums,
@@ -27,6 +28,7 @@ import type {
   AllStaffLeaveSummary,
   PayrollSummaryResponse,
   PayrollAdjustmentCreate,
+  PayslipRecord,
   DayStatus,
   DayStatusType,
 } from '../types';
@@ -137,14 +139,19 @@ export default function StaffManagement() {
 
   // Payroll state
   const [payrollSummary, setPayrollSummary] = useState<PayrollSummaryResponse | null>(null);
-  const [payrollPeriodType, setPayrollPeriodType] = useState<'week' | 'month'>('month');
-  const [payrollYear, setPayrollYear] = useState<number>(new Date().getFullYear());
-  const [payrollMonth, setPayrollMonth] = useState<number>(new Date().getMonth() + 1);
-  const [payrollWeek, setPayrollWeek] = useState<number | undefined>(undefined);
+  const [payrollStartDate, setPayrollStartDate] = useState<string>(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  });
+  const [payrollEndDate, setPayrollEndDate] = useState<string>(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+  });
 
   // Delete confirmations
   const [deleteShiftId, setDeleteShiftId] = useState<number | null>(null);
   const [cancelHolidayId, setCancelHolidayId] = useState<number | null>(null);
+  const [deleteAbsenceId, setDeleteAbsenceId] = useState<number | null>(null);
 
   // Modal forms
   const shiftModal = useModalForm<CreateShift>({
@@ -172,6 +179,17 @@ export default function StaffManagement() {
     staff_id: user?.id || 0,
     date: new Date().toISOString().split('T')[0],
   });
+
+  const editAbsenceModal = useModalForm<UpdateSickLeave>({
+    reason: '',
+    expected_return: '',
+    actual_return: '',
+    notes: '',
+    has_fit_note: false,
+    fit_note_start: '',
+    fit_note_end: '',
+  });
+  const [editAbsenceRecord, setEditAbsenceRecord] = useState<SickLeaveRecord | null>(null);
 
   const loadInitialData = useCallback(async () => {
     try {
@@ -234,10 +252,8 @@ export default function StaffManagement() {
         }
         case 'payroll': {
           const payrollData = await staffApi.getPayrollSummary(
-            payrollPeriodType,
-            payrollYear,
-            payrollMonth,
-            payrollWeek
+            payrollStartDate,
+            payrollEndDate
           );
           setPayrollSummary(payrollData);
           break;
@@ -248,7 +264,7 @@ export default function StaffManagement() {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, leaveYear, payrollPeriodType, payrollYear, payrollMonth, payrollWeek]);
+  }, [activeTab, leaveYear, payrollStartDate, payrollEndDate]);
 
   useEffect(() => {
     loadInitialData();
@@ -338,7 +354,7 @@ export default function StaffManagement() {
         // If they've returned, check if date is before return
         if (a.actual_return && dateStr >= a.actual_return) return false;
         // If no actual return but expected return exists, show as absence until expected
-        if (a.expected_return && dateStr <= a.expected_return) return true;
+        if (a.expected_return && dateStr < a.expected_return) return true;
         // If no return dates, just show the initial absence date
         if (!a.expected_return && !a.actual_return && a.date === dateStr) return true;
       }
@@ -666,6 +682,42 @@ export default function StaffManagement() {
     }
   };
 
+  const handleEditAbsence = (record: SickLeaveRecord) => {
+    setEditAbsenceRecord(record);
+    editAbsenceModal.edit(record.id, {
+      reason: record.reason || '',
+      expected_return: record.expected_return || '',
+      actual_return: record.actual_return || '',
+      notes: record.notes || '',
+      has_fit_note: record.has_fit_note || false,
+      fit_note_start: record.fit_note_start || '',
+      fit_note_end: record.fit_note_end || '',
+    });
+  };
+
+  const handleUpdateAbsence = async () => {
+    if (!editAbsenceModal.editingId) return;
+    try {
+      await staffApi.updateSickLeave(editAbsenceModal.editingId, editAbsenceModal.formData);
+      editAbsenceModal.close();
+      setEditAbsenceRecord(null);
+      loadTabData();
+    } catch {
+      setError('Failed to update absence');
+    }
+  };
+
+  const handleDeleteAbsence = async () => {
+    if (!deleteAbsenceId) return;
+    try {
+      await staffApi.deleteSickLeave(deleteAbsenceId);
+      setDeleteAbsenceId(null);
+      loadTabData();
+    } catch {
+      setError('Failed to delete absence');
+    }
+  };
+
   const formatDate = (dateStr: string): string => {
     return new Date(dateStr).toLocaleDateString();
   };
@@ -830,6 +882,8 @@ export default function StaffManagement() {
           setAbsenceStaffFilter={setAbsenceStaffFilter}
           isManager={isManager}
           onOpenModal={() => sickModal.open()}
+          onEdit={handleEditAbsence}
+          onDelete={setDeleteAbsenceId}
           formatDate={formatDate}
           formatTime={formatTime}
         />
@@ -848,14 +902,10 @@ export default function StaffManagement() {
       {activeTab === 'payroll' && isManager && (
         <PayrollTab
           payrollSummary={payrollSummary}
-          periodType={payrollPeriodType}
-          setPeriodType={setPayrollPeriodType}
-          year={payrollYear}
-          setYear={setPayrollYear}
-          month={payrollMonth}
-          setMonth={setPayrollMonth}
-          week={payrollWeek}
-          setWeek={setPayrollWeek}
+          startDate={payrollStartDate}
+          setStartDate={setPayrollStartDate}
+          endDate={payrollEndDate}
+          setEndDate={setPayrollEndDate}
           loading={loading}
           staffList={staffList}
           loadTabData={loadTabData}
@@ -1191,6 +1241,100 @@ export default function StaffManagement() {
         </FormGroup>
       </Modal>
 
+      {/* Edit Absence Modal */}
+      <Modal
+        isOpen={editAbsenceModal.isOpen}
+        onClose={() => { editAbsenceModal.close(); setEditAbsenceRecord(null); }}
+        title="Edit Absence"
+        footer={
+          <>
+            <button className="ds-btn ds-btn-secondary" onClick={() => { editAbsenceModal.close(); setEditAbsenceRecord(null); }}>Cancel</button>
+            <button className="ds-btn ds-btn-primary" onClick={handleUpdateAbsence}>Update</button>
+          </>
+        }
+      >
+        {editAbsenceRecord && (
+          <div className="ds-alert ds-alert-info" style={{ marginBottom: 'var(--space-4)' }}>
+            <strong>{editAbsenceRecord.staff_name}</strong> &mdash; {formatDate(editAbsenceRecord.date)}
+          </div>
+        )}
+        <FormGroup label="Reason">
+          <Select
+            value={editAbsenceModal.formData.reason || 'sickness'}
+            onChange={(e) => editAbsenceModal.updateField('reason', e.target.value)}
+          >
+            <option value="sickness">Sickness</option>
+            <option value="no_show">No Show / No Contact</option>
+            <option value="personal_emergency">Personal Emergency</option>
+            <option value="family_emergency">Family Emergency</option>
+            <option value="hangover">Hangover</option>
+            <option value="other">Other</option>
+          </Select>
+        </FormGroup>
+        <FormRow>
+          <FormGroup label="Expected Return">
+            <Input
+              type="date"
+              value={editAbsenceModal.formData.expected_return || ''}
+              onChange={(e) => editAbsenceModal.updateField('expected_return', e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup label="Actual Return">
+            <Input
+              type="date"
+              value={editAbsenceModal.formData.actual_return || ''}
+              onChange={(e) => editAbsenceModal.updateField('actual_return', e.target.value)}
+            />
+          </FormGroup>
+        </FormRow>
+        <FormGroup label="Notes">
+          <Textarea
+            value={editAbsenceModal.formData.notes || ''}
+            onChange={(e) => editAbsenceModal.updateField('notes', e.target.value)}
+            rows={2}
+          />
+        </FormGroup>
+        <FormGroup label="">
+          <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <input
+              type="checkbox"
+              checked={editAbsenceModal.formData.has_fit_note || false}
+              onChange={(e) => editAbsenceModal.updateField('has_fit_note', e.target.checked)}
+            />
+            Has fit note
+          </label>
+        </FormGroup>
+        {editAbsenceModal.formData.has_fit_note && (
+          <FormRow>
+            <FormGroup label="Fit Note Start">
+              <Input
+                type="date"
+                value={editAbsenceModal.formData.fit_note_start || ''}
+                onChange={(e) => editAbsenceModal.updateField('fit_note_start', e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup label="Fit Note End">
+              <Input
+                type="date"
+                value={editAbsenceModal.formData.fit_note_end || ''}
+                onChange={(e) => editAbsenceModal.updateField('fit_note_end', e.target.value)}
+              />
+            </FormGroup>
+          </FormRow>
+        )}
+      </Modal>
+
+      {/* Delete Absence Confirmation */}
+      <ConfirmModal
+        isOpen={!!deleteAbsenceId}
+        onClose={() => setDeleteAbsenceId(null)}
+        onConfirm={handleDeleteAbsence}
+        title="Delete Absence"
+        message="Are you sure you want to delete this absence record?"
+        confirmLabel="Delete"
+        variant="danger"
+      />
+
       {/* Delete Shift Confirmation */}
       <ConfirmModal
         isOpen={!!deleteShiftId}
@@ -1424,7 +1568,7 @@ function ShiftsTab({
                           else if (leaveStatus === 'absence') classes += ' on-absence';
                           else if (leaveStatus === 'unavailable') classes += ' on-unavailable';
                           else if (leaveStatus === 'day_off') classes += ' on-day-off';
-                          if (hasShift && shiftRole) classes += ` shift-active ${getRoleColorClass(shiftRole)}`;
+                          if (hasShift && shiftRole && leaveStatus !== 'holiday' && leaveStatus !== 'absence') classes += ` shift-active ${getRoleColorClass(shiftRole)}`;
                           // Allow clicking in status mode even if there's a leave status (to toggle day statuses)
                           if (isManager && (isStatusAssignment || !leaveStatus || leaveStatus === 'unavailable' || leaveStatus === 'day_off')) {
                             classes += ' clickable';
@@ -1471,22 +1615,22 @@ function ShiftsTab({
                               onClick={() => isCellClickable && onCellClick(staff.id, day, 'morning')}
                               title={getCellTitle(morningShift)}
                             >
-                              {leaveStatus === 'holiday' && !morningShift && <span className="leave-marker">H</span>}
-                              {leaveStatus === 'absence' && !morningShift && <span className="leave-marker absence">A</span>}
+                              {leaveStatus === 'holiday' && <span className="leave-marker">H</span>}
+                              {leaveStatus === 'absence' && <span className="leave-marker absence">A</span>}
                               {leaveStatus === 'unavailable' && !morningShift && <span className="leave-marker unavailable">U</span>}
                               {leaveStatus === 'day_off' && !morningShift && <span className="leave-marker day-off">O</span>}
-                              {morningShift && <span className="shift-marker">{getRoleAbbrev(morningShift.role)}</span>}
+                              {morningShift && leaveStatus !== 'holiday' && leaveStatus !== 'absence' && <span className="shift-marker">{getRoleAbbrev(morningShift.role)}</span>}
                             </td>
                             <td
                               className={getCellClass(!!afternoonShift, afternoonShift?.role)}
                               onClick={() => isCellClickable && onCellClick(staff.id, day, 'afternoon')}
                               title={getCellTitle(afternoonShift)}
                             >
-                              {leaveStatus === 'holiday' && !afternoonShift && <span className="leave-marker">H</span>}
-                              {leaveStatus === 'absence' && !afternoonShift && <span className="leave-marker absence">A</span>}
+                              {leaveStatus === 'holiday' && <span className="leave-marker">H</span>}
+                              {leaveStatus === 'absence' && <span className="leave-marker absence">A</span>}
                               {leaveStatus === 'unavailable' && !afternoonShift && <span className="leave-marker unavailable">U</span>}
                               {leaveStatus === 'day_off' && !afternoonShift && <span className="leave-marker day-off">O</span>}
-                              {afternoonShift && <span className="shift-marker">{getRoleAbbrev(afternoonShift.role)}</span>}
+                              {afternoonShift && leaveStatus !== 'holiday' && leaveStatus !== 'absence' && <span className="shift-marker">{getRoleAbbrev(afternoonShift.role)}</span>}
                             </td>
                           </React.Fragment>
                         );
@@ -1846,6 +1990,8 @@ interface SickLeaveTabProps {
   setAbsenceStaffFilter: (id: number) => void;
   isManager: boolean;
   onOpenModal: () => void;
+  onEdit: (record: SickLeaveRecord) => void;
+  onDelete: (id: number) => void;
   formatDate: (dateStr: string) => string;
   formatTime: (timeStr: string) => string;
 }
@@ -1857,6 +2003,8 @@ function SickLeaveTab({
   setAbsenceStaffFilter,
   isManager,
   onOpenModal,
+  onEdit,
+  onDelete,
   formatDate,
   formatTime,
 }: SickLeaveTabProps) {
@@ -1921,6 +2069,7 @@ function SickLeaveTab({
               <th>Expected Return</th>
               <th>Actual Return</th>
               <th>Notes</th>
+              {isManager && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -1935,10 +2084,16 @@ function SickLeaveTab({
                 <td>{r.expected_return ? formatDate(r.expected_return) : '-'}</td>
                 <td>{r.actual_return ? formatDate(r.actual_return) : 'Not returned'}</td>
                 <td>{r.notes || '-'}</td>
+                {isManager && (
+                  <td className="action-buttons">
+                    <button className="ds-btn ds-btn-secondary btn-sm" onClick={() => onEdit(r)}>Edit</button>
+                    <button className="ds-btn ds-btn-danger btn-sm" onClick={() => onDelete(r.id)}>Delete</button>
+                  </td>
+                )}
               </tr>
             ))}
             {(sickLeave?.records.filter(r => absenceStaffFilter === 0 || r.staff_id === absenceStaffFilter).length === 0) && (
-              <tr><td colSpan={isManager ? 8 : 7} className="empty">No absence records</td></tr>
+              <tr><td colSpan={isManager ? 9 : 7} className="empty">No absence records</td></tr>
             )}
           </tbody>
         </table>
@@ -2033,14 +2188,10 @@ function LeaveSummaryTab({
 
 interface PayrollTabProps {
   payrollSummary: PayrollSummaryResponse | null;
-  periodType: 'week' | 'month';
-  setPeriodType: (type: 'week' | 'month') => void;
-  year: number;
-  setYear: (year: number) => void;
-  month: number;
-  setMonth: (month: number) => void;
-  week: number | undefined;
-  setWeek: (week: number | undefined) => void;
+  startDate: string;
+  setStartDate: (date: string) => void;
+  endDate: string;
+  setEndDate: (date: string) => void;
   loading: boolean;
   staffList: User[];
   loadTabData: () => void;
@@ -2048,14 +2199,10 @@ interface PayrollTabProps {
 
 function PayrollTab({
   payrollSummary,
-  periodType,
-  setPeriodType,
-  year,
-  setYear,
-  month,
-  setMonth,
-  week,
-  setWeek,
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
   loading,
   staffList,
   loadTabData,
@@ -2071,10 +2218,90 @@ function PayrollTab({
   });
   const [adjustmentError, setAdjustmentError] = useState('');
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  // Payslip state
+  const [payslips, setPayslips] = useState<PayslipRecord[]>([]);
+  const [showPayslipModal, setShowPayslipModal] = useState(false);
+  const [payslipFile, setPayslipFile] = useState<File | null>(null);
+  const [payslipForm, setPayslipForm] = useState({
+    staff_id: 0,
+    document_type: 'payslip' as string,
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1,
+    notes: '',
+  });
+  const [payslipError, setPayslipError] = useState('');
+  const [deletePayslipId, setDeletePayslipId] = useState<number | null>(null);
+
+  const loadPayslips = useCallback(async () => {
+    try {
+      const data = await payslipApi.list();
+      setPayslips(data.payslips);
+    } catch {
+      // Silently fail - payslips are secondary to payroll data
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPayslips();
+  }, [loadPayslips]);
+
+  const handleUploadPayslip = async () => {
+    try {
+      setPayslipError('');
+      if (!payslipForm.staff_id) {
+        setPayslipError('Please select a staff member');
+        return;
+      }
+      if (!payslipFile) {
+        setPayslipError('Please select a PDF file');
+        return;
+      }
+      const month = payslipForm.document_type === 'payslip' ? payslipForm.month : null;
+      await payslipApi.upload(
+        payslipFile,
+        payslipForm.staff_id,
+        payslipForm.document_type,
+        payslipForm.year,
+        month,
+        payslipForm.notes || undefined,
+      );
+      setShowPayslipModal(false);
+      setPayslipFile(null);
+      setPayslipForm({
+        staff_id: 0,
+        document_type: 'payslip',
+        year: new Date().getFullYear(),
+        month: new Date().getMonth() + 1,
+        notes: '',
+      });
+      loadPayslips();
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      setPayslipError(err.response?.data?.detail || 'Failed to upload payslip');
+    }
+  };
+
+  const handleDeletePayslip = async () => {
+    if (!deletePayslipId) return;
+    try {
+      await payslipApi.delete(deletePayslipId);
+      setDeletePayslipId(null);
+      loadPayslips();
+    } catch {
+      setDeletePayslipId(null);
+    }
+  };
+
+  const handleDownloadPayslip = async (p: PayslipRecord) => {
+    await payslipApi.download(p.id, p.original_filename || undefined);
+  };
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  const getPayslipPeriodLabel = (p: PayslipRecord) => {
+    if (p.document_type === 'annual_summary') return `${p.year} Annual Summary`;
+    return `${monthNames[p.month - 1]} ${p.year}`;
+  };
 
   const handleCreateAdjustment = async () => {
     try {
@@ -2114,121 +2341,31 @@ function PayrollTab({
     }).format(amount);
   };
 
-  // Generate week options for the year (ISO weeks 1-52/53)
-  const getWeekOptions = () => {
-    const weeks: { value: number; label: string }[] = [];
-    // Calculate number of weeks in year from last day
-    const lastDay = new Date(year, 11, 31);
-    const lastWeek = getISOWeek(lastDay);
-    const maxWeeks = lastWeek === 1 ? 52 : lastWeek;
-
-    for (let i = 1; i <= maxWeeks; i++) {
-      weeks.push({ value: i, label: `Week ${i}` });
-    }
-    return weeks;
-  };
-
-  // Get ISO week number
-  const getISOWeek = (date: Date): number => {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-  };
-
   return (
     <div className="payroll-view">
       <div className="payroll-toolbar">
         <div className="period-selector">
-          <button
-            className="ds-btn ds-btn-secondary period-nav-btn"
-            onClick={() => {
-              if (periodType === 'month') {
-                if (month === 1) {
-                  setMonth(12);
-                  setYear(year - 1);
-                } else {
-                  setMonth(month - 1);
-                }
-              } else {
-                if (week && week <= 1) {
-                  setWeek(52);
-                  setYear(year - 1);
-                } else {
-                  setWeek((week || 1) - 1);
-                }
+          <label className="date-range-label">From</label>
+          <input
+            type="date"
+            className="ds-input"
+            value={startDate}
+            onChange={(e) => {
+              const newStart = e.target.value;
+              setStartDate(newStart);
+              if (newStart > endDate) {
+                setEndDate(newStart);
               }
             }}
-            title={periodType === 'month' ? 'Previous month' : 'Previous week'}
-          >
-            ←
-          </button>
-
-          <select
-            value={periodType}
-            onChange={(e) => setPeriodType(e.target.value as 'week' | 'month')}
-            className="ds-select"
-          >
-            <option value="month">Monthly</option>
-            <option value="week">Weekly</option>
-          </select>
-
-          <select
-            value={year}
-            onChange={(e) => setYear(parseInt(e.target.value))}
-            className="ds-select"
-          >
-            {[year - 1, year, year + 1].map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-
-          {periodType === 'month' ? (
-            <select
-              value={month}
-              onChange={(e) => setMonth(parseInt(e.target.value))}
-              className="ds-select"
-            >
-              {monthNames.map((name, idx) => (
-                <option key={idx + 1} value={idx + 1}>{name}</option>
-              ))}
-            </select>
-          ) : (
-            <select
-              value={week || getISOWeek(new Date())}
-              onChange={(e) => setWeek(parseInt(e.target.value))}
-              className="ds-select"
-            >
-              {getWeekOptions().map(w => (
-                <option key={w.value} value={w.value}>{w.label}</option>
-              ))}
-            </select>
-          )}
-
-          <button
-            className="ds-btn ds-btn-secondary period-nav-btn"
-            onClick={() => {
-              if (periodType === 'month') {
-                if (month === 12) {
-                  setMonth(1);
-                  setYear(year + 1);
-                } else {
-                  setMonth(month + 1);
-                }
-              } else {
-                if (week && week >= 52) {
-                  setWeek(1);
-                  setYear(year + 1);
-                } else {
-                  setWeek((week || 1) + 1);
-                }
-              }
-            }}
-            title={periodType === 'month' ? 'Next month' : 'Next week'}
-          >
-            →
-          </button>
+          />
+          <label className="date-range-label">To</label>
+          <input
+            type="date"
+            className="ds-input"
+            value={endDate}
+            min={startDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
         </div>
 
         <button
@@ -2245,9 +2382,6 @@ function PayrollTab({
         <>
           <div className="payroll-header">
             <h3>{payrollSummary.period_label}</h3>
-            <span className="period-dates">
-              {new Date(payrollSummary.period_start).toLocaleDateString()} - {new Date(payrollSummary.period_end).toLocaleDateString()}
-            </span>
           </div>
 
           <div className="payroll-summary-cards">
@@ -2258,6 +2392,10 @@ function PayrollTab({
             <div className="summary-card">
               <div className="summary-value">{formatCurrency(payrollSummary.total_base_pay)}</div>
               <div className="summary-label">Earned Pay</div>
+            </div>
+            <div className="summary-card">
+              <div className="summary-value">{formatCurrency(payrollSummary.total_holiday_pay)}</div>
+              <div className="summary-label">Holiday Pay</div>
             </div>
             <div className="summary-card">
               <div className="summary-value">{formatCurrency(payrollSummary.total_adjustments)}</div>
@@ -2278,6 +2416,8 @@ function PayrollTab({
                   <th>Hourly Rate</th>
                   <th>Hours</th>
                   <th>Earned Pay</th>
+                  <th>Hol. Hours</th>
+                  <th>Hol. Pay</th>
                   <th>One-off</th>
                   <th>Taxable</th>
                   <th className="tips-header">Tips<span className="tax-free-label">Tax-free</span></th>
@@ -2292,6 +2432,8 @@ function PayrollTab({
                     <td>{formatCurrency(s.hourly_rate || 0)}</td>
                     <td>{s.approved_hours.toFixed(2)}</td>
                     <td>{formatCurrency(s.base_pay)}</td>
+                    <td>{s.holiday_hours.toFixed(2)}</td>
+                    <td>{formatCurrency(s.holiday_pay)}</td>
                     <td>{formatCurrency(s.adjustments.oneoff_total)}</td>
                     <td>{formatCurrency(s.taxable_pay)}</td>
                     <td className={s.adjustments.tips_total > 0 ? 'tips-cell has-tips' : 'tips-cell'}>
@@ -2301,7 +2443,7 @@ function PayrollTab({
                   </tr>
                 ))}
                 {payrollSummary.staff_summaries.length === 0 && (
-                  <tr><td colSpan={9} className="empty">No payroll data for this period</td></tr>
+                  <tr><td colSpan={11} className="empty">No payroll data for this period</td></tr>
                 )}
               </tbody>
               {payrollSummary.staff_summaries.length > 0 && (
@@ -2310,6 +2452,8 @@ function PayrollTab({
                     <td colSpan={3}><strong>Totals</strong></td>
                     <td><strong>{payrollSummary.total_approved_hours.toFixed(2)}</strong></td>
                     <td><strong>{formatCurrency(payrollSummary.total_base_pay)}</strong></td>
+                    <td><strong>{payrollSummary.total_holiday_hours.toFixed(2)}</strong></td>
+                    <td><strong>{formatCurrency(payrollSummary.total_holiday_pay)}</strong></td>
                     <td colSpan={3}><strong>{formatCurrency(payrollSummary.total_adjustments)}</strong></td>
                     <td><strong>{formatCurrency(payrollSummary.total_pay)}</strong></td>
                   </tr>
@@ -2319,7 +2463,7 @@ function PayrollTab({
           </div>
 
           <div className="payroll-notes">
-            <p><strong>Note:</strong> Tips are shown separately as they are tax-free. Taxable pay includes base pay plus taxable one-off payments.</p>
+            <p><strong>Note:</strong> Holiday pay is calculated from approved annual leave (full day = 8 hours, half day = 4 hours). Tips are shown separately as they are tax-free. Taxable pay includes base pay, holiday pay, and taxable one-off payments.</p>
           </div>
         </>
       )}
@@ -2414,6 +2558,144 @@ function PayrollTab({
           </div>
         )}
       </Modal>
+
+      {/* Payslip Documents Section */}
+      <div className="payslip-documents-section">
+        <div className="section-header">
+          <h3>Payslip Documents</h3>
+          <button className="ds-btn ds-btn-primary" onClick={() => setShowPayslipModal(true)}>
+            Upload Payslip
+          </button>
+        </div>
+
+        {payslips.length > 0 ? (
+          <div className="data-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff</th>
+                  <th>Type</th>
+                  <th>Period</th>
+                  <th>Uploaded</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payslips.map((p) => (
+                  <tr key={p.id}>
+                    <td><strong>{p.staff_name || `Staff #${p.staff_id}`}</strong></td>
+                    <td>{p.document_type === 'annual_summary' ? 'Annual Summary' : 'Payslip'}</td>
+                    <td>{getPayslipPeriodLabel(p)}</td>
+                    <td>{new Date(p.created_at).toLocaleDateString('en-GB')}</td>
+                    <td>{p.notes || '-'}</td>
+                    <td className="action-buttons">
+                      <button className="ds-btn ds-btn-secondary btn-sm" onClick={() => handleDownloadPayslip(p)}>Download</button>
+                      <button className="ds-btn ds-btn-danger btn-sm" onClick={() => setDeletePayslipId(p.id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="empty-state">No payslip documents uploaded yet.</p>
+        )}
+      </div>
+
+      {/* Upload Payslip Modal */}
+      <Modal
+        isOpen={showPayslipModal}
+        onClose={() => { setShowPayslipModal(false); setPayslipError(''); }}
+        title="Upload Payslip"
+        footer={
+          <>
+            <button className="ds-btn ds-btn-secondary" onClick={() => { setShowPayslipModal(false); setPayslipError(''); }}>Cancel</button>
+            <button className="ds-btn ds-btn-primary" onClick={handleUploadPayslip}>Upload</button>
+          </>
+        }
+      >
+        {payslipError && <div className="ds-alert ds-alert-error">{payslipError}</div>}
+
+        <FormGroup label="Staff Member" required>
+          <Select
+            value={payslipForm.staff_id}
+            onChange={(e) => setPayslipForm({ ...payslipForm, staff_id: parseInt(e.target.value) })}
+            required
+          >
+            <option value={0}>Select staff...</option>
+            {staffList.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </Select>
+        </FormGroup>
+
+        <FormGroup label="Document Type" required>
+          <Select
+            value={payslipForm.document_type}
+            onChange={(e) => setPayslipForm({ ...payslipForm, document_type: e.target.value })}
+            required
+          >
+            <option value="payslip">Monthly Payslip</option>
+            <option value="annual_summary">Annual Summary (P60)</option>
+          </Select>
+        </FormGroup>
+
+        <FormRow>
+          <FormGroup label="Year" required>
+            <Input
+              type="number"
+              min={2020}
+              max={2099}
+              value={payslipForm.year}
+              onChange={(e) => setPayslipForm({ ...payslipForm, year: parseInt(e.target.value) || new Date().getFullYear() })}
+              required
+            />
+          </FormGroup>
+          {payslipForm.document_type === 'payslip' && (
+            <FormGroup label="Month" required>
+              <Select
+                value={payslipForm.month}
+                onChange={(e) => setPayslipForm({ ...payslipForm, month: parseInt(e.target.value) })}
+                required
+              >
+                {monthNames.map((name, idx) => (
+                  <option key={idx} value={idx + 1}>{name}</option>
+                ))}
+              </Select>
+            </FormGroup>
+          )}
+        </FormRow>
+
+        <FormGroup label="PDF File" required>
+          <Input
+            type="file"
+            accept=".pdf"
+            onChange={(e) => setPayslipFile(e.target.files?.[0] || null)}
+            required
+          />
+        </FormGroup>
+
+        <FormGroup label="Notes">
+          <Textarea
+            value={payslipForm.notes}
+            onChange={(e) => setPayslipForm({ ...payslipForm, notes: e.target.value })}
+            rows={2}
+            placeholder="Optional notes about this payslip"
+          />
+        </FormGroup>
+      </Modal>
+
+      {/* Delete Payslip Confirmation */}
+      <ConfirmModal
+        isOpen={deletePayslipId !== null}
+        onClose={() => setDeletePayslipId(null)}
+        onConfirm={handleDeletePayslip}
+        title="Delete Payslip"
+        message="Are you sure you want to delete this payslip? The PDF file will be permanently removed."
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 }

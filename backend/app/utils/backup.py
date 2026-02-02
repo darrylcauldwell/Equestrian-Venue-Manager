@@ -55,6 +55,7 @@ from app.models.land_management import (
 )
 from app.models.staff_profile import StaffProfile, HourlyRateHistory
 from app.models.risk_assessment import RiskAssessment, RiskAssessmentCategory, RiskAssessmentReview, RiskAssessmentAcknowledgement, ReviewTrigger
+from app.models.payslip import Payslip, PayslipDocumentType
 from app.utils.auth import get_password_hash
 from app.utils.seed_validator import validate_seed_data, SeedValidationError
 
@@ -381,6 +382,10 @@ def export_database(db: Session) -> Tuple[Dict[str, Any], Dict[str, int]]:
     # Sheep Flock Field Assignments
     data["sheep_flock_field_assignments"] = export_models(db, SheepFlockFieldAssignment)
     entity_counts["sheep_flock_field_assignments"] = len(data["sheep_flock_field_assignments"])
+
+    # Payslips (metadata only - PDF files need separate backup)
+    data["payslips"] = export_models(db, Payslip)
+    entity_counts["payslips"] = len(data["payslips"])
 
     return data, entity_counts
 
@@ -810,6 +815,10 @@ def import_database(
         # 50. Horse Field Assignments (permanent livery field assignments)
         if "horse_field_assignments" in data:
             counts["horse_field_assignments"] = _import_horse_field_assignments(db, data["horse_field_assignments"], user_map, log)
+
+        # 51. Payslips (metadata only - PDF files must be restored separately)
+        if "payslips" in data:
+            counts["payslips"] = _import_payslips(db, data["payslips"], user_map, log)
 
         # Single commit at the end - all or nothing
         db.commit()
@@ -4412,6 +4421,141 @@ def _import_horse_field_assignments(db: Session, assignments_data: List[Dict], u
         count += 1
         field_str = field_name if field_name else "Box Rest"
         log(f"  Assigned '{horse_name}' to {field_str}")
+
+    db.flush()
+    return count
+
+
+def _generate_demo_pdf(filename: str, staff_name: str, doc_type: str, year: int, month: int) -> None:
+    """Generate a minimal placeholder PDF for demo/seed payslips."""
+    month_names = [
+        "", "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+    ]
+    if doc_type == "annual_summary":
+        title = f"Annual Summary (P60) - {year}"
+    else:
+        title = f"Payslip - {month_names[month]} {year}"
+
+    # Minimal valid PDF with text content
+    content = f"DEMO PAYSLIP DOCUMENT\n\nStaff: {staff_name}\n{title}\n\nThis is a placeholder PDF for demonstration purposes."
+    # Build a minimal PDF manually (no external dependencies needed)
+    text_stream = content.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    stream_content = f"BT /F1 12 Tf 50 750 Td ({text_stream.splitlines()[0]}) Tj ET\n"
+    y = 730
+    for line in text_stream.splitlines()[1:]:
+        stream_content += f"BT /F1 12 Tf 50 {y} Td ({line}) Tj ET\n"
+        y -= 20
+
+    stream_bytes = stream_content.encode("latin-1")
+    stream_len = len(stream_bytes)
+
+    pdf = (
+        b"%PDF-1.4\n"
+        b"1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj\n"
+        b"2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj\n"
+        b"3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+        b"/Contents 4 0 R /Resources <</Font <</F1 5 0 R>>>>>> endobj\n"
+        + f"4 0 obj <</Length {stream_len}>> stream\n".encode("latin-1")
+        + stream_bytes
+        + b"\nendstream endobj\n"
+        + b"5 0 obj <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>> endobj\n"
+        + b"xref\n0 6\n"
+        + b"0000000000 65535 f \n"
+        + b"0000000009 00000 n \n"
+        + b"0000000058 00000 n \n"
+        + b"0000000115 00000 n \n"
+        + b"0000000290 00000 n \n"
+        + b"0000000400 00000 n \n"
+        + b"trailer <</Size 6 /Root 1 0 R>>\nstartxref\n480\n%%EOF\n"
+    )
+
+    payslip_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "payslips")
+    os.makedirs(payslip_dir, exist_ok=True)
+    filepath = os.path.join(payslip_dir, filename)
+    with open(filepath, "wb") as f:
+        f.write(pdf)
+
+
+def _import_payslips(db: Session, payslips_data: List[Dict], user_map: Dict[str, int], log: Callable) -> int:
+    """Import payslip records. Generates demo PDFs for filenames starting with 'demo_'."""
+    log("Importing payslips...")
+    count = 0
+
+    for payslip_data in payslips_data:
+        # Resolve staff user
+        staff_username = payslip_data.get("staff_username")
+        staff_id = payslip_data.get("staff_id")
+        if staff_username:
+            staff_id = user_map.get(staff_username)
+            if not staff_id:
+                log(f"  Staff user '{staff_username}' not found, skipping payslip")
+                continue
+        elif staff_id:
+            user = db.query(User).filter(User.id == staff_id).first()
+            if not user:
+                log(f"  Staff user ID {staff_id} not found, skipping payslip")
+                continue
+
+        # Resolve uploaded_by user
+        uploaded_by_username = payslip_data.get("uploaded_by_username")
+        uploaded_by_id = payslip_data.get("uploaded_by_id")
+        if uploaded_by_username:
+            uploaded_by_id = user_map.get(uploaded_by_username)
+        if not uploaded_by_id:
+            admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+            uploaded_by_id = admin.id if admin else 1
+
+        # Parse document type
+        doc_type_str = payslip_data.get("document_type", "payslip")
+        try:
+            document_type = PayslipDocumentType(doc_type_str)
+        except ValueError:
+            document_type = PayslipDocumentType.PAYSLIP
+
+        year = payslip_data.get("year", date.today().year)
+        month = payslip_data.get("month", 0)
+
+        # Check for duplicate
+        existing = db.query(Payslip).filter(
+            Payslip.staff_id == staff_id,
+            Payslip.document_type == document_type,
+            Payslip.year == year,
+            Payslip.month == month,
+        ).first()
+        if existing:
+            log(f"  Payslip for staff_id={staff_id} {doc_type_str} {year}/{month} already exists, skipping")
+            continue
+
+        pdf_filename = payslip_data.get("pdf_filename", "")
+
+        # Generate demo PDF file for seed data
+        if pdf_filename.startswith("demo_"):
+            staff_name = staff_username or f"Staff {staff_id}"
+            _generate_demo_pdf(pdf_filename, staff_name, doc_type_str, year, month)
+            log(f"  Generated demo PDF: {pdf_filename}")
+
+        payslip = Payslip(
+            staff_id=staff_id,
+            document_type=document_type,
+            year=year,
+            month=month,
+            pdf_filename=pdf_filename,
+            original_filename=payslip_data.get("original_filename"),
+            notes=payslip_data.get("notes"),
+            uploaded_by_id=uploaded_by_id,
+        )
+
+        if payslip_data.get("created_at"):
+            try:
+                payslip.created_at = datetime.fromisoformat(str(payslip_data["created_at"]))
+            except (ValueError, TypeError):
+                pass
+
+        db.add(payslip)
+        count += 1
+        period = f"{year}/{month}" if month > 0 else f"{year} (annual)"
+        log(f"  Created payslip: {doc_type_str} {period}")
 
     db.flush()
     return count

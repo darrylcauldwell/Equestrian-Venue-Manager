@@ -409,5 +409,38 @@
       "assigned_stable_name": "Stable 6",
       "processed_by_username": "admin"
     }
+  ],
+
+  "payslips": [
+    {
+      "staff_username": "staff1",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 10,
+      "pdf_filename": "demo_staff1_2025_10.pdf",
+      "original_filename": "staff1_october_2025.pdf",
+      "notes": "October payslip"
+    },
+    {
+      "staff_username": "staff1",
+      "uploaded_by_username": "admin",
+      "document_type": "payslip",
+      "year": 2025,
+      "month": 11,
+      "pdf_filename": "demo_staff1_2025_11.pdf",
+      "original_filename": "staff1_november_2025.pdf",
+      "notes": "November payslip"
+    },
+    {
+      "staff_username": "staff1",
+      "uploaded_by_username": "admin",
+      "document_type": "annual_summary",
+      "year": 2025,
+      "month": 0,
+      "pdf_filename": "demo_staff1_2025_p60.pdf",
+      "original_filename": "staff1_p60_2025.pdf",
+      "notes": "Annual P60 summary"
+    }
   ]
 }
