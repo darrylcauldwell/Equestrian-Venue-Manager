@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { staffApi, usersApi, payslipApi } from '../services/api';
+import { staffApi, usersApi } from '../services/api';
 
 // Lazy load StaffProfiles to avoid massive bundle
 const StaffProfiles = lazy(() => import('./admin/StaffProfiles'));
@@ -28,7 +28,6 @@ import type {
   AllStaffLeaveSummary,
   PayrollSummaryResponse,
   PayrollAdjustmentCreate,
-  PayslipRecord,
   DayStatus,
   DayStatusType,
 } from '../types';
@@ -2218,91 +2217,6 @@ function PayrollTab({
   });
   const [adjustmentError, setAdjustmentError] = useState('');
 
-  // Payslip state
-  const [payslips, setPayslips] = useState<PayslipRecord[]>([]);
-  const [showPayslipModal, setShowPayslipModal] = useState(false);
-  const [payslipFile, setPayslipFile] = useState<File | null>(null);
-  const [payslipForm, setPayslipForm] = useState({
-    staff_id: 0,
-    document_type: 'payslip' as string,
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1,
-    notes: '',
-  });
-  const [payslipError, setPayslipError] = useState('');
-  const [deletePayslipId, setDeletePayslipId] = useState<number | null>(null);
-
-  const loadPayslips = useCallback(async () => {
-    try {
-      const data = await payslipApi.list();
-      setPayslips(data.payslips);
-    } catch {
-      // Silently fail - payslips are secondary to payroll data
-    }
-  }, []);
-
-  useEffect(() => {
-    loadPayslips();
-  }, [loadPayslips]);
-
-  const handleUploadPayslip = async () => {
-    try {
-      setPayslipError('');
-      if (!payslipForm.staff_id) {
-        setPayslipError('Please select a staff member');
-        return;
-      }
-      if (!payslipFile) {
-        setPayslipError('Please select a PDF file');
-        return;
-      }
-      const month = payslipForm.document_type === 'payslip' ? payslipForm.month : null;
-      await payslipApi.upload(
-        payslipFile,
-        payslipForm.staff_id,
-        payslipForm.document_type,
-        payslipForm.year,
-        month,
-        payslipForm.notes || undefined,
-      );
-      setShowPayslipModal(false);
-      setPayslipFile(null);
-      setPayslipForm({
-        staff_id: 0,
-        document_type: 'payslip',
-        year: new Date().getFullYear(),
-        month: new Date().getMonth() + 1,
-        notes: '',
-      });
-      loadPayslips();
-    } catch (e: unknown) {
-      const err = e as { response?: { data?: { detail?: string } } };
-      setPayslipError(err.response?.data?.detail || 'Failed to upload payslip');
-    }
-  };
-
-  const handleDeletePayslip = async () => {
-    if (!deletePayslipId) return;
-    try {
-      await payslipApi.delete(deletePayslipId);
-      setDeletePayslipId(null);
-      loadPayslips();
-    } catch {
-      setDeletePayslipId(null);
-    }
-  };
-
-  const handleDownloadPayslip = async (p: PayslipRecord) => {
-    await payslipApi.download(p.id, p.original_filename || undefined);
-  };
-
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-  const getPayslipPeriodLabel = (p: PayslipRecord) => {
-    if (p.document_type === 'annual_summary') return `${p.year} Annual Summary`;
-    return `${monthNames[p.month - 1]} ${p.year}`;
-  };
-
   const handleCreateAdjustment = async () => {
     try {
       setAdjustmentError('');
@@ -2554,148 +2468,11 @@ function PayrollTab({
 
         {adjustmentForm.adjustment_type === 'tip' && (
           <div className="ds-alert ds-alert-info">
-            Tips are recorded as tax-free income and will appear separately on staff payslips.
+            Tips are recorded as tax-free income.
           </div>
         )}
       </Modal>
 
-      {/* Payslip Documents Section */}
-      <div className="payslip-documents-section">
-        <div className="section-header">
-          <h3>Payslip Documents</h3>
-          <button className="ds-btn ds-btn-primary" onClick={() => setShowPayslipModal(true)}>
-            Upload Payslip
-          </button>
-        </div>
-
-        {payslips.length > 0 ? (
-          <div className="data-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Staff</th>
-                  <th>Type</th>
-                  <th>Period</th>
-                  <th>Uploaded</th>
-                  <th>Notes</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payslips.map((p) => (
-                  <tr key={p.id}>
-                    <td><strong>{p.staff_name || `Staff #${p.staff_id}`}</strong></td>
-                    <td>{p.document_type === 'annual_summary' ? 'Annual Summary' : 'Payslip'}</td>
-                    <td>{getPayslipPeriodLabel(p)}</td>
-                    <td>{new Date(p.created_at).toLocaleDateString('en-GB')}</td>
-                    <td>{p.notes || '-'}</td>
-                    <td className="action-buttons">
-                      <button className="ds-btn ds-btn-secondary btn-sm" onClick={() => handleDownloadPayslip(p)}>Download</button>
-                      <button className="ds-btn ds-btn-danger btn-sm" onClick={() => setDeletePayslipId(p.id)}>Delete</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="empty-state">No payslip documents uploaded yet.</p>
-        )}
-      </div>
-
-      {/* Upload Payslip Modal */}
-      <Modal
-        isOpen={showPayslipModal}
-        onClose={() => { setShowPayslipModal(false); setPayslipError(''); }}
-        title="Upload Payslip"
-        footer={
-          <>
-            <button className="ds-btn ds-btn-secondary" onClick={() => { setShowPayslipModal(false); setPayslipError(''); }}>Cancel</button>
-            <button className="ds-btn ds-btn-primary" onClick={handleUploadPayslip}>Upload</button>
-          </>
-        }
-      >
-        {payslipError && <div className="ds-alert ds-alert-error">{payslipError}</div>}
-
-        <FormGroup label="Staff Member" required>
-          <Select
-            value={payslipForm.staff_id}
-            onChange={(e) => setPayslipForm({ ...payslipForm, staff_id: parseInt(e.target.value) })}
-            required
-          >
-            <option value={0}>Select staff...</option>
-            {staffList.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </Select>
-        </FormGroup>
-
-        <FormGroup label="Document Type" required>
-          <Select
-            value={payslipForm.document_type}
-            onChange={(e) => setPayslipForm({ ...payslipForm, document_type: e.target.value })}
-            required
-          >
-            <option value="payslip">Monthly Payslip</option>
-            <option value="annual_summary">Annual Summary (P60)</option>
-          </Select>
-        </FormGroup>
-
-        <FormRow>
-          <FormGroup label="Year" required>
-            <Input
-              type="number"
-              min={2020}
-              max={2099}
-              value={payslipForm.year}
-              onChange={(e) => setPayslipForm({ ...payslipForm, year: parseInt(e.target.value) || new Date().getFullYear() })}
-              required
-            />
-          </FormGroup>
-          {payslipForm.document_type === 'payslip' && (
-            <FormGroup label="Month" required>
-              <Select
-                value={payslipForm.month}
-                onChange={(e) => setPayslipForm({ ...payslipForm, month: parseInt(e.target.value) })}
-                required
-              >
-                {monthNames.map((name, idx) => (
-                  <option key={idx} value={idx + 1}>{name}</option>
-                ))}
-              </Select>
-            </FormGroup>
-          )}
-        </FormRow>
-
-        <FormGroup label="PDF File" required>
-          <Input
-            type="file"
-            accept=".pdf"
-            onChange={(e) => setPayslipFile(e.target.files?.[0] || null)}
-            required
-          />
-        </FormGroup>
-
-        <FormGroup label="Notes">
-          <Textarea
-            value={payslipForm.notes}
-            onChange={(e) => setPayslipForm({ ...payslipForm, notes: e.target.value })}
-            rows={2}
-            placeholder="Optional notes about this payslip"
-          />
-        </FormGroup>
-      </Modal>
-
-      {/* Delete Payslip Confirmation */}
-      <ConfirmModal
-        isOpen={deletePayslipId !== null}
-        onClose={() => setDeletePayslipId(null)}
-        onConfirm={handleDeletePayslip}
-        title="Delete Payslip"
-        message="Are you sure you want to delete this payslip? The PDF file will be permanently removed."
-        confirmLabel="Delete"
-        variant="danger"
-      />
     </div>
   );
 }

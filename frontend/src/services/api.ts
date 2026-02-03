@@ -114,8 +114,7 @@ import type {
   PayrollAdjustmentCreate,
   PayrollAdjustmentListResponse,
   PayrollSummaryResponse,
-  PayslipRecord,
-  PayslipListResponse,
+
   StaffThanks,
   StaffThanksCreate,
   StaffThanksListResponse,
@@ -4158,70 +4157,6 @@ export const sheepFlocksApi = {
   getAssignmentHistory: async (flockId: number): Promise<SheepFlockFieldAssignment[]> => {
     const response = await api.get(`/sheep-flocks/${flockId}/assignment-history`);
     return response.data;
-  },
-};
-
-export const payslipApi = {
-  upload: async (
-    file: File,
-    staffId: number,
-    documentType: string,
-    year: number,
-    month: number | null,
-    notes?: string,
-  ): Promise<PayslipRecord> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const params: Record<string, string> = {
-      staff_id: staffId.toString(),
-      document_type: documentType,
-      year: year.toString(),
-    };
-    if (month !== null) params.month = month.toString();
-    if (notes) params.notes = notes;
-    const response = await api.post('/payslips/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      params,
-    });
-    return response.data;
-  },
-
-  list: async (
-    staffId?: number,
-    year?: number,
-    documentType?: string,
-  ): Promise<PayslipListResponse> => {
-    const params: Record<string, string> = {};
-    if (staffId) params.staff_id = staffId.toString();
-    if (year) params.year = year.toString();
-    if (documentType) params.document_type = documentType;
-    const response = await api.get('/payslips/', { params });
-    return response.data;
-  },
-
-  listMine: async (): Promise<PayslipListResponse> => {
-    const response = await api.get('/payslips/my');
-    return response.data;
-  },
-
-  download: async (payslipId: number, filename?: string): Promise<void> => {
-    const response = await api.get(`/payslips/${payslipId}/download`, {
-      responseType: 'blob',
-    });
-    const url = window.URL.createObjectURL(
-      new Blob([response.data], { type: 'application/pdf' })
-    );
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', filename || `payslip_${payslipId}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-  },
-
-  delete: async (payslipId: number): Promise<void> => {
-    await api.delete(`/payslips/${payslipId}`);
   },
 };
 

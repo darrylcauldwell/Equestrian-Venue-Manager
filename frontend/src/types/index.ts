@@ -1692,28 +1692,6 @@ export interface PayrollSummaryResponse {
   total_pay: number;
 }
 
-// Payslip Types
-export type PayslipDocumentType = 'payslip' | 'annual_summary';
-
-export interface PayslipRecord {
-  id: number;
-  staff_id: number;
-  document_type: PayslipDocumentType;
-  year: number;
-  month: number;
-  pdf_filename: string;
-  original_filename: string | null;
-  notes: string | null;
-  uploaded_by_id: number;
-  created_at: string;
-  staff_name?: string;
-  uploaded_by_name?: string;
-}
-
-export interface PayslipListResponse {
-  payslips: PayslipRecord[];
-  total: number;
-}
 
 // Staff Thanks (appreciation messages with optional tips)
 export interface StaffThanksCreate {

@@ -40,7 +40,7 @@ const MyTimesheet = lazy(() => import('./pages/MyTimesheet'));
 const MyRota = lazy(() => import('./pages/MyRota'));
 const MyLeave = lazy(() => import('./pages/MyLeave'));
 const MyThanks = lazy(() => import('./pages/MyThanks'));
-const MyPayslips = lazy(() => import('./pages/MyPayslips'));
+
 const SendThanks = lazy(() => import('./pages/SendThanks'));
 const Clinics = lazy(() => import('./pages/Clinics'));
 const Lessons = lazy(() => import('./pages/Lessons'));
@@ -170,7 +170,7 @@ function App() {
         <Route path="my-timesheet" element={<ProtectedRoute requireStaff><MyTimesheet /></ProtectedRoute>} />
         <Route path="my-leave" element={<ProtectedRoute requireStaff><MyLeave /></ProtectedRoute>} />
         <Route path="my-thanks" element={<ProtectedRoute requireStaff><MyThanks /></ProtectedRoute>} />
-        <Route path="my-payslips" element={<ProtectedRoute requireStaff><MyPayslips /></ProtectedRoute>} />
+
 
         {/* Livery-only routes for appreciation */}
         <Route path="send-thanks" element={<ProtectedRoute requireLivery><SendThanks /></ProtectedRoute>} />

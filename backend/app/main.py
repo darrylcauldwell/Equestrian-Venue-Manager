@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-from app.routers import auth, users, arenas, bookings, horses, health_records, feed, services, notices, professionals, tasks, staff_management, staff_profiles, clinics, lessons, payments, settings, uploads, weather, stables, livery_packages, compliance, turnout, account, backup, rehab, fields, invoices, billing, holiday_livery, contracts, grants, land_features, flood_warnings, feature_flags, risk_assessments, sheep_flocks, feed_notifications, payslips
+from app.routers import auth, users, arenas, bookings, horses, health_records, feed, services, notices, professionals, tasks, staff_management, staff_profiles, clinics, lessons, payments, settings, uploads, weather, stables, livery_packages, compliance, turnout, account, backup, rehab, fields, invoices, billing, holiday_livery, contracts, grants, land_features, flood_warnings, feature_flags, risk_assessments, sheep_flocks, feed_notifications
 from app.services.scheduler import start_scheduler, stop_scheduler
 from app.database import SessionLocal
 from app.models.settings import SiteSettings
@@ -122,7 +122,7 @@ app.include_router(feature_flags.router, prefix="/api", tags=["Feature Flags"])
 app.include_router(risk_assessments.router, prefix="/api", tags=["Risk Assessments"])
 app.include_router(sheep_flocks.router, prefix="/api", tags=["Sheep Flocks"])
 app.include_router(feed_notifications.router, prefix="/api/feed-notifications", tags=["Feed Notifications"])
-app.include_router(payslips.router, prefix="/api/payslips", tags=["Payslips"])
+
 
 
 @app.get("/api/health")

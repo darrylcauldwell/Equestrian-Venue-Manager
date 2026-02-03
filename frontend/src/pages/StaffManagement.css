@@ -1228,30 +1228,6 @@
   color: var(--text-secondary);
 }
 
-/* Payslip Documents Section */
-.payslip-documents-section {
-  margin-top: var(--space-8);
-  border-top: 1px solid var(--border-color);
-  padding-top: var(--space-6);
-}
-
-.payslip-documents-section .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-4);
-}
-
-.payslip-documents-section .section-header h3 {
-  margin: 0;
-  font-size: var(--font-size-lg);
-}
-
-.payslip-documents-section .empty-state {
-  text-align: center;
-  padding: var(--space-8);
-  color: var(--text-muted);
-}
 
 @media (max-width: 768px) {
   .payroll-toolbar {
