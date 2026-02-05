@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.routers import auth, users, arenas, bookings, horses, health_records, feed, services, notices, professionals, tasks, staff_management, staff_profiles, clinics, lessons, payments, settings, uploads, weather, stables, livery_packages, compliance, turnout, account, backup, rehab, fields, invoices, billing, holiday_livery, contracts, grants, land_features, flood_warnings, feature_flags, risk_assessments, sheep_flocks, feed_notifications
 from app.services.scheduler import start_scheduler, stop_scheduler
@@ -128,3 +129,7 @@ app.include_router(feed_notifications.router, prefix="/api/feed-notifications", 
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy"}
+
+
+# Prometheus metrics instrumentation
+Instrumentator().instrument(app).expose(app)
