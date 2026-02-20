@@ -697,7 +697,12 @@ export default function StaffManagement() {
   const handleUpdateAbsence = async () => {
     if (!editAbsenceModal.editingId) return;
     try {
-      await staffApi.updateSickLeave(editAbsenceModal.editingId, editAbsenceModal.formData);
+      const data = { ...editAbsenceModal.formData };
+      // Convert empty date strings to null so Pydantic accepts them as Optional[date]
+      (['expected_return', 'actual_return', 'fit_note_start', 'fit_note_end'] as const).forEach(field => {
+        if (data[field] === '') data[field] = undefined;
+      });
+      await staffApi.updateSickLeave(editAbsenceModal.editingId, data);
       editAbsenceModal.close();
       setEditAbsenceRecord(null);
       loadTabData();
