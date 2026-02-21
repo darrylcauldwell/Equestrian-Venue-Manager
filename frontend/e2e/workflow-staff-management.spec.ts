@@ -180,7 +180,7 @@ test.describe('Staff Management Workflow', () => {
       await expect(page.locator('.ds-modal-overlay')).toBeVisible();
       await expect(page.locator('.ds-modal-header h2').filter({ hasText: 'Record Unplanned Absence' })).toBeVisible();
 
-      // The staff dropdown defaults to the current admin user (System Administrator)
+      // The staff dropdown defaults to the current admin user (Barnaby Hoofington-Smythe)
       // Verify the dropdown has a valid selection (not the placeholder)
       const staffSelect = page.locator('.ds-modal-body select').first();
       const selectedValue = await staffSelect.inputValue();
@@ -217,8 +217,8 @@ test.describe('Staff Management Workflow', () => {
       await page.waitForTimeout(1000);
       await dismissPopups(page);
 
-      // Find the row for System Administrator in the absences table
-      const absenceRow = page.locator('table tbody tr').filter({ hasText: 'System Administrator' }).last();
+      // Find the row for the admin user in the absences table
+      const absenceRow = page.locator('table tbody tr').filter({ hasText: 'Barnaby Hoofington-Smythe' }).last();
       await expect(absenceRow).toBeVisible();
 
       // Click "Edit" on that row
@@ -229,7 +229,7 @@ test.describe('Staff Management Workflow', () => {
       await expect(page.locator('.ds-modal-header h2').filter({ hasText: 'Edit Absence' })).toBeVisible();
 
       // Verify the info banner shows staff name
-      await expect(page.locator('.ds-modal-body .ds-alert-info').filter({ hasText: 'System Administrator' })).toBeVisible();
+      await expect(page.locator('.ds-modal-body .ds-alert-info').filter({ hasText: 'Barnaby Hoofington-Smythe' })).toBeVisible();
 
       // Change the expected return date to 3 days from now
       const newReturnDate = new Date();
@@ -257,7 +257,7 @@ test.describe('Staff Management Workflow', () => {
 
       // Verify the updated expected return date appears in the table
       // The formatDate function uses toLocaleDateString() so we match the row content
-      const updatedRow = page.locator('table tbody tr').filter({ hasText: 'System Administrator' }).last();
+      const updatedRow = page.locator('table tbody tr').filter({ hasText: 'Barnaby Hoofington-Smythe' }).last();
       await expect(updatedRow).toBeVisible();
 
       // Verify the date was actually updated by checking the Expected Return column
